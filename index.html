@@ -568,6 +568,9 @@ var Guide = (function () {
       // 歩行空間ネットワークの勾配（構内地図のある駅）。段差なしの条件では 8% を超える坂を避ける（通れなくはしない）
       var inf = st.linkInfo && st.linkInfo[li];
       if (inf && inf[1] >= 5 && profile === 'ev') c = c * 4 + 60;
+      // 推定でつないだ線（Machiawase）は少し割高に。数 m の近道のために、確かな通路を外れて推定の線を行き来しないように
+      // （2026-10-09 ビアードパパ → 東武東上線の改札（推定）で、平行な 2 本の通路を推定の線で渡り「折り返して」いた）
+      if (inf && inf[6]) c = c * 1.5 + 15;
       if (!isFinite(c)) return;
       adj[a].push([b, c, li, false]);
       if (l[3] === 1) adj[b].push([a, c, li, true]);
@@ -668,10 +671,11 @@ var Guide = (function () {
         if (L > 0.8 && prevDir) {
           var cos = (dx * prevDir[0] + dy * prevDir[1]) / L;
           var rest = s.edges.slice(s.edges.indexOf(e)).reduce(function (t, x) { return t + x.len; }, 0);
-          // 地上の歩道の曲がり角（Machiawase）: 地上を歩く区間は、手前約 25 m とこの先約 30 m の向きが 60 度以上違い、前後とも 30 m 以上
-          // あるときに分ける。横断歩道で道を渡ってすぐ元の向きに戻る形は、先の 30 m の向きで見るので曲がり角にしない
+          // 曲がり角（Machiawase）: 手前約 25 m とこの先約 30 m の向きが 60 度以上違い、前後とも 30 m 以上あるときに分ける。
+          // 横断歩道で道を渡ってすぐ元の向きに戻る形は、先の 30 m の向きで見るので曲がり角にしない。はじめは地上の歩道だけだったが、
+          // 地下の通路も長い（ビアードパパ → 中央の改札で 240 m）ので同じく分ける（2026-10-09 利用者「標準、2の案内がおかしい（途中まがっている）」）
           var groundTurn = false;
-          if (Math.abs(a[2]) < 0.01 && Math.abs(b[2]) < 0.01 && run >= 30 && rest >= 30) {
+          if (Math.abs(a[2] - b[2]) < 0.01 && run >= 30 && rest >= 30) {
             var p25 = recentDir(25), ax2 = 0, ay2 = 0, acc3 = 0;
             for (var q = s.edges.indexOf(e); q < s.edges.length && acc3 < 30; q++) {
               var qa = st.nodes[s.edges[q].a], qb = st.nodes[s.edges[q].b];
@@ -686,6 +690,9 @@ var Guide = (function () {
             for (var hk = hist.length - 1; hk >= 0 && !lastDir; hk--) if (hist[hk][2] >= 1.5) lastDir = [hist[hk][0] / hist[hk][2], hist[hk][1] / hist[hk][2]];
             lastDir = lastDir || prevDir;
             var c2 = (dx * lastDir[0] + dy * lastDir[1]) / L, cross = lastDir[0] * dy - lastDir[1] * dx; // 正なら左（反時計回り）
+            // 曲がり角で分けたとき（折り返しでないとき）は、手前約 25 m とこの先約 30 m の向きで左右を決める。直前の短い線の向きだと、
+            // 線が細かくぶれている所で左右が逆になっていた（Machiawase、ビアードパパ → 東武東上線の改札（推定）の 3: 西 → 南西で「右」）
+            if (groundTurn && !(cos < -0.707 && run >= 4 && rest >= 4)) { c2 = (ax2 * p25[0] + ay2 * p25[1]) / la2; cross = p25[0] * ay2 - p25[1] * ax2; }
             var turn = c2 < -0.7 ? 'back' : cross > 0 ? 'left' : 'right';
             cur = { kind: 'walk', edges: [], steps: 0, uturn: true, turn: turn };
             run = 0;
@@ -2243,11 +2250,15 @@ var View3D = (function () {
     var mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthTest: true, depthWrite: true });
     var segs = Math.min(800, sp.length * 16), rad = 12;
     var geo = new THREE.TubeGeometry(curve, segs, radius, rad, false);
-    // 頂点ごとに、その輪の中心（線の上の点）
-    var cen = new Float32Array((segs + 1) * (rad + 1) * 3), P = new THREE.Vector3();
+    // 頂点ごとに、その輪の中心（線の上の点）。輪の頂点の平均で求める。curve.getPointAt で求めると、長い折れ線では
+    // 円柱の輪の位置と最大 200 m 以上ずれ、拡大すると（輪が中心へ縮むので）矢印が離れた場所に出ていた（Machiawase、2026-10-09
+    // 利用者「地図を拡大していくと矢印がへんな場所に表示される」）
+    var cen = new Float32Array((segs + 1) * (rad + 1) * 3), gp = geo.attributes.position;
     for (var i = 0; i <= segs; i++) {
-      curve.getPointAt(i / segs, P);
-      for (var j = 0; j <= rad; j++) { var o = (i * (rad + 1) + j) * 3; cen[o] = P.x; cen[o + 1] = P.y; cen[o + 2] = P.z; }
+      var cx = 0, cy = 0, cz = 0;
+      for (var k = 0; k < rad; k++) { var q = i * (rad + 1) + k; cx += gp.getX(q); cy += gp.getY(q); cz += gp.getZ(q); }
+      cx /= rad; cy /= rad; cz /= rad;
+      for (var j = 0; j <= rad; j++) { var o = (i * (rad + 1) + j) * 3; cen[o] = cx; cen[o + 1] = cy; cen[o + 2] = cz; }
     }
     geo.setAttribute('aCenter', new THREE.BufferAttribute(cen, 3));
     var uni = { uPix: { value: 0.01 }, uR0: { value: radius } };
