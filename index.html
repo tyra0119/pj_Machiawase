@@ -846,7 +846,10 @@ var Guide = (function () {
         var wc = !toilet && toiletNear(st, s);
         if (wc && !!wc[4] !== inFare) wc = null;
         if (wc) { toilet = wc; d += 'そばにトイレがあります（' + (wc[4] ? '改札内' : '改札外') + '）。'; }
-        if (estOn(st, s)) d += 'データの線のすき間を推定でつないだ所を通ります（実際に通れるか現地で確かめてください）。';
+        var bends = bendsIn(st, s);
+        if (bends.length) d += '途中で' + bends.join('、') + 'に曲がります。';
+        var est = estPart(st, s);
+        if (est) d += (est.where === 0 ? 'はじめの' : est.where === 2 ? '終わりの' : '途中の') + '約' + Math.max(5, Math.round(est.len / 5) * 5) + 'mは、地図データに通路の線が無いので、近くの通路をまっすぐ結んで案内しています。実際の通り道は少し違うかもしれません。';
         // 地下の通路は、歩き終わる所の目印（15 m 以内の改札・地下街・地下通路・店）を添える（Machiawase）
         var mk = !ground && markNear(st, s.to, 15, 'gmrfso', usedMarks);
         if (mk) { usedMarks[mk[3]] = 1; d += '「' + mk[3] + '」のそばまで進みます。'; }
@@ -887,7 +890,7 @@ var Guide = (function () {
           var ew = { 3: '車椅子に対応したエレベーターです。', 4: '視覚障害者に対応したエレベーターです。', 5: '車椅子・視覚障害者に対応したエレベーターです。' }[ek];
           if (ew) step.note = ew;
         }
-        if (estOn(st, s)) step.note = 'データでは階段・スロープの位置が分からず、近さから推定でつないだ上り下りです。';
+        if (estPart(st, s)) step.note = '地図データに階段・スロープの位置が無いので、近くの通路と結んで案内しています。実際の上り下りの場所は少し違うかもしれません。';
         // 階段のとなりに逆向き専用のエスカレーターがあるなら、そう書く（並んで見えるのに使わない理由）
         if (s.mode === STAIR && oppositeEscalatorNear(st, s, up)) step.note = 'となりのエスカレーターは' + (up ? '下り' : '上り') + '専用です。';
         // ホームに接する昇降設備なら、ホーム上の位置を添える
@@ -933,9 +936,34 @@ var Guide = (function () {
       st: st, carSet: !!(cf || ct) }; // st: 車両を指定したときは一時的な点を足した駅のデータ（立体図はこちらで描く）
   }
 
-  // 推定でつないだ線（linkInfo の 7 番目）を通るか（Machiawase）
-  function estOn(st, s) {
-    return !!st.linkInfo && s.edges.some(function (e) { var x = st.linkInfo[e.li]; return x && x[6]; });
+  // 推定でつないだ線（linkInfo の 7 番目）を通るか（Machiawase）。通るなら、その長さと、手順のどのあたりか（0 はじめ・1 途中・2 終わり）
+  function estPart(st, s) {
+    if (!st.linkInfo) return null;
+    var len = 0, at = 0, pos = 0, total = s.len || 1;
+    s.edges.forEach(function (e) { var x = st.linkInfo[e.li]; if (x && x[6]) { if (!len) at = pos; len += e.len; } pos += e.len; });
+    if (!len) return null;
+    return { len: len, where: at < total * 0.25 ? 0 : at > total * 0.6 ? 2 : 1 };
+  }
+  // 1 つの手順の中の曲がり（Machiawase）: 線を 15 m 以上のまとまりに区切り（データの線の小さな出っ張りは拾わない）、となりのまとまりと 50 度以上向きが変わる所を、
+  // 左・右で順に（3 つまで）。手順を細かく分けすぎない代わりに、文で伝える（2026-10-09 利用者「2の案内がおかしい（途中まがっている）」）
+  function bendsIn(st, s) {
+    if (s.len < 15) return [];
+    var chunks = [], cx = 0, cy = 0, cl = 0;
+    s.edges.forEach(function (e) {
+      var a = st.nodes[e.a], b = st.nodes[e.b], dx = b[0] - a[0], dy = b[1] - a[1];
+      if (Math.abs(b[2] - a[2]) > 0.01) return; // 上り下りは別
+      cx += dx; cy += dy; cl += Math.hypot(dx, dy);
+      if (cl >= 15) { chunks.push([cx, cy]); cx = cy = cl = 0; }
+    });
+    if (cl >= 10) chunks.push([cx, cy]);
+    var out = [];
+    for (var i = 1; i < chunks.length && out.length < 3; i++) {
+      var p = chunks[i - 1], q = chunks[i], lp = Math.hypot(p[0], p[1]), lq = Math.hypot(q[0], q[1]);
+      if (!lp || !lq) continue;
+      var cos = (p[0] * q[0] + p[1] * q[1]) / lp / lq, cross = p[0] * q[1] - p[1] * q[0];
+      if (cos < Math.cos(50 * Math.PI / 180)) out.push(cos < -0.7 ? '折り返すよう' : cross > 0 ? '左' : '右');
+    }
+    return out;
   }
 
   // 待ち合わせ場所の近くの目印（25 m 以内、3 つまで）
