@@ -4,4 +4,4 @@
 
 公開ページ: https://tyra0119.github.io/pj_Machiawase/
 
-データ: 国土交通省「歩行空間ネットワークデータ（池袋駅周辺）」（政府標準利用規約 第 2.0 版）、© OpenStreetMap contributors（ODbL）
+データ: 国土交通省「歩行空間ネットワークデータ（池袋駅周辺）」（政府標準利用規約 第 2.0 版）、© OpenStreetMap contributors（ODbL）、「3D都市モデル（Project PLATEAU）東京都23区（2025年度）」（国土交通省）を加工して作成
