@@ -1327,6 +1327,35 @@ var View3D = (function () {
   // 駅ごとに消す地下街の面（gml_id）。通路網が突き抜けている本当の壁（2026-10-08 利用者「上記 2 件の壁は、消して」）:
   // 新宿西口 D1 の出入口の先（402N0020→402N0187）の細い仕切り 2 面と、ホームへ下りる手前（402N0175→402N0220）の壁 2 面
   var UBLD_HIDE = { '402': { 'bdry_7e4c5782-b3ad-48d5-a56c-05a678fa4fd0': 1, 'bdry_1cd36a68-d3bb-4f94-842a-1d4ca3157add': 1, 'bdry_2ef855c3-ad42-4d3b-afd5-0592c8392d98': 1, 'bdry_a2505b93-a24e-4a6a-a3c0-92a2b85447aa': 1 } };
+  // 地下街の面の色。床は濃いめ、壁は向きで明るさを変える（光の当たる南西寄りの面は明るく、反対は暗く）。
+  // 1 色だと横から見たときに立体に見えなかった（2026-10-11 利用者「地下街の床の色をもう少し濃くして」「壁の色が1色だと、横から見たときに立体に見えないね」）
+  var UBLD_FLOOR = new THREE.Color(0x7f90b2), UBLD_STEP = new THREE.Color(0x9fadc8), UBLD_CEIL = new THREE.Color(0xb9c6dc),
+    UBLD_WALL_DARK = new THREE.Color(0x7f8dab), UBLD_WALL_LIGHT = new THREE.Color(0xe2e8f2);
+  function ubldColors(o) {
+    var g = o.geometry, p = g.attributes.position, idx = g.index, cnt = idx ? idx.count : p.count;
+    var ft = o.userData.ftype, bid = g.attributes._batchid || g.attributes._feature_id_0;
+    var col = g.attributes.color;
+    if (!col) { col = new THREE.BufferAttribute(new Float32Array(p.count * 3), 3); g.setAttribute('color', col); }
+    var a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(), e1 = new THREE.Vector3(), e2 = new THREE.Vector3(), cc = new THREE.Color();
+    var lx = -0.6, lz = 0.8; // 壁を明るくする向き（水平。立体図の光とおおよそ同じ）
+    for (var t = 0; t + 2 < cnt; t += 3) {
+      var i0 = idx ? idx.getX(t) : t, i1 = idx ? idx.getX(t + 1) : t + 1, i2 = idx ? idx.getX(t + 2) : t + 2;
+      a.fromBufferAttribute(p, i0); b.fromBufferAttribute(p, i1); c.fromBufferAttribute(p, i2);
+      e1.subVectors(b, a); e2.subVectors(c, a); e1.cross(e2);
+      var L = e1.length(); if (L < 1e-9) continue;
+      e1.divideScalar(L);
+      var ty = ft && bid ? ft[bid.getX(i0)] : '';
+      if (ty === 'uro:CeilingSurface' || ty === 'uro:RoofSurface') cc.copy(UBLD_CEIL);
+      else if (ty === 'uro:FloorSurface' || ty === 'uro:GroundSurface') cc.copy(UBLD_FLOOR);
+      else if (Math.abs(e1.y) > 0.7) cc.copy(ty || e1.y < 0 ? UBLD_STEP : UBLD_FLOOR); // 設備（階段など）の水平な面
+      else {
+        var h = Math.hypot(e1.x, e1.z) || 1, k = 0.5 + 0.5 * (e1.x * lx + e1.z * lz) / h;
+        cc.copy(UBLD_WALL_DARK).lerp(UBLD_WALL_LIGHT, k);
+      }
+      col.setXYZ(i0, cc.r, cc.g, cc.b); col.setXYZ(i1, cc.r, cc.g, cc.b); col.setXYZ(i2, cc.r, cc.g, cc.b);
+    }
+    col.needsUpdate = true;
+  }
   var ubldCache = {}, ubldReal = {}; // ubldReal: 駅 ID → 段のある通路の点の深さ（地下街を表示しているときだけ使う）
   var realY = null; // いま描いている駅で、深さを置き直す点の高さ（点の番号 → 高さ。使わないときは null）
   function ubldLevels(meshes, ground, st) {
@@ -1584,7 +1613,7 @@ var View3D = (function () {
           o.geometry.setIndex(keepIdx);
           if (ceilIdx.length) { o.userData.allIdx = keepIdx; o.userData.wallIdx = wallIdx; o.userData.ceilIdx = ceilIdx; }
         }
-        o.material = new THREE.MeshLambertMaterial({ color: 0xb9c6dc, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false });
+        o.material = new THREE.MeshLambertMaterial({ color: 0xffffff, vertexColors: true, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false }); // 色は面ごと（ubldColors）
         o.renderOrder = 1; o.userData.city = 'ubld'; o.userData.keep = true;
       });
       mins.sort(function (a, b) { return a - b; });
@@ -1605,6 +1634,7 @@ var View3D = (function () {
         for (var k = 0; k < p.count; k++) p.setY(k, depthToY(oy[k] - u.ground, c.pts));
         if (o.userData.allIdx) o.geometry.setIndex(o.userData.allIdx); // 作り直しのときは、天井も入れて向きを出し直す
         p.needsUpdate = true; o.geometry.computeVertexNormals(); o.geometry.computeBoundingSphere();
+        ubldColors(o);
         if (o.parent) o.parent.remove(o);
         o.position.set(0, 0, 0); o.rotation.set(0, 0, 0); o.scale.set(1, 1, 1); o.updateMatrix();
         grp.add(o); netMeshes.push(o);
