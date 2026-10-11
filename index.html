@@ -1304,9 +1304,27 @@ var View3D = (function () {
     if (r.scene.parent) r.scene.parent.remove(r.scene); // 作り直す前の画面から外す
     holder.add(r.scene); grp.add(holder);
     grp.updateMatrixWorld(true);
-    var mins = [];
+    var mins = [], pb = st.photoBox;
     holder.traverse(function (o) {
       if (!o.isMesh) return;
+      // 写真の範囲（photoBox）の外の建物は描かない。タイル（200〜300 m 四方）は範囲の外まで広がっていて、範囲の外ではふつうの街並みの
+      // 建物も描くので、同じ建物が二重になってちらついていた（2026-10-11 利用者「渋谷、新宿の地上の写真付きビル、ちらつくね」。写真の範囲を
+      // 地下街に合わせて狭くしてから目立った）。建物（_batchid）ごとの点の中心で決める（ふつうの街並みの outOfPhoto と同じ考え方）
+      var bid = o.geometry.attributes._batchid || o.geometry.attributes._feature_id_0;
+      if (pb && bid && !o.userData.clipped) {
+        var pos = o.geometry.attributes.position, sx = {}, sz = {}, sn = {}, w = new THREE.Vector3();
+        for (var q = 0; q < pos.count; q++) {
+          w.fromBufferAttribute(pos, q).applyMatrix4(o.matrixWorld);
+          var bq = bid.getX(q); sx[bq] = (sx[bq] || 0) + w.x; sz[bq] = (sz[bq] || 0) + w.z; sn[bq] = (sn[bq] || 0) + 1;
+        }
+        var inside = {};
+        Object.keys(sn).forEach(function (bq) { var cx = sx[bq] / sn[bq], cy = -sz[bq] / sn[bq]; inside[bq] = cx >= pb[0] && cx <= pb[2] && cy >= pb[1] && cy <= pb[3]; });
+        var src = o.geometry.index ? o.geometry.index.array : null, n3 = src ? src.length : pos.count, keep = [];
+        for (var q3 = 0; q3 < n3; q3 += 3) { var a0 = src ? src[q3] : q3; if (inside[bid.getX(a0)]) keep.push(a0, src ? src[q3 + 1] : q3 + 1, src ? src[q3 + 2] : q3 + 2); }
+        o.geometry.setIndex(keep);
+        o.userData.clipped = true;
+        if (!keep.length) o.visible = false;
+      }
       if (photoState.offset === null) {
         var p = o.geometry.attributes.position, id = o.geometry.attributes._batchid || o.geometry.attributes._feature_id_0, lo = {}, v = new THREE.Vector3();
         for (var k = 0; k < p.count; k++) {
