@@ -116,7 +116,7 @@ body.nav-on .meet { display: none; } /* 案内中は案内カードを見せる 
 .late { color: #c0392b; font-weight: 700; }
 .ontime { color: var(--muted); font-weight: 500; }
 .mmark, .pmark { display: inline-block; width: 14px; height: 5px; border-radius: 3px; margin-right: 6px; vertical-align: middle; background: var(--oedo); }
-.pmark { background: #e8780a; }
+.pmark { background: #e06a00; }
 ol.psteps { margin: 0; padding-left: 1.4em; display: grid; gap: 6px; font-size: 14px; }
 ol.psteps small { display: block; color: var(--muted); font-size: 12px; }
 .meet .send { justify-self: start; font: inherit; font-weight: 700; font-size: 14px; padding: 8px 14px; border-radius: 999px; cursor: pointer; border: 1px solid var(--sel); background: var(--sel); color: #fff; }
@@ -424,6 +424,7 @@ body.nav-on .summary .acts { display: none; } /* 案内中は、案内開始の�
   <div class="wrap">
     <div class="numbering" id="numbering" aria-hidden="true"><div><b>待</b><span>B1</span></div></div>
     <h1><small>Machiawase　駅の地下で待ち合わせ</small><span id="stname">池袋</span></h1>
+    <a class="howto" href="https://tyra0119.github.io/pj_Machiawase/manual.html" target="_blank" rel="noopener">使い方</a>
   </div>
 </header>
 
@@ -3707,8 +3708,9 @@ var View3D = (function () {
     var st = curSt, E = gp.route.edges, pts = [V(st, E[0].a, 0.6)];
     E.forEach(function (e) { var p = V(st, e.b, 0.6); if (p.distanceTo(pts[pts.length - 1]) > 0.05) pts.push(p); });
     if (pts.length < 2) return;
-    var col = '#e8780a';
-    var tube = new THREE.Mesh(new THREE.TubeGeometry(polyCurve(pts), Math.min(1500, pts.length * 10), 0.4, 6, false), new THREE.MeshBasicMaterial({ color: col }));
+    var col = '#e06a00'; // わたしの経路（赤）と同じくらい目立つ太さ・濃さ（前の 0.4・#e8780a は地下街・建物に紛れた）
+    var tube = new THREE.Mesh(new THREE.TubeGeometry(polyCurve(pts), Math.min(1500, pts.length * 10), 0.55, 6, false), new THREE.MeshBasicMaterial({ color: col }));
+    tube.renderOrder = 3;
     scene.add(tube); partnerObjs.push(tube);
     var ball = new THREE.Mesh(new THREE.SphereGeometry(0.9, 16, 12), new THREE.MeshBasicMaterial({ color: col }));
     ball.position.copy(pts[0]); scene.add(ball); partnerObjs.push(ball);
