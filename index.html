@@ -2241,6 +2241,7 @@ var View3D = (function () {
     controls.enabled = !on;
     camera.fov = on ? 72 : 38; camera.near = on ? 0.1 : 1; camera.updateProjectionMatrix();
     if (fpvSigns) fpvSigns.visible = on;
+    if (partnerXray) partnerXray.visible = !on;
     if (fpvStairs) fpvStairs.visible = on;
     if (routeTube) routeTube.visible = !on;
     if (dot) dot.visible = !on && (!sel || !!play);
@@ -3700,10 +3701,10 @@ var View3D = (function () {
 
   // あいての道順（ふたりで待ち合わせ。2026-10-11 利用者「2人がどういう経路で来て、どこで合流するのか、その経路案内を共有できるとスムーズだよね」）:
   // わたしの経路（赤）とは別の色（だいだい）の管と、あいての出発の「あいて」のピン。経路を選び直すたびに描き直す
-  var partnerObjs = [];
+  var partnerObjs = [], partnerXray = null;
   function setPartner(gp) {
     partnerObjs.forEach(function (o) { if (o.isObject3D) { scene.remove(o); if (o.geometry) o.geometry.dispose(); } else if (o.el) { if (o.el.parentNode) o.el.parentNode.removeChild(o.el); var k = pins.indexOf(o); if (k >= 0) pins.splice(k, 1); } });
-    partnerObjs = [];
+    partnerObjs = []; partnerXray = null;
     if (!gp || !scene || !curSt || !gp.route || !gp.route.edges.length) return;
     var st = curSt, E = gp.route.edges, pts = [V(st, E[0].a, 0.6)];
     E.forEach(function (e) { var p = V(st, e.b, 0.6); if (p.distanceTo(pts[pts.length - 1]) > 0.05) pts.push(p); });
@@ -3712,6 +3713,10 @@ var View3D = (function () {
     var tube = new THREE.Mesh(new THREE.TubeGeometry(polyCurve(pts), Math.min(1500, pts.length * 10), 0.55, 6, false), new THREE.MeshBasicMaterial({ color: col }));
     tube.renderOrder = 3;
     scene.add(tube); partnerObjs.push(tube);
+    // 地下街のモデルの床・壁を何枚も通る所でも追えるように、上から薄く透けて見える同じ線も重ねる（リアル視点では壁越しに見えて紛らわしいので出さない）
+    partnerXray = new THREE.Mesh(tube.geometry.clone(), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.4, depthTest: false, depthWrite: false }));
+    partnerXray.renderOrder = 4; partnerXray.visible = !fpv;
+    scene.add(partnerXray); partnerObjs.push(partnerXray);
     var ball = new THREE.Mesh(new THREE.SphereGeometry(0.9, 16, 12), new THREE.MeshBasicMaterial({ color: col }));
     ball.position.copy(pts[0]); scene.add(ball); partnerObjs.push(ball);
     var pin = pinEl('あいて', col);
