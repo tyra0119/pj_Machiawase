@@ -112,6 +112,8 @@ select:focus-visible, button:focus-visible, input:focus-visible + span { outline
 .meet li button[aria-current="true"] { border-color: var(--sel); background: var(--sel-soft); }
 .meet li .nm { font-weight: 700; }
 .meet li .tm { font-size: 13px; color: var(--muted); }
+.late { color: #c0392b; font-weight: 700; }
+.ontime { color: var(--muted); font-weight: 500; }
 .mmark, .pmark { display: inline-block; width: 14px; height: 5px; border-radius: 3px; margin-right: 6px; vertical-align: middle; background: var(--oedo); }
 .pmark { background: #e8780a; }
 ol.psteps { margin: 0; padding-left: 1.4em; display: grid; gap: 6px; font-size: 14px; }
@@ -4051,16 +4053,27 @@ var View3D = (function () {
   // わたし（出発地）とあいての来かたから、待ち合わせ場所ごとの歩く時間を出し（Guide.costs。電車で着くときはホームから改札までを含む）、
   // ふたりの乗ってくる電車の着く時刻があれば「ふたりがそろう時刻」がいちばん早い場所、無ければ遠いほうの時間が短い場所を上から 5 つ
   function meetHTML(st, from, to, g, pr, gp) {
-    var pe = partnerEp(), at = timeOf('from'), bt = timeOf('partner');
-    if (!pe && at == null) return '';
+    var pe = partnerEp(), at0 = timeOf('from'), bt0 = timeOf('partner');
+    if (!pe && at0 == null) return '';
+    state.meetArgs = [st, from, to, g, pr, gp];
+    // 遅れ（ODPT の列車の位置・運行情報）を足した、電車が駅に着く時刻
+    var da = from.type === 'line' ? delayOf(from, at0) : null, db = pe && pe.type === 'line' ? delayOf(pe, bt0) : null;
+    var at = at0 != null ? at0 + (da ? da.min : 0) : null, bt = bt0 != null ? bt0 + (db ? db.min : 0) : null;
     var rows = '', meA = at != null ? at + g.minutes : null, meB = gp && bt != null ? bt + gp.minutes : null;
-    rows += '<b><span class="mmark"></span>わたし</b><span>' + esc(epText(from)) + (at != null ? '　' + hm(at) + ' 着の電車' : '') + ' → 約' + g.minutes + '分' + (meA != null ? '（' + hm(meA) + ' ごろ着く）' : '') + '</span>';
-    if (pe) rows += '<b><span class="pmark"></span>あいて</b><span>' + esc(epText(pe)) + (bt != null ? '　' + hm(bt) + ' 着の電車' : '') + (gp ? ' → 約' + gp.minutes + '分' + (meB != null ? '（' + hm(meB) + ' ごろ着く）' : '') : ' → 経路が見つかりません') + '</span>';
+    rows += '<b><span class="mmark"></span>わたし</b><span>' + esc(epText(from)) + (at0 != null ? '　' + hm(at0) + ' 着の電車' + delayText(da) : '') + ' → 約' + g.minutes + '分' + (meA != null ? '（' + hm(meA) + ' ごろ着く）' : '') + infoText(da) + '</span>';
+    if (pe) rows += '<b><span class="pmark"></span>あいて</b><span>' + esc(epText(pe)) + (bt0 != null ? '　' + hm(bt0) + ' 着の電車' + delayText(db) : '') + (gp ? ' → 約' + gp.minutes + '分' + (meB != null ? '（' + hm(meB) + ' ごろ着く）' : '') : ' → 経路が見つかりません') + infoText(db) + '</span>';
     var when = '';
     if (meA != null && meB != null) {
       var w = Math.abs(meA - meB);
       when = '<div class="when">' + hm(Math.max(meA, meB)) + ' ごろ、ふたりがそろいます' + (w >= 1 ? '<small style="font-size:13px;font-weight:500;color:var(--muted)">（' + (meA < meB ? 'わたし' : 'あいて') + 'が約' + Math.round(w) + '分待つ）</small>' : '') + '</div>';
+      // 10 分以上待つなら、待ち合わせ場所の近く（歩いて 4 分以内）のカフェ・飲食の店を添える
+      if (w >= 10 && to.type === 'spot') {
+        var ct = Guide.costs(st, to, pr), cafe = null, cm = 240;
+        (st.spots || []).forEach(function (s) { if (s.kind === 'カフェ・飲食' && s.node !== to.idx && ct[s.node] < cm) { cm = ct[s.node]; cafe = s; } });
+        if (cafe) when += '<p class="hint" style="margin:0">' + (meA < meB ? 'わたし' : 'あいて') + 'は、待ち合わせ場所から約' + Math.max(1, Math.round(cm / 60)) + '分の「' + esc(cafe.name) + '」で待つこともできます。</p>';
+      }
     }
+    when += liveNote();
     var list = '';
     if (pe) {
       var ca = Guide.costs(st, from, pr), cb = Guide.costs(st, pe, pr), cand = [];
@@ -4081,12 +4094,111 @@ var View3D = (function () {
     }
     return '<section class="meet" aria-label="ふたりの到着"><div class="who">' + rows + '</div>' + when + list + '</section>';
   }
+  // ---------- 遅れに合わせる（ODPT の運行情報・列車の位置。2026-10-11 利用者「遅れに合わせる機能も入れて」） ----------
+  // 中継サーバ（トークンはサーバ側。CORS は公開ページ tyra0119.github.io だけ）から、選んだ路線の運行情報（odpt:TrainInformation）と
+  // 走っている列車（odpt:Train。遅れの秒）を取る。1 分ごとに取り直し、ふたりの到着の欄だけ描き直す。
+  // 遅れ: その方面でこの駅に近づいている列車を近い順に並べ、選んだ電車がいまから何本目かで当てる（40 分より先の電車は当てない）
+  var RELAY = 'https://tyra.jp/odpt/api/', live = { data: {}, at: 0, err: '', busy: false };
+  function liveLines() {
+    var out = [];
+    [parseEp($('from').value), partnerEp()].forEach(function (ep) { if (ep && ep.type === 'line' && out.indexOf(ep.L) < 0) out.push(ep.L); });
+    return out;
+  }
+  function getJson(u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); }
+  function liveFetch(done) {
+    var ls = liveLines();
+    if (!ls.length || live.busy) { if (done) done(); return; }
+    live.busy = true;
+    var sides = {};
+    ls.forEach(function (L) {
+      var s = sides[L.side || 'main'] = sides[L.side || 'main'] || { ops: [], rws: [] };
+      if (s.ops.indexOf(L.odptOp) < 0) s.ops.push(L.odptOp);
+      if (s.rws.indexOf(L.railway) < 0) s.rws.push(L.railway);
+    });
+    var jobs = [];
+    Object.keys(sides).forEach(function (side) {
+      var s = sides[side];
+      // 運行情報は事業者ごとに取り、その路線のもの（無ければ事業者全体のもの）を使う
+      jobs.push(getJson(RELAY + side + '/v4/odpt:TrainInformation?odpt:operator=' + encodeURIComponent(s.ops.map(function (o) { return 'odpt.Operator:' + o; }).join(','))).then(function (a) {
+        ls.forEach(function (L) {
+          if ((L.side || 'main') !== side) return;
+          var hit = a.filter(function (x) { return x['odpt:railway'] === L.railway; })[0] ||
+            a.filter(function (x) { return !x['odpt:railway'] && x['odpt:operator'] === 'odpt.Operator:' + L.odptOp; })[0];
+          var d = live.data[L.railway] = live.data[L.railway] || {}, t = hit && hit['odpt:trainInformationText'];
+          d.info = t ? (t.ja || t) : '';
+        });
+      }));
+      jobs.push(getJson(RELAY + side + '/v4/odpt:Train?odpt:railway=' + encodeURIComponent(s.rws.join(','))).then(function (a) {
+        s.rws.forEach(function (rw) { var d = live.data[rw] = live.data[rw] || {}; d.trains = a.filter(function (x) { return x['odpt:railway'] === rw; }); });
+      }));
+    });
+    Promise.all(jobs.map(function (p) { return p.catch(function (e) { return e instanceof Error ? e : new Error(String(e)); }); })).then(function (rs) {
+      live.busy = false; live.at = Date.now();
+      live.err = rs.every(function (r) { return r instanceof Error; }) ? '遅れと運行情報を取れませんでした（公開ページでだけ取れます）' : '';
+      if (done) done();
+    });
+  }
+  // 選んだ電車の遅れ（分）。how: train（近づいている列車の位置から）・line（その方面の列車の遅れの中ほど）・''（分からない）
+  function delayOf(ep, t) {
+    var d = live.data[ep.L.railway];
+    if (!d) return null;
+    var res = { info: d.info || '', min: 0, how: '' };
+    if (d.trains && d.trains.length && t != null) {
+      var ap = ep.d.approach || [], list = [];
+      d.trains.forEach(function (x) {
+        if (x['odpt:railDirection'] !== ep.d.dir) return;
+        var k = ap.indexOf(x['odpt:fromStation']), to = x['odpt:toStation'];
+        if (k < 0) return;
+        if (to && (k < 1 || ap.indexOf(to) !== k - 1)) return; // 走っている列車は次の駅がこの駅の側のものだけ（この駅を出て先へ行った列車を除く）
+        list.push({ pos: to ? k * 2 - 1 : k * 2, delay: (x['odpt:delay'] || 0) / 60 });
+      });
+      list.sort(function (a, b) { return a.pos - b.pos; });
+      var day = new Date().getDay(), tt = ((day === 0 || day === 6) ? ep.d.h : ep.d.w) || [], now = nowMin();
+      var idx = tt.filter(function (x) { return x >= now - 2 && x < t; }).length; // 選んだ電車は、いまから何本目か
+      if (t - now <= 40 && idx < list.length) { res.min = Math.round(list[idx].delay); res.how = 'train'; }
+      else if (list.length) {
+        var ds = list.map(function (x) { return x.delay; }).sort(function (a, b) { return a - b; });
+        res.avg = Math.round(ds[Math.floor(ds.length / 2)]); res.how = 'line';
+      }
+    }
+    return res;
+  }
+  function delayText(dl) {
+    if (!dl || !dl.how) return '';
+    if (dl.how === 'train') return dl.min >= 1 ? '<b class="late">（いま約' + dl.min + '分遅れ）</b>' : '<span class="ontime">（いまは遅れなし）</span>';
+    return dl.avg >= 1 ? '<span class="ontime">（この方面の電車は、いま約' + dl.avg + '分遅れ）</span>' : '';
+  }
+  function infoText(dl) {
+    if (!dl || !dl.info) return '';
+    var normal = /平常|遅延はありません|通常/.test(dl.info);
+    return '<small class="' + (normal ? 'ontime' : 'late') + '" style="display:block">運行情報: ' + esc(dl.info) + '</small>';
+  }
+  function liveNote() {
+    if (live.err) return '<p class="hint" style="margin:0">' + esc(live.err) + '</p>';
+    if (!liveLines().length || !live.at) return '';
+    var d = new Date(live.at);
+    return '<p class="hint" style="margin:0">遅れと運行情報は ' + d.getHours() + ':' + ('0' + d.getMinutes()).slice(-2) + ' 時点（公共交通オープンデータセンター。1 分ごとに取り直します）。' +
+      '遅れは、この駅に近づいている列車の位置から見積もったものです。着く時刻は遅れを足しています。</p>';
+  }
+  // ふたりの到着の欄だけ描き直す（立体図は作り直さない）
+  function rerenderMeet() {
+    var sec = document.querySelector('.meet'), a = state.meetArgs;
+    if (!sec || !a) return;
+    var tmp = document.createElement('div'); tmp.innerHTML = meetHTML.apply(null, a);
+    if (tmp.firstChild) sec.replaceWith(tmp.firstChild);
+    document.querySelectorAll('[data-meet]').forEach(function (b) { b.addEventListener('click', function () { $('to').value = b.dataset.meet; runBusy(); }); });
+    if ($('send-partner')) $('send-partner').addEventListener('click', sendToPartner);
+  }
+  setInterval(function () { if (document.visibilityState === 'visible' && state.meetArgs && liveLines().length) liveFetch(rerenderMeet); }, 60000);
   // あいてに送る: あいての来かたを出発地にした（わたしとあいてを入れ替えた）リンクと、待ち合わせの時刻・場所の文
   function sendToPartner() {
     var pe = partnerEp(), to = epOf('to'), pr = profile(), at = timeOf('from'), bt = timeOf('partner');
     var gp = Guide.guide(state.st, pe, to, pr), g = state.g;
     var q = '?st=' + encodeURIComponent(state.st.id) + '&from=' + encodeURIComponent($('partner').value) + '&to=' + encodeURIComponent($('to').value) + '&pr=' + pr +
       (bt != null ? '&at=' + hm(bt) : '') + '&b=' + encodeURIComponent($('from').value) + (at != null ? '&bt=' + hm(at) : '');
+    var da = epOf('from').type === 'line' ? delayOf(epOf('from'), at) : null, db = pe.type === 'line' ? delayOf(pe, bt) : null;
+    if (at != null && da) at += da.min;
+    if (bt != null && db) bt += db.min;
     var meA = at != null && g ? at + g.minutes : null, meB = bt != null && gp ? bt + gp.minutes : null;
     var text = (meA != null && meB != null ? hm(Math.max(meA, meB)) + ' ごろ、' : '') + state.st.name + '駅の「' + epText(to) + '」で待ち合わせ。' +
       'あなたは' + epText(pe) + (bt != null ? '（' + hm(bt) + ' 着）' : '') + (gp ? 'から約' + gp.minutes + '分、' : '、') +
@@ -4199,6 +4311,7 @@ var View3D = (function () {
     $('share').addEventListener('click', shareRoute);
     document.querySelectorAll('[data-meet]').forEach(function (b) { b.addEventListener('click', function () { $('to').value = b.dataset.meet; runBusy(); }); });
     if ($('send-partner')) $('send-partner').addEventListener('click', sendToPartner);
+    if (liveLines().length && Date.now() - live.at > 30000) liveFetch(rerenderMeet); // 遅れ・運行情報（30 秒より新しければそのまま）
     document.querySelectorAll('[data-view]').forEach(function (b) {
       b.addEventListener('click', function () { View3D.view(b.dataset.view); if ($('fpv-toggle')) $('fpv-toggle').setAttribute('aria-pressed', View3D.fpv); });
     });
