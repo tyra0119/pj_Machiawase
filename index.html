@@ -445,6 +445,7 @@ body.nav-on .summary .acts { display: none; } /* 案内中は、案内開始の�
     <div class="duo">
       <label for="partner" class="lbl">あいての来かた</label>
       <select id="partner"></select>
+      <select id="partner-pr" aria-label="あいての移動の条件"><option value="std">標準</option><option value="ev">段差なし（車いす・ベビーカー）</option></select>
       <select id="partner-time" class="carsel" hidden aria-label="あいての乗ってくる電車（この駅に着く時刻）"></select>
       <input type="time" id="partner-tin" class="tin" hidden aria-label="あいての電車がこの駅に着く時刻">
     </div>
@@ -882,8 +883,8 @@ var Guide = (function () {
       var sk = from.starts.filter(function (s) { return s[0] === r.start; })[0] || from.starts[0], gname = sk[2].charAt(0) === '*' ? '' : sk[2];
       inGateSec = sk[1];
       steps.push({ kind: 'start', icon: 'train', title: from.id + 'で着いて、' + (gname ? gname.replace(/の前$/, '') + 'を出る' : '駅を出る'),
-        detail: 'ホームから' + (gname ? '改札' : '駅の外') + 'まで約' + Math.max(1, Math.round(sk[1] / 60)) + '分（駅のホームと改札の位置からの推定）。' +
-          (gname ? '' : 'この駅の改札の位置はデータに無いので、駅の位置のそばから案内します。'),
+        detail: 'ホームから' + (gname ? '改札' : '駅の外') + 'まで約' + Math.max(1, Math.round(sk[1] / 60)) + '分' + (from.evMode ? '' : '（駅のホームと改札の位置からの推定）') + '。' +
+          (gname ? '' : 'この駅の改札の位置はデータに無いので、駅の位置のそばから案内します。') + (from.note || ''),
         z: st.nodes[r.start][2] });
     } else {
       steps.push({ kind: 'start', icon: 'exit', title: exitLabel(from.id) + 'の前から出発', detail: '地上の「' + exitLabel(from.id) + '」の前が出発地点です。', z: st.nodes[r.start][2] });
@@ -3887,6 +3888,25 @@ var View3D = (function () {
     return sel.value === 'in' ? parseHm($(k + '-tin').value) : +sel.value;
   }
   function partnerEp() { return $('partner').value ? parseEp($('partner').value) : null; }
+  function partnerPr() { return $('partner-pr').value || 'std'; }
+  // 段差なし（車いす・ベビーカー）で電車で着くとき: ホームから改札を出るまで、都営の GTFS-Pathways がある駅（大江戸線の新宿・
+  // 新宿西口・都庁前・上野御徒町）はエレベーターの道の秒、無い駅はふつうの見積もりに 1 分足して「エレベーターの位置はデータに無い」と断る。
+  // GTFS-Pathways で段差なしで出られない駅は出発にできない（2026-10-11 利用者「段差無しの待ち合わせも入れて」）
+  function withPr(ep, pr) {
+    if (!ep || ep.type !== 'line' || pr !== 'ev') return ep;
+    var L = ep.L, o = {}, k;
+    for (k in ep) o[k] = ep[k];
+    o.evMode = true;
+    if (L.ev === -1) { o.starts = []; o.evNo = true; return o; }
+    if (L.ev >= 0) {
+      o.starts = L.starts.map(function (s) { return [s[0], Math.max(60, L.ev), s[2]]; });
+      o.note = 'ホームから改札までは、エレベーターを使う道です（都営地下鉄の GTFS-Pathways から）。';
+    } else {
+      o.starts = L.starts.map(function (s) { return [s[0], s[1] + 60, s[2]]; });
+      o.note = 'この駅のホームから改札までのエレベーターの位置はデータに無いので、時間は推定です。エレベーターの場所は駅で確かめてください。';
+    }
+    return o;
+  }
   // 車両の選択: ホームのときだけ出し、「おすすめ」には推定した車両を添える
   function syncCarSel(k, rec) {
     var sel = $(k + '-car'), plat = parseEp($(k).value).type === 'plat';
@@ -3945,6 +3965,7 @@ var View3D = (function () {
     // あいての来かたと乗ってくる電車（共有リンク・前回の選択）
     var pd = state.pend || {}; state.pend = null;
     $('partner').value = pd.b && hasOpt('partner', pd.b) ? pd.b : '';
+    $('partner-pr').value = pd.bp === 'ev' ? 'ev' : 'std';
     fillTime('from', pd.at); fillTime('partner', pd.bt);
     syncCarSel('from'); syncCarSel('to');
     $('from-car').value = fc >= 1 && fc <= Guide.CARS ? String(fc) : '';
@@ -3968,6 +3989,7 @@ var View3D = (function () {
   // ホームを選び直したら、車両はおすすめに戻す
   $('from').addEventListener('change', function () { $('from-car').value = ''; fillTime('from'); runBusy(); });
   $('partner').addEventListener('change', function () { fillTime('partner'); runBusy(); });
+  $('partner-pr').addEventListener('change', runBusy);
   ['from', 'partner'].forEach(function (k) {
     $(k + '-time').addEventListener('change', function () { $(k + '-tin').hidden = this.value !== 'in'; if (this.value === 'in' && !$(k + '-tin').value) $(k + '-tin').value = hm(nowMin() + 10).replace(/^(\d):/, '0$1:'); runBusy(); });
     $(k + '-tin').addEventListener('change', runBusy);
@@ -3998,7 +4020,7 @@ var View3D = (function () {
   function saveChoice() {
     var at = timeOf('from'), bt = timeOf('partner');
     try { localStorage.setItem(SAVE_KEY, JSON.stringify({ st: state.st.id, from: $('from').value, to: $('to').value, pr: profile(), fc: epOf('from').car, tc: epOf('to').car,
-      at: at != null ? hm(at) : null, b: $('partner').value, bt: bt != null ? hm(bt) : null })); } catch (e) {}
+      at: at != null ? hm(at) : null, b: $('partner').value, bt: bt != null ? hm(bt) : null, bp: partnerPr() })); } catch (e) {}
     // アドレス欄も選んだ内容に合わせる（そのままコピーしても同じ案内が開く）。埋め込み（アーティファクト）では変えない
     try { if (/^https?:/.test(location.protocol) && window.top === window) history.replaceState(null, '', location.pathname + choiceQuery()); } catch (e) {}
   }
@@ -4009,13 +4031,13 @@ var View3D = (function () {
     var fc = epOf('from').car, tc = epOf('to').car;
     var at = timeOf('from'), bt = timeOf('partner'), b = $('partner').value;
     return '?st=' + encodeURIComponent(state.st.id) + '&from=' + encodeURIComponent($('from').value) + '&to=' + encodeURIComponent($('to').value) + '&pr=' + profile() +
-      (fc ? '&fc=' + fc : '') + (tc ? '&tc=' + tc : '') + (at != null ? '&at=' + hm(at) : '') + (b ? '&b=' + encodeURIComponent(b) : '') + (b && bt != null ? '&bt=' + hm(bt) : '');
+      (fc ? '&fc=' + fc : '') + (tc ? '&tc=' + tc : '') + (at != null ? '&at=' + hm(at) : '') + (b ? '&b=' + encodeURIComponent(b) : '') + (b && bt != null ? '&bt=' + hm(bt) : '') + (b && partnerPr() !== 'std' ? '&bp=' + partnerPr() : '');
   }
   function urlChoice() {
     try {
       var p = new URLSearchParams(location.search);
       return p.get('st') ? { st: p.get('st'), from: p.get('from'), to: p.get('to'), pr: p.get('pr'), fc: +p.get('fc') || null, tc: +p.get('tc') || null,
-        at: p.get('at'), b: p.get('b'), bt: p.get('bt') } : null;
+        at: p.get('at'), b: p.get('b'), bt: p.get('bt'), bp: p.get('bp') } : null;
     } catch (e) { return null; }
   }
   function epText(ep) {
@@ -4053,7 +4075,7 @@ var View3D = (function () {
   // わたし（出発地）とあいての来かたから、待ち合わせ場所ごとの歩く時間を出し（Guide.costs。電車で着くときはホームから改札までを含む）、
   // ふたりの乗ってくる電車の着く時刻があれば「ふたりがそろう時刻」がいちばん早い場所、無ければ遠いほうの時間が短い場所を上から 5 つ
   function meetHTML(st, from, to, g, pr, gp) {
-    var pe = partnerEp(), at0 = timeOf('from'), bt0 = timeOf('partner');
+    var prB = partnerPr(), pe = withPr(partnerEp(), prB), at0 = timeOf('from'), bt0 = timeOf('partner');
     if (!pe && at0 == null) return '';
     state.meetArgs = [st, from, to, g, pr, gp];
     // 遅れ（ODPT の列車の位置・運行情報）を足した、電車が駅に着く時刻
@@ -4061,7 +4083,7 @@ var View3D = (function () {
     var at = at0 != null ? at0 + (da ? da.min : 0) : null, bt = bt0 != null ? bt0 + (db ? db.min : 0) : null;
     var rows = '', meA = at != null ? at + g.minutes : null, meB = gp && bt != null ? bt + gp.minutes : null;
     rows += '<b><span class="mmark"></span>わたし</b><span>' + esc(epText(from)) + (at0 != null ? '　' + hm(at0) + ' 着の電車' + delayText(da) : '') + ' → 約' + g.minutes + '分' + (meA != null ? '（' + hm(meA) + ' ごろ着く）' : '') + infoText(da) + '</span>';
-    if (pe) rows += '<b><span class="pmark"></span>あいて</b><span>' + esc(epText(pe)) + (bt0 != null ? '　' + hm(bt0) + ' 着の電車' + delayText(db) : '') + (gp ? ' → 約' + gp.minutes + '分' + (meB != null ? '（' + hm(meB) + ' ごろ着く）' : '') : ' → 経路が見つかりません') + infoText(db) + '</span>';
+    if (pe) rows += '<b><span class="pmark"></span>あいて</b><span>' + esc(epText(pe)) + (bt0 != null ? '　' + hm(bt0) + ' 着の電車' + delayText(db) : '') + (prB === 'ev' ? '（段差なし）' : '') + (gp ? ' → 約' + gp.minutes + '分' + (meB != null ? '（' + hm(meB) + ' ごろ着く）' : '') : pe.evNo ? ' → この駅のホームから段差なしで出る道がデータにありません' : ' → ' + (prB === 'ev' ? '段差なしでは' : '') + 'この待ち合わせ場所への経路が見つかりません。下の候補から選んでください') + infoText(db) + '</span>';
     var when = '';
     if (meA != null && meB != null) {
       var w = Math.abs(meA - meB);
@@ -4074,9 +4096,15 @@ var View3D = (function () {
       }
     }
     when += liveNote();
+    // 段差なしの人がいるときは、待ち合わせ場所にいちばん近い車いす対応のトイレ（OSM の wheelchair=yes。直線の距離）
+    if ((pr === 'ev' || prB === 'ev') && to.type === 'spot') {
+      var tn = st.nodes[to.idx], wc = null, wd = 1e9;
+      (st.toilets || []).forEach(function (t) { if (!t[4]) return; var d = Math.hypot(t[0] - tn[0], t[1] - tn[1]) + Math.abs(t[2] - tn[2]) * 30; if (d < wd) { wd = d; wc = t; } });
+      when += '<p class="hint" style="margin:0">' + (wc && wd < 400 ? '車いす対応のトイレ: 待ち合わせ場所から直線で約' + Math.max(10, Math.round(wd / 10) * 10) + 'm（' + esc(Guide.levelLabel(st, wc[2])) + '。立体図のトイレのマーク）。' : '待ち合わせ場所の近くに、車いす対応のトイレのデータはありません。') + '</p>';
+    }
     var list = '';
     if (pe) {
-      var ca = Guide.costs(st, from, pr), cb = Guide.costs(st, pe, pr), cand = [];
+      var ca = Guide.costs(st, from, pr), cb = pe.evNo ? [] : Guide.costs(st, pe, prB), cand = [];
       (st.spots || []).forEach(function (s, i) {
         var a = ca[s.node] / 60, b = cb[s.node] / 60;
         if (!isFinite(a) || !isFinite(b)) return;
@@ -4085,7 +4113,8 @@ var View3D = (function () {
       });
       cand.sort(function (x, y) { return x.score - y.score; });
       var cur = $('to').value;
-      list = '<h2>ふたりにちょうどよい待ち合わせ場所</h2><p class="hint" style="margin:0">' + (at != null && bt != null ? 'ふたりがそろう時刻の早い順です。' : 'ふたりのうち遠いほうの歩く時間が短い順です（乗ってくる電車を選ぶと、そろう時刻の早い順になります）。') + '押すと、その場所への道順に切り替えます。</p><ol>' +
+      list = '<h2>ふたりにちょうどよい待ち合わせ場所</h2><p class="hint" style="margin:0">' + (at != null && bt != null ? 'ふたりがそろう時刻の早い順です。' : 'ふたりのうち遠いほうの歩く時間が短い順です（乗ってくる電車を選ぶと、そろう時刻の早い順になります）。') +
+        (pr === 'ev' || prB === 'ev' ? '段差なしの人がエレベーターで行ける場所だけです。' : '') + '押すと、その場所への道順に切り替えます。</p>' + (cand.length ? '' : '<p class="hint" style="margin:0">ふたりとも行ける待ち合わせ場所がデータにありません。</p>') + '<ol>' +
         cand.slice(0, 5).map(function (c) {
           var v = 'spot:' + spotKey(c.s, c.i);
           return '<li><button type="button" data-meet="' + esc(v) + '" aria-current="' + (v === cur) + '"><span class="nm">' + esc(c.s.name) + '（' + esc(Guide.levelLabel(st, c.s.f)) + '）</span>' +
@@ -4193,8 +4222,8 @@ var View3D = (function () {
   // あいてに送る: あいての来かたを出発地にした（わたしとあいてを入れ替えた）リンクと、待ち合わせの時刻・場所の文
   function sendToPartner() {
     var pe = partnerEp(), to = epOf('to'), pr = profile(), at = timeOf('from'), bt = timeOf('partner');
-    var gp = Guide.guide(state.st, pe, to, pr), g = state.g;
-    var q = '?st=' + encodeURIComponent(state.st.id) + '&from=' + encodeURIComponent($('partner').value) + '&to=' + encodeURIComponent($('to').value) + '&pr=' + pr +
+    var prB = partnerPr(), gp = state.gp, g = state.g;
+    var q = '?st=' + encodeURIComponent(state.st.id) + '&from=' + encodeURIComponent($('partner').value) + '&to=' + encodeURIComponent($('to').value) + '&pr=' + prB + '&bp=' + pr +
       (bt != null ? '&at=' + hm(bt) : '') + '&b=' + encodeURIComponent($('from').value) + (at != null ? '&bt=' + hm(at) : '');
     var da = epOf('from').type === 'line' ? delayOf(epOf('from'), at) : null, db = pe.type === 'line' ? delayOf(pe, bt) : null;
     if (at != null && da) at += da.min;
@@ -4223,7 +4252,8 @@ var View3D = (function () {
     if (from.type === to.type && from.id === to.id) {
       out.innerHTML = '<div class="notice">出発地と待ち合わせ場所が同じです。どちらかを変えてください。</div>'; return;
     }
-    var g = Guide.guide(st, from, to, pr);
+    from = withPr(from, pr);
+    var g = from.evNo ? null : Guide.guide(st, from, to, pr);
     // 「おすすめの車両」に、車両を指定しないときの推定の車両を添える
     var g0 = from.car || to.car ? Guide.guide(st, { type: from.type, id: from.id }, { type: to.type, id: to.id }, pr) : g;
     if (g0) {
@@ -4233,7 +4263,7 @@ var View3D = (function () {
     if (!g) { out.innerHTML = noRoute(st, from, to, pr); bindAlts(); return; }
     state.g = g; state.nav = -1; state.auto = false; document.body.classList.remove('nav-on');
     // あいての道順（あいての来かたを選んだとき）
-    var pe = partnerEp(), gp = pe ? Guide.guide(st, pe, to, pr) : null;
+    var prB = partnerPr(), pe = withPr(partnerEp(), prB), gp = pe && !pe.evNo ? Guide.guide(st, pe, to, prB) : null;
     state.gp = gp;
     out.innerHTML =
       summaryHTML(g, from, to) + meetHTML(st, from, to, g, pr, gp) +
