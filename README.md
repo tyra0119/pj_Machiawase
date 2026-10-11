@@ -1,6 +1,6 @@
 # pj_Machiawase
 
-[Machiawase](https://github.com/tyra0119/Machiawase)（駅の地下での待ち合わせの経路案内）の公開用。`scripts/publish.py` の出力だけを置く。
+[Machiawase](https://github.com/tyra0119/Machiawase)（駅の地下での待ち合わせの経路案内）の公開用。`scripts/publish.py` の出力だけを置く。index.html には駅の一覧だけを入れ、駅ごとのデータ（経路網・待ち合わせ場所・建物・道路）は data/<駅>.json から選んだ駅の分だけ読む。
 
 公開ページ: https://tyra0119.github.io/pj_Machiawase/
 
