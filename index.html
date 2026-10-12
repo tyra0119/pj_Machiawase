@@ -1099,6 +1099,10 @@ var View3D = (function () {
   var depth = 0.5, lastArgs = null; // 深さの倍率（×0.5 で固定。2026-10-08 利用者「深さの倍率について、変更できなくしたほうがいいよね？」）と、作り直し用の引数
   var showCity = true; // 地上の街並み（PLATEAU の建物・道路）
   try { if (localStorage.getItem('machiawase.city') === '0') showCity = false; } catch (e) {}
+  // 地下の名前の札（改札・地下街・地下通路・店）とトイレのマーク、地上の建物の名前。スマホでは画面が札で埋まるので消せる（2026-10-12 利用者「地下街に表示しているラベルについて、
+  // 非表示もできるようにしてほしい。スマホだとラベルで画面が埋まる」）。出発・待ち合わせ場所・あいてのしるし、出口、手順の札は残す
+  var showMarks = true;
+  try { if (localStorage.getItem('machiawase.marks') === '0') showMarks = false; } catch (e) {}
   var cityAlpha = 0.15; // 街並みの濃さ（0〜1。利用者が調整）
   try { var ca = parseFloat(localStorage.getItem('machiawase.cityAlpha')); if (ca >= 0 && ca <= 1) cityAlpha = ca; } catch (e) {}
   var photoCity = false; // 写真の街並み。重いので選んだときだけ読み込む
@@ -3087,7 +3091,7 @@ var View3D = (function () {
     // トイレ（構内地図のある駅だけ）。マークの下の端を、その階の床（構内図の面と同じ高さ）に置く（2026-10-08 利用者「トイレの位置が空中に浮いてるように感じる」。前は床の 2.5 上）
     (st.toilets || []).forEach(function (t) {
       var ty = levelY(t[2]), wc = toiletSprite(26);
-      wc.position.set(t[0], ty - 0.35, -t[1]); labels.push(wc); scene.add(wc);
+      wc.position.set(t[0], ty - 0.35, -t[1]); wc.userData.mark = true; labels.push(wc); scene.add(wc);
     });
 
     // 地下の目印（Machiawase）: 改札・地下街・地下通路・店・カフェの名前を、その階の高さに小さな札で。重なるときは優先度の高いもの
@@ -3096,10 +3100,10 @@ var View3D = (function () {
     (st.marks || []).forEach(function (m) {
       if (m[4] === 'b') return;
       // 改札は札を緑の地に白い字（実際の改札の案内と同じ色）、ホームは改札内なので薄い字
-      if (m[4] === 'g') { var gl = label(m[3], css('--gate'), '#ffffff', 14, null, 9); gl.position.set(m[0], levelY(m[2]) + 0.6, -m[1]); labels.push(gl); scene.add(gl); return; }
+      if (m[4] === 'g') { var gl = label(m[3], css('--gate'), '#ffffff', 14, null, 9); gl.position.set(m[0], levelY(m[2]) + 0.6, -m[1]); gl.userData.mark = true; labels.push(gl); scene.add(gl); return; }
       var col = { m: css('--sel'), r: css('--sel'), p: cInk }[m[4]] || cMuted, small = m[4] === 'f' || m[4] === 's' || m[4] === 'o';
       var lb = label(m[3], null, col, small ? 12 : 14, null, m[4] === 'm' ? 8 : m[4] === 'r' || m[4] === 'p' ? 6 : 3);
-      lb.position.set(m[0], levelY(m[2]) + 0.6, -m[1]); labels.push(lb); scene.add(lb);
+      lb.position.set(m[0], levelY(m[2]) + 0.6, -m[1]); lb.userData.mark = true; labels.push(lb); scene.add(lb);
     });
 
     // ホーム: 乗るホームは8両分に区切り、乗る位置の車両を塗る
@@ -3434,7 +3438,7 @@ var View3D = (function () {
 
   // 建物の名前の札を置く。画面の中ならその場所、外なら端（上のボタンと下のつまみを避ける）に向きの矢印つきで
   function placeNames() {
-    var show = !sel && !fpv && showCity && cityAlpha > 0.02;
+    var show = !sel && !fpv && showCity && showMarks && cityAlpha > 0.02;
     nameBox.hidden = !show;
     if (!show) return;
     var W = el.clientWidth, H = el.clientHeight, top = 84, bottom = H - 96, left = 12, right = W - 12, cx = W / 2, cy = (top + bottom) / 2;
@@ -3468,6 +3472,7 @@ var View3D = (function () {
     if (fpv) { labels.forEach(function (l) { l.material.visible = false; if (l.userData.stem) l.userData.stem.visible = false; }); return; }
     var H = el.clientHeight, W = el.clientWidth, placed = [];
     var shown = labels.filter(function (l) {
+      if (l.userData.mark && !showMarks) { l.material.visible = false; return false; }
       for (var o = l; o; o = o.parent) if (!o.visible) return false;
       return true;
     }).sort(function (a, b) { return b.userData.pri - a.userData.pri; });
@@ -3617,6 +3622,12 @@ var View3D = (function () {
     camera.position.copy(pos); controls.target.copy(tgt); controls.update();
   }
 
+  function setMarks(on) {
+    showMarks = on;
+    try { localStorage.setItem('machiawase.marks', on ? '1' : '0'); } catch (e) {}
+    lastCull = 0; // 次の描画で札を並べ直す
+  }
+
   function setPhotoCity(on) {
     photoCity = on;
     try { localStorage.setItem('machiawase.photo', on ? '1' : '0'); } catch (e) {}
@@ -3731,7 +3742,7 @@ var View3D = (function () {
     applyOpacity();
   }
 
-  return { build: build, setDepth: setDepth, setCity: setCity, setPhotoCity: setPhotoCity, get photoCity() { return photoCity; }, setUbld: setUbld, get ubld() { return showUbld; }, setSpaces: setSpaces, get spaces() { return showSpaces; }, hasSpaces: function (st) { return !!(st && window.SPACES && SPACES[st.id] && SPACES[st.id].length); }, setFpv: function (on) { if (camera) setFpv(on); }, get fpv() { return fpv; }, canFpv: function (st) { return !!(UBLD_ENABLED && st && window.UBLD && UBLD.stations && UBLD.stations[st.id] && UBLD.stations[st.id].lod === 'LOD4'); }, hasUbld: function (st) { return !!(UBLD_ENABLED && st && window.UBLD && UBLD.stations && UBLD.stations[st.id]); }, get ubldEnabled() { return UBLD_ENABLED; }, get hasPhoto() { return !!(window.TILES && TILES.stations); }, setCityAlpha: setCityAlpha, get cityAlpha() { return cityAlpha; }, setUbldAlpha: setUbldAlpha, setPartner: setPartner, get ubldAlpha() { return ubldAlpha; }, get city() { return showCity; }, get hasCity() { return !!(window.CITY && CITY.stations); }, get depth() { return depth; }, view: setView, highlight: highlight, focus: focus,
+  return { build: build, setDepth: setDepth, setCity: setCity, setPhotoCity: setPhotoCity, get photoCity() { return photoCity; }, setUbld: setUbld, get ubld() { return showUbld; }, setSpaces: setSpaces, get spaces() { return showSpaces; }, hasSpaces: function (st) { return !!(st && window.SPACES && SPACES[st.id] && SPACES[st.id].length); }, setFpv: function (on) { if (camera) setFpv(on); }, get fpv() { return fpv; }, canFpv: function (st) { return !!(UBLD_ENABLED && st && window.UBLD && UBLD.stations && UBLD.stations[st.id] && UBLD.stations[st.id].lod === 'LOD4'); }, hasUbld: function (st) { return !!(UBLD_ENABLED && st && window.UBLD && UBLD.stations && UBLD.stations[st.id]); }, get ubldEnabled() { return UBLD_ENABLED; }, get hasPhoto() { return !!(window.TILES && TILES.stations); }, setCityAlpha: setCityAlpha, get cityAlpha() { return cityAlpha; }, setUbldAlpha: setUbldAlpha, setPartner: setPartner, setMarks: setMarks, get marks() { return showMarks; }, get ubldAlpha() { return ubldAlpha; }, get city() { return showCity; }, get hasCity() { return !!(window.CITY && CITY.stations); }, get depth() { return depth; }, view: setView, highlight: highlight, focus: focus,
     set onStep(fn) { onStep = fn; }, set onPlay(fn) { onPlay = fn; }, set onLocate(fn) { onLocate = fn; },
     // 続きから: 再開する手順（無ければ -1）、手動の案内を閉じた手順を覚える、最初からに戻す
     get resumeStep() { return resumeU !== null && resumeU > 0 && resumeU < 1 && total ? stepAt(Math.min(1, resumeU + 0.5 / total)) : -1; },
@@ -4289,6 +4300,8 @@ var View3D = (function () {
               (View3D.hasCity ? '<button type="button" id="city-toggle" aria-pressed="' + View3D.city + '">街並み ' + (View3D.city ? '表示中' : '非表示') + '</button>' : '') +
               (View3D.hasPhoto ? '<button type="button" id="photo-toggle" aria-pressed="' + View3D.photoCity + '" title="PLATEAU の写真付きの建物と、航空写真の地面に切り替える（データが多いので通信に注意）"' + (View3D.city ? '' : ' hidden') + '>写真の街並み</button>' : '') +
               (View3D.hasUbld(st) ? '<button type="button" id="ubld-toggle" aria-pressed="' + View3D.ubld + '" title="PLATEAU の地下街モデル（壁・床・天井）を重ねる。深さは通路網の階に合わせて伸ばしている">地下街</button>' : '') +
+              // 地下・建物の名前の札とトイレのマーク（2026-10-12 利用者「スマホだとラベルで画面が埋まる」）
+              '<button type="button" id="marks-toggle" aria-pressed="' + View3D.marks + '" title="改札・地下街・店・建物の名前の札とトイレのマークを出す・消す（出発・待ち合わせ場所・出口・手順の札は残す）">ラベル ' + (View3D.marks ? '表示中' : '非表示') + '</button>' +
             '</div><div class="knobs">' +
             (View3D.hasCity ? '<label class="depth" for="city-a" id="city-a-wrap"' + (View3D.city ? '' : ' hidden') + '>街並みの濃さ<input type="range" id="city-a" min="0" max="1" step="0.05" value="' + View3D.cityAlpha + '"><output id="city-a-v">' + Math.round(View3D.cityAlpha * 100) + '%</output></label>' : '') +
             // 地下街の濃さ（2026-10-11 利用者「地下空間の透明度を調整できるようにして」）。地下街を出しているときだけ
@@ -4314,6 +4327,11 @@ var View3D = (function () {
       this.setAttribute('aria-pressed', on); this.textContent = '街並み ' + (on ? '表示中' : '非表示');
       if ($('city-a-wrap')) $('city-a-wrap').hidden = !on;
       if ($('photo-toggle')) $('photo-toggle').hidden = !on;
+    });
+    $('marks-toggle').addEventListener('click', function () {
+      var on = !View3D.marks;
+      View3D.setMarks(on);
+      this.setAttribute('aria-pressed', on); this.textContent = 'ラベル ' + (on ? '表示中' : '非表示');
     });
     if ($('ubld-toggle')) $('ubld-toggle').addEventListener('click', function () {
       var on = !View3D.ubld;
