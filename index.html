@@ -2238,6 +2238,56 @@ var View3D = (function () {
     fpvLook = fpvLook ? fpvLook.lerp(look, 0.12) : look.clone();
     camera.lookAt(fpvLook);
   }
+  // 2 本指の操作（Google マップと同じ）: ひねると回転、広げる・狭めると拡大・縮小、2 本指のまま動かすと移動、横に並べた 2 本指をそろえて上下に動かすと傾き。
+  // OrbitControls の 2 本指（回転は「そろえて横に動かす」）は使わず（touches.TWO = null）、ここで扱う
+  // （2026-10-12 利用者「Google マップのように指をひねって回す操作にしてほしい」）。動き始めで傾きか、それ以外（拡大・回転・移動）かを決める。
+  // 回転は、ひねりが 10° を超えてから（広げる・狭めるだけのときに少し回ってしまわないように）
+  function twoFinger(dom) {
+    var g = null;
+    function info(t) {
+      var a = t[0], b = t[1], dx = b.clientX - a.clientX, dy = b.clientY - a.clientY;
+      return { d: Math.hypot(dx, dy), ang: Math.atan2(dy, dx), mx: (a.clientX + b.clientX) / 2, my: (a.clientY + b.clientY) / 2, y0: a.clientY, y1: b.clientY, horiz: Math.abs(dx) > Math.abs(dy) };
+    }
+    function turn(a) { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a; }
+    dom.addEventListener('touchstart', function (e) {
+      if (e.touches.length !== 2) { g = null; return; }
+      if (!controls.enabled || fpv) return;
+      var i = info(e.touches);
+      g = { first: i, last: i, mode: null, rot: false };
+      controls.dispatchEvent({ type: 'start' });
+    }, { passive: false });
+    dom.addEventListener('touchmove', function (e) {
+      if (!g || e.touches.length !== 2 || !controls.enabled || fpv) return;
+      e.preventDefault();
+      var i = info(e.touches), p = g.last, f = g.first, twist = turn(i.ang - f.ang);
+      if (!g.mode) {
+        var dy0 = i.y0 - f.y0, dy1 = i.y1 - f.y1;
+        if (f.horiz && dy0 * dy1 > 0 && Math.min(Math.abs(dy0), Math.abs(dy1)) > 10 && Math.abs(i.d - f.d) < 0.15 * f.d && Math.abs(twist) < 0.15) g.mode = 'tilt';
+        else if (Math.abs(i.d - f.d) > 12 || Math.abs(twist) > 0.15 || Math.hypot(i.mx - f.mx, i.my - f.my) > 12) g.mode = 'map';
+        if (!g.mode) return;
+      }
+      var off = camera.position.clone().sub(controls.target);
+      if (g.mode === 'tilt') {
+        // 上へ動かすと斜めに（地面に近い目線に）、下へ動かすと真上からに近づく
+        var sph = new THREE.Spherical().setFromVector3(off);
+        sph.phi = Math.max(0.05, Math.min(controls.maxPolarAngle, sph.phi - (i.my - p.my) / el.clientHeight * Math.PI));
+        off.setFromSpherical(sph);
+      } else {
+        if (p.d > 0 && i.d > 0) off.setLength(Math.max(controls.minDistance, Math.min(controls.maxDistance, off.length() * p.d / i.d)));
+        if (!g.rot && Math.abs(twist) > 0.17) g.rot = true;
+        if (g.rot) off.applyAxisAngle(new THREE.Vector3(0, 1, 0), turn(i.ang - p.ang)); // 時計回りにひねると、地図も時計回りに
+        // 2 本指の中ほどが動いた分だけ、地面に沿って動かす（OrbitControls の 1 本指の移動と同じ量）
+        var k = 2 * off.length() * Math.tan(camera.fov / 2 * Math.PI / 180) / el.clientHeight;
+        var r = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0), u = new THREE.Vector3().crossVectors(camera.up, r);
+        controls.target.add(r.multiplyScalar(-(i.mx - p.mx) * k)).add(u.multiplyScalar((i.my - p.my) * k));
+      }
+      camera.position.copy(controls.target).add(off);
+      g.last = i;
+    }, { passive: false });
+    dom.addEventListener('touchend', function (e) { if (e.touches.length < 2) g = null; });
+    dom.addEventListener('touchcancel', function () { g = null; });
+  }
+
   function setFpv(on) {
     if (on === fpv) return;
     fpv = on;
@@ -2861,11 +2911,12 @@ var View3D = (function () {
     controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true; controls.dampingFactor = 0.12;
     controls.maxPolarAngle = Math.PI * 0.95;
-    // マウスは地図アプリと同じく、左ドラッグで移動（地面に沿って動かす）、右ドラッグで回転、ホイールで拡大。指の操作も地図アプリに近く、1 本で移動、2 本で拡大・縮小（広げる・狭める）と回転（そろえて横に動かすと回り、上下で傾く）
+    // マウスは地図アプリと同じく、左ドラッグで移動（地面に沿って動かす）、右ドラッグで回転、ホイールで拡大。指の操作も地図アプリと同じく、1 本で移動、2 本はひねると回転・広げる・狭めると拡大・縮小・そろえて上下で傾き（twoFinger）
     // （2026-10-12 利用者「スマホでの地図操作について、操作方法は一般的か？」→「直して」。前は three.js の初めの設定のまま 1 本で回転・2 本で拡大と移動だった）
     controls.mouseButtons = { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
     controls.screenSpacePanning = false;
-    controls.touches = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE };
+    controls.touches = { ONE: THREE.TOUCH.PAN, TWO: null }; // 2 本指は twoFinger で
+    twoFinger(renderer.domElement);
     controls.addEventListener('start', function () { anim = null; if (play) { resumeU = playU(); play = null; } });
     ro = new ResizeObserver(resize);
   }
