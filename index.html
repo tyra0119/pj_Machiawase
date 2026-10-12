@@ -2861,9 +2861,11 @@ var View3D = (function () {
     controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true; controls.dampingFactor = 0.12;
     controls.maxPolarAngle = Math.PI * 0.95;
-    // マウスは地図アプリと同じく、左ドラッグで移動（地面に沿って動かす）、右ドラッグで回転、ホイールで拡大。指の操作は 1 本で回転、2 本で拡大・移動のまま
+    // マウスは地図アプリと同じく、左ドラッグで移動（地面に沿って動かす）、右ドラッグで回転、ホイールで拡大。指の操作も地図アプリに近く、1 本で移動、2 本で拡大・縮小（広げる・狭める）と回転（そろえて横に動かすと回り、上下で傾く）
+    // （2026-10-12 利用者「スマホでの地図操作について、操作方法は一般的か？」→「直して」。前は three.js の初めの設定のまま 1 本で回転・2 本で拡大と移動だった）
     controls.mouseButtons = { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
     controls.screenSpacePanning = false;
+    controls.touches = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE };
     controls.addEventListener('start', function () { anim = null; if (play) { resumeU = playU(); play = null; } });
     ro = new ResizeObserver(resize);
   }
@@ -4294,7 +4296,7 @@ var View3D = (function () {
         (gp ? '<section class="panel" aria-labelledby="h-psteps"><h2 id="h-psteps"><span class="pmark"></span>あいての歩く順番</h2><p class="hint">立体図のだいだいの線です。あいてに送ると、あいての画面ではこちらが案内になります。</p><ol class="psteps">' +
           gp.steps.map(function (s) { return '<li>' + esc(s.title) + (s.detail ? '<small>' + esc(s.detail) + '</small>' : '') + '</li>'; }).join('') + '</ol></section>' : '') +
         '</div>' +
-          '<section class="panel p3d" aria-labelledby="h-3d"><h2 id="h-3d">立体で見る</h2><p class="hint" title="マウスは左ドラッグで移動、右ドラッグで回転、ホイールで拡大します（スマホは 1 本指で回転、2 本指で拡大・移動）。右上の方位マークを押すと北が上になります。地上の建物は実際の高さです。手順を押すとその場所に寄ります。高さは見やすいように強調しています。">マウスは左ドラッグで移動、右ドラッグで回転、ホイールで拡大します（スマホは 1 本指で回転、2 本指で拡大・移動）。右上の方位マークを押すと北が上に、＋・－で拡大・縮小、◎で現在地を出して出発地にします。地上の建物は実際の高さです。手順を押すとその場所に寄ります。高さは見やすいように強調しています。</p>' +
+          '<section class="panel p3d" aria-labelledby="h-3d"><h2 id="h-3d">立体で見る</h2><p class="hint" title="マウスは左ドラッグで移動、右ドラッグで回転、ホイールで拡大します（スマホは 1 本指で移動、2 本指で拡大・回転）。右上の方位マークを押すと北が上になります。地上の建物は実際の高さです。手順を押すとその場所に寄ります。高さは見やすいように強調しています。">マウスは左ドラッグで移動、右ドラッグで回転、ホイールで拡大します（スマホは 1 本指で移動、2 本指で拡大・回転）。右上の方位マークを押すと北が上に、＋・－で拡大・縮小、◎で現在地を出して出発地にします。地上の建物は実際の高さです。手順を押すとその場所に寄ります。高さは見やすいように強調しています。</p>' +
             '<div class="stage" id="stage"><div class="views">' +
               '<button type="button" data-view="oblique">斜めから</button><button type="button" data-view="side">横から</button><button type="button" data-view="top">真上から</button>' +
               (View3D.hasCity ? '<button type="button" id="city-toggle" aria-pressed="' + View3D.city + '">街並み ' + (View3D.city ? '表示中' : '非表示') + '</button>' : '') +
