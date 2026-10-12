@@ -2238,26 +2238,73 @@ var View3D = (function () {
     fpvLook = fpvLook ? fpvLook.lerp(look, 0.12) : look.clone();
     camera.lookAt(fpvLook);
   }
-  // 2 本指の操作（Google マップと同じ）: ひねると回転、広げる・狭めると拡大・縮小、2 本指のまま動かすと移動、横に並べた 2 本指をそろえて上下に動かすと傾き。
-  // OrbitControls の 2 本指（回転は「そろえて横に動かす」）は使わず（touches.TWO = null）、ここで扱う
-  // （2026-10-12 利用者「Google マップのように指をひねって回す操作にしてほしい」）。動き始めで傾きか、それ以外（拡大・回転・移動）かを決める。
+  // 指の操作（Google マップと同じ）: 2 本指は、ひねると回転、広げる・狭めると拡大・縮小、2 本指のまま動かすと移動、横に並べた 2 本指をそろえて上下に動かすと傾き。
+  // 拡大・縮小と回転は 2 本の指のあいだを中心に、移動は指の下の地面が指についてくるように。2 本指から 1 本を離したら、残った指でそのまま動かせる。
+  // OrbitControls の 2 本指（回転は「そろえて横に動かす」）は使わず（touches.TWO = null）、ここで扱う。1 本指で始めたときの移動は OrbitControls のまま
+  // （2026-10-12 利用者「Google マップのように指をひねって回す操作にしてほしい」「同じにして」）。動き始めで傾きか、それ以外（拡大・回転・移動）かを決める。
   // 回転は、ひねりが 10° を超えてから（広げる・狭めるだけのときに少し回ってしまわないように）
   function twoFinger(dom) {
-    var g = null;
+    var g = null, one = null, h = 0, rc = new THREE.Raycaster(), ndc = new THREE.Vector2(), plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), UP = new THREE.Vector3(0, 1, 0);
     function info(t) {
       var a = t[0], b = t[1], dx = b.clientX - a.clientX, dy = b.clientY - a.clientY;
       return { d: Math.hypot(dx, dy), ang: Math.atan2(dy, dx), mx: (a.clientX + b.clientX) / 2, my: (a.clientY + b.clientY) / 2, y0: a.clientY, y1: b.clientY, horiz: Math.abs(dx) > Math.abs(dy) };
     }
     function turn(a) { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a; }
+    // 指を置いた所に描かれている物（経路・通路・床・道路など。地上の建物、透けて薄い物、札は除く）の高さ。無ければ見ている中心の高さ。
+    // 地上の出口と深いホームのように高さが大きく違うので、指の下の物の高さの水平な面を「地面」として、拡大・回転の中心と移動に使う
+    function pickHeight(x, y) {
+      var r = dom.getBoundingClientRect();
+      camera.updateMatrixWorld();
+      ndc.set((x - r.left) / r.width * 2 - 1, -(y - r.top) / r.height * 2 + 1);
+      rc.setFromCamera(ndc, camera);
+      var hits = rc.intersectObjects(scene.children, true);
+      for (var k = 0; k < hits.length; k++) {
+        var o = hits[k].object, m = o.material, vis = o.isMesh && !(m && (m.visible === false || m.depthTest === false || (m.transparent && m.opacity < 0.5)));
+        for (var q = o; vis && q; q = q.parent) if (!q.visible || /^(fill|edge|photo)$/.test(q.userData.city || '')) vis = false; // 地上の建物（写真の建物も）は除く
+        if (vis) return hits[k].point.y;
+      }
+      return controls.target.y;
+    }
+    // 画面の点の下の地面（指を置いた所の高さの水平な面）。地平線の近くなど遠すぎるときは null
+    function ground(x, y) {
+      var r = dom.getBoundingClientRect();
+      camera.updateMatrixWorld();
+      ndc.set((x - r.left) / r.width * 2 - 1, -(y - r.top) / r.height * 2 + 1);
+      rc.setFromCamera(ndc, camera);
+      plane.constant = -h;
+      var hit = rc.ray.intersectPlane(plane, new THREE.Vector3());
+      return hit && hit.distanceTo(camera.position) < camera.position.distanceTo(controls.target) * 6 ? hit : null;
+    }
+    // 指の下の地面が指についてくるように動かす（地面が取れないときは、OrbitControls の移動と同じ量）
+    function grab(px, py, x, y) {
+      var a = ground(px, py), b = a && ground(x, y), d;
+      if (a && b) d = a.sub(b);
+      else {
+        var k = 2 * camera.position.distanceTo(controls.target) * Math.tan(camera.fov / 2 * Math.PI / 180) / dom.clientHeight;
+        var r = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0), u = new THREE.Vector3().crossVectors(camera.up, r);
+        d = r.multiplyScalar(-(x - px) * k).add(u.multiplyScalar((y - py) * k));
+      }
+      controls.target.add(d); camera.position.add(d);
+    }
     dom.addEventListener('touchstart', function (e) {
+      one = null;
       if (e.touches.length !== 2) { g = null; return; }
       if (!controls.enabled || fpv) return;
       var i = info(e.touches);
       g = { first: i, last: i, mode: null, rot: false };
+      h = pickHeight(i.mx, i.my);
       controls.dispatchEvent({ type: 'start' });
     }, { passive: false });
     dom.addEventListener('touchmove', function (e) {
-      if (!g || e.touches.length !== 2 || !controls.enabled || fpv) return;
+      if (!controls.enabled || fpv) return;
+      if (one && e.touches.length === 1) { // 2 本指から 1 本を離した後の、残った指
+        e.preventDefault();
+        var t = e.touches[0];
+        grab(one.x, one.y, t.clientX, t.clientY);
+        one = { x: t.clientX, y: t.clientY };
+        return;
+      }
+      if (!g || e.touches.length !== 2) return;
       e.preventDefault();
       var i = info(e.touches), p = g.last, f = g.first, twist = turn(i.ang - f.ang);
       if (!g.mode) {
@@ -2266,26 +2313,35 @@ var View3D = (function () {
         else if (Math.abs(i.d - f.d) > 12 || Math.abs(twist) > 0.15 || Math.hypot(i.mx - f.mx, i.my - f.my) > 12) g.mode = 'map';
         if (!g.mode) return;
       }
-      var off = camera.position.clone().sub(controls.target);
       if (g.mode === 'tilt') {
         // 上へ動かすと斜めに（地面に近い目線に）、下へ動かすと真上からに近づく
-        var sph = new THREE.Spherical().setFromVector3(off);
-        sph.phi = Math.max(0.05, Math.min(controls.maxPolarAngle, sph.phi - (i.my - p.my) / el.clientHeight * Math.PI));
-        off.setFromSpherical(sph);
+        var off = camera.position.clone().sub(controls.target), sph = new THREE.Spherical().setFromVector3(off);
+        sph.phi = Math.max(0.05, Math.min(controls.maxPolarAngle, sph.phi - (i.my - p.my) / dom.clientHeight * Math.PI));
+        camera.position.copy(controls.target).add(off.setFromSpherical(sph));
       } else {
-        if (p.d > 0 && i.d > 0) off.setLength(Math.max(controls.minDistance, Math.min(controls.maxDistance, off.length() * p.d / i.d)));
+        grab(p.mx, p.my, i.mx, i.my); // 前の 2 本指の中ほどの下の地面を、いまの中ほどへ
+        var c = ground(i.mx, i.my) || controls.target.clone(); // 拡大・縮小と回転の中心
+        if (p.d > 0 && i.d > 0) {
+          var len = camera.position.distanceTo(controls.target), s = Math.max(controls.minDistance, Math.min(controls.maxDistance, len * p.d / i.d)) / len;
+          // 中心を動かさずに全体を縮める・広げる（向きは変わらないので、中心は画面の同じ所に残る）
+          controls.target.sub(c).multiplyScalar(s).add(c);
+          camera.position.sub(c).multiplyScalar(s).add(c);
+        }
         if (!g.rot && Math.abs(twist) > 0.17) g.rot = true;
-        if (g.rot) off.applyAxisAngle(new THREE.Vector3(0, 1, 0), turn(i.ang - p.ang)); // 時計回りにひねると、地図も時計回りに
-        // 2 本指の中ほどが動いた分だけ、地面に沿って動かす（OrbitControls の 1 本指の移動と同じ量）
-        var k = 2 * off.length() * Math.tan(camera.fov / 2 * Math.PI / 180) / el.clientHeight;
-        var r = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0), u = new THREE.Vector3().crossVectors(camera.up, r);
-        controls.target.add(r.multiplyScalar(-(i.mx - p.mx) * k)).add(u.multiplyScalar((i.my - p.my) * k));
+        if (g.rot) { // 時計回りにひねると、地図も時計回りに（中心のまわりに回す）
+          var da = turn(i.ang - p.ang);
+          controls.target.sub(c).applyAxisAngle(UP, da).add(c);
+          camera.position.sub(c).applyAxisAngle(UP, da).add(c);
+        }
       }
-      camera.position.copy(controls.target).add(off);
+      camera.lookAt(controls.target);
       g.last = i;
     }, { passive: false });
-    dom.addEventListener('touchend', function (e) { if (e.touches.length < 2) g = null; });
-    dom.addEventListener('touchcancel', function () { g = null; });
+    dom.addEventListener('touchend', function (e) {
+      if (e.touches.length === 1 && g) { one = { x: e.touches[0].clientX, y: e.touches[0].clientY }; h = pickHeight(one.x, one.y); g = null; return; }
+      if (e.touches.length === 0) { g = null; one = null; }
+    });
+    dom.addEventListener('touchcancel', function () { g = null; one = null; });
   }
 
   function setFpv(on) {
