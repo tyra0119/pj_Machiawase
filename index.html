@@ -76,7 +76,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--f-body); fon
 .howto:hover { background: rgba(255,255,255,.12); }
 .sign h1 small { display: block; font-size: 12px; font-weight: 500; letter-spacing: .08em; opacity: .75; }
 
-/* 設定（2026-10-13 利用者「画面上部の設定箇所が使いにくい」）: 「いつ・どこで」「わたし」「あいて」の 3 つのまとまり。
+/* 設定（2026-10-13 利用者「画面上部の設定箇所が使いにくい」）: 「待ち合わせ場所」「わたしの出発地」「あいての出発地」の 3 つのまとまり。
    決めたら 1 行のまとめ（sumbar）だけを残して閉じる */
 .setup { margin-top: 14px; display: grid; gap: 10px; }
 .sumbar { display: flex; align-items: center; gap: 8px 14px; flex-wrap: wrap; padding: 8px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
@@ -92,6 +92,54 @@ body.setup-closed .setup-body { display: none; }
 .grp .row { display: flex; gap: 6px; flex-wrap: wrap; }
 .grp .tin { font-size: 15px; padding: 7px 10px; }
 .hint2 { font-size: 12px; color: var(--muted); }
+/* 路線図（電車・バスのカードのあいだ、立体図の場所に出す。2026-10-13 利用者「立体図には、電車、バスの路線図を表示してほしい」） */
+.routemap { position: absolute; inset: 0; z-index: 4; background: var(--stage); }
+.routemap[hidden] { display: none; }
+.routemap svg { width: 100%; height: 100%; display: block; }
+.routemap .rm-title { position: absolute; left: 10px; top: 8px; font-size: 13px; font-weight: 700; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px; }
+.rm-net { stroke: var(--muted); stroke-width: 1.4; opacity: .35; fill: none; }
+.rm-map { opacity: .85; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .rm-map { opacity: .5; } }
+:root[data-theme="dark"] .rm-map { opacity: .5; }
+.routemap .rm-credit { position: absolute; right: 6px; bottom: 4px; font-size: 10px; color: var(--muted); background: var(--surface); padding: 0 4px; border-radius: 3px; opacity: .85; }
+.rm-lbl { font-size: 15px; font-weight: 700; fill: var(--ink); paint-order: stroke; stroke: var(--stage); stroke-width: 4px; stroke-linejoin: round; }
+.rm-sub { font-size: 12px; fill: var(--muted); paint-order: stroke; stroke: var(--stage); stroke-width: 3px; }
+ol.legs li[data-ride] { cursor: pointer; }
+ol.legs li[data-ride]:hover { background: var(--faint); border-radius: 6px; }
+/* あいてに入力してもらう（部屋・QR コード。2026-10-13 利用者「相手に入力してもらう仕組みも欲しい」） */
+.invite { font: inherit; font-size: 14px; font-weight: 700; border: 1px dashed var(--oedo); background: var(--oedo-soft); color: var(--oedo); border-radius: 8px; padding: 8px 10px; cursor: pointer; text-align: left; }
+.roomst { font-size: 13px; color: var(--ink); background: var(--faint); border-radius: 8px; padding: 6px 10px; display: grid; gap: 4px; }
+.roomst[hidden] { display: none; }
+.roomst button { font: inherit; font-size: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 2px 10px; cursor: pointer; justify-self: start; }
+.roomst .row { display: flex; gap: 6px; flex-wrap: wrap; }
+.roombadge { font-size: 12px; font-weight: 700; color: #0b6b3a; }
+dialog.qr { border: 1px solid var(--line); border-radius: 14px; padding: 18px; max-width: min(380px, 92vw); background: var(--surface); color: var(--ink); }
+dialog.qr::backdrop { background: rgba(0,0,0,.45); }
+dialog.qr h2 { margin: 0 0 6px; font-size: 17px; }
+dialog.qr .qrbox { background: #fff; border-radius: 10px; padding: 10px; display: grid; place-items: center; margin: 10px 0; }
+dialog.qr .qrbox svg { width: 100%; max-width: 280px; height: auto; }
+dialog.qr .acts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+dialog.qr .acts button { font: inherit; font-size: 14px; font-weight: 700; border-radius: 999px; padding: 7px 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+dialog.qr .acts button.primary { background: var(--sel); color: #fff; border-color: var(--sel); }
+dialog.qr .url { font-size: 12px; color: var(--muted); word-break: break-all; }
+/* 出発駅・バス停の候補（2026-10-13 利用者「検索結果は分かりやすく表示してね」）: 駅名（合う所を色で）・読みがな・路線の色の札・バス停 */
+.sugg { position: relative; }
+.sugglist { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 30; margin: 0; padding: 4px; list-style: none;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 22px rgba(0,0,0,.18); max-height: min(340px, 50vh); overflow-y: auto; }
+.sugglist[hidden] { display: none; }
+.sugglist li { padding: 8px 10px; border-radius: 8px; cursor: pointer; display: grid; gap: 4px; }
+.sugglist li[aria-selected="true"], .sugglist li:not(.empty):hover { background: var(--faint); }
+.sugglist .nm { font-weight: 700; font-size: 15px; }
+.sugglist .nm mark { background: none; color: var(--oedo); }
+.sugglist .kn { font-size: 11px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+.sugglist .tag { font-size: 11px; font-weight: 700; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; margin-left: 6px; }
+.sugglist .ls { display: flex; flex-wrap: wrap; gap: 4px; }
+.sugglist .lb { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+.sugglist .more { font-size: 11px; color: var(--muted); align-self: center; }
+.sugglist .empty { color: var(--muted); cursor: default; font-size: 13px; }
+.sugglist li.ng { cursor: default; }
+.sugglist li.ng .nm { color: var(--muted); }
+.sugglist .ngtx { font-size: 12px; font-weight: 700; color: var(--warn); }
 /* 見る画面の切り替え: ふたり・わたし・あいて */
 .viewtabs { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
 .viewtabs[hidden] { display: none; }
@@ -253,6 +301,13 @@ li.minor .ico { width: 40px; height: 28px; background: transparent; color: var(-
 .st-title { font-weight: 700; font-size: 16px; line-height: 1.45; padding-top: 8px; }
 li.minor .st-title { font-weight: 500; font-size: 14px; color: var(--muted); padding-top: 3px; }
 .st-detail { font-size: 13px; color: var(--muted); margin-top: 2px; }
+/* 地上か地下か（2026-10-13 利用者「地上を案内されてるのか、地下を案内されてるのか分かりにくい」）: 地上は空色、地下は土色の札 */
+.lv { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 7px; border-radius: 4px; line-height: 1.5; vertical-align: 1px; white-space: nowrap; }
+.lv-g { background: #d8eefc; color: #0b4f7a; }
+.lv-u { background: #5b4636; color: #fff; }
+.lvs { display: inline-flex; align-items: center; gap: 3px; margin-right: 6px; font-size: 12px; color: var(--muted); }
+.nav.on-g { border-left: 6px solid #6fb6e6; }
+.nav.on-u { border-left: 6px solid #5b4636; }
 .where { display: inline-block; margin-top: 6px; font-size: 13px; font-weight: 700; color: var(--oedo); background: var(--oedo-soft);
   padding: 2px 10px; border-radius: 999px; }
 li.on .where { background: var(--surface); }
@@ -397,6 +452,7 @@ body.nav-on .summary .acts { display: none; } /* 案内中は、案内開始の�
   body.nav-on .navtx b { font-size: 18px; }
   body.nav-on .illust { padding: 2px; }
   body.nav-on .illust svg { max-height: 104px; }
+  body.nav-on.ride-on .illust svg { max-height: 190px; }
   .navkeys { display: none; }
 }
 /* PC（幅 961px 以上・高さ 600px 以上）: ページをスクロールさせず、画面の高さに収める。
@@ -457,26 +513,31 @@ body.nav-on .summary .acts { display: none; } /* 案内中は、案内開始の�
   <form class="setup" id="form" autocomplete="off">
     <div class="sumbar"><div class="sumtx" id="sumtx"></div><button type="button" class="sumbtn" id="setup-toggle" aria-expanded="true" aria-controls="setup-body">設定を閉じる</button></div>
     <div class="setup-body" id="setup-body">
-      <fieldset class="grp"><legend>いつ・どこで</legend>
+      <fieldset class="grp"><legend>待ち合わせ場所</legend>
         <div class="field f-station"><label for="station">駅</label><select id="station"></select></div>
-        <div class="field"><label for="to">待ち合わせ場所</label><select id="to"></select><select id="to-car" class="carsel" hidden aria-label="目的地のホームの車両"></select></div>
+        <div class="field"><label for="to">場所</label><select id="to"></select><select id="to-car" class="carsel" hidden aria-label="目的地のホームの車両"></select></div>
         <div class="field"><label for="md">合流日時</label><div class="row"><input type="date" id="md" class="tin" aria-label="合流する日"><input type="time" id="mt" class="tin" step="300" aria-label="合流する時刻"></div><small id="md-kind" class="hint2"></small></div>
       </fieldset>
-      <fieldset class="grp"><legend><span class="mmark"></span>わたし</legend>
+      <fieldset class="grp"><legend><span class="mmark"></span>わたしの出発地</legend>
         <div class="field"><label for="from">来かた</label><select id="from"></select><select id="from-car" class="carsel" hidden aria-label="出発のホームの車両"></select>
-          <input type="text" id="from-dep" class="depin" list="dep-list" hidden placeholder="出発駅・バス停（例：和光市）" aria-label="わたしの出発駅・バス停" enterkeyhint="search">
+          <div class="sugg"><input type="text" id="from-dep" class="depin" hidden placeholder="出発駅・バス停（例：和光市・わこうし）" aria-label="わたしの出発駅・バス停" enterkeyhint="search" role="combobox" aria-autocomplete="list" aria-controls="from-dep-list" aria-expanded="false"><ul class="sugglist" id="from-dep-list" role="listbox" hidden></ul></div>
           <div class="trainsel"><select id="from-time" class="carsel" hidden aria-label="わたしの乗ってくる電車（この駅に着く時刻）"></select><input type="time" id="from-tin" class="tin" hidden aria-label="わたしの電車がこの駅に着く時刻"></div></div>
         <div class="field"><label for="from-pr">移動の条件</label><select id="from-pr"><option value="std">標準（いちばん早い）</option><option value="stair">階段を使う</option><option value="esc">エスカレーターを使う</option><option value="ev">段差なし（エレベーター・車いす・ベビーカー）</option></select></div>
       </fieldset>
-      <fieldset class="grp"><legend><span class="pmark"></span>あいて</legend>
+      <fieldset class="grp"><legend><span class="pmark"></span>あいての出発地</legend>
         <div class="field"><label for="partner">来かた</label><select id="partner"></select>
-          <input type="text" id="partner-dep" class="depin" list="dep-list" hidden placeholder="あいての出発駅・バス停（例：荻窪）" aria-label="あいての出発駅・バス停" enterkeyhint="search">
+          <div class="sugg"><input type="text" id="partner-dep" class="depin" hidden placeholder="あいての出発駅・バス停（例：荻窪・おぎくぼ）" aria-label="あいての出発駅・バス停" enterkeyhint="search" role="combobox" aria-autocomplete="list" aria-controls="partner-dep-list" aria-expanded="false"><ul class="sugglist" id="partner-dep-list" role="listbox" hidden></ul></div>
           <div class="trainsel"><select id="partner-time" class="carsel" hidden aria-label="あいての乗ってくる電車（この駅に着く時刻）"></select><input type="time" id="partner-tin" class="tin" hidden aria-label="あいての電車がこの駅に着く時刻"></div></div>
+        <button type="button" class="invite" id="invite" hidden>あいてに入力してもらう（QRコード）<small class="hint2" style="display:block;font-weight:500">あいてがQRを読み込んで来かたを入れると、ここに自動で出ます</small></button>
+        <div class="roomst" id="roomst" hidden></div>
         <div class="field"><label for="partner-pr">移動の条件</label><select id="partner-pr"><option value="std">標準（いちばん早い）</option><option value="stair">階段を使う</option><option value="esc">エスカレーターを使う</option><option value="ev">段差なし（エレベーター・車いす・ベビーカー）</option></select></div>
       </fieldset>
     </div>
-    <datalist id="dep-list"></datalist>
   </form>
+  <dialog class="qr" id="qr-dlg" aria-labelledby="qr-h"><h2 id="qr-h">あいてに入力してもらう</h2>
+    <p class="hint2" style="margin:0">あいてにこの QR コードを読み込んでもらうか、リンクを送ってください。あいてが来かたを入れると、この画面の「あいて」に自動で出ます（3 日で消えます）。</p>
+    <div class="qrbox" id="qr-box">QR コードを作っています…</div><p class="url" id="qr-url"></p>
+    <div class="acts"><button type="button" id="qr-share">リンクを送る</button><button type="button" class="primary" id="qr-close">閉じる</button></div></dialog>
   <!-- 見る画面: ふたり（ふたりの流れと、構内のふたりの道順）・わたし・あいて（それぞれの案内）。あいてを選んだときだけ -->
   <div class="viewtabs" id="viewtabs" role="tablist" aria-label="見る画面" hidden>
     <button type="button" role="tab" data-v="duo">ふたり</button><button type="button" role="tab" data-v="me">わたし</button><button type="button" role="tab" data-v="you">あいて</button>
@@ -487,7 +548,7 @@ body.nav-on .summary .acts { display: none; } /* 案内中は、案内開始の�
 
   <footer>
     <div id="city-credit"></div>
-    <div>データ出典：地上の歩道は国土交通省「歩行空間ネットワークデータ」（池袋駅周辺・東京駅周辺・台東区上野駅周辺・渋谷駅、千駄ヶ谷駅周辺／新宿駅周辺。政府標準利用規約 第2.0版）。地下の通路・出口・待ち合わせ場所・トイレは © OpenStreetMap contributors（ODbL）。電車で着くときの路線・方面・着く時刻は、公共交通オープンデータセンター（ODPT）の駅・路線・駅時刻表・列車時刻表（東京メトロ：公共交通オープンデータ基本ライセンス、東京都交通局：CC BY 4.0、JR東日本・東武鉄道・西武鉄道・小田急電鉄・京王電鉄・東急電鉄：公共交通オープンデータチャレンジ限定ライセンス）。乗換案内（出発駅から待ち合わせの駅まで）は、ODPT の列車時刻表（東京メトロ・東京都交通局・JR東日本・東武鉄道・京王電鉄）と、都営バスの GTFS（東京都交通局・公共交通オープンデータ協議会、CC BY 4.0）。乗換の歩く時間は駅・バス停の位置からの見込みです。降りる車両は、ホームと改札の位置からの推定です。ホームから改札までの時間は、駅のホームと改札の位置からの推定です。経路と案内文はこれらのデータから自動で作っています。地上と地下は出口の位置でつないでおり、一部は近さから推定したつなぎ目です。実際に通れるかは現地で確かめてください。</div>
+    <div>データ出典：地上の歩道は国土交通省「歩行空間ネットワークデータ」（池袋駅周辺・東京駅周辺・台東区上野駅周辺・渋谷駅、千駄ヶ谷駅周辺／新宿駅周辺。政府標準利用規約 第2.0版）。地下の通路・出口・待ち合わせ場所・トイレは © OpenStreetMap contributors（ODbL）。電車で着くときの路線・方面・着く時刻は、公共交通オープンデータセンター（ODPT）の駅・路線・駅時刻表・列車時刻表（東京メトロ：公共交通オープンデータ基本ライセンス、東京都交通局：CC BY 4.0、JR東日本・東武鉄道・西武鉄道・小田急電鉄・京王電鉄・東急電鉄：公共交通オープンデータチャレンジ限定ライセンス）。乗換案内（出発駅から待ち合わせの駅まで）は、ODPT の列車時刻表（東京メトロ・東京都交通局・JR東日本・東武鉄道・京王電鉄）と、都営バスの GTFS（東京都交通局・公共交通オープンデータ協議会、CC BY 4.0）。乗換の歩く時間は駅・バス停の位置からの見込みです。路線図の背景は地理院タイル（淡色地図）（国土地理院）。降りる車両は、ホームと改札の位置からの推定です。ホームから改札までの時間は、駅のホームと改札の位置からの推定です。経路と案内文はこれらのデータから自動で作っています。地上と地下は出口の位置でつないでおり、一部は近さから推定したつなぎ目です。実際に通れるかは現地で確かめてください。</div>
     <div>階の名前は、データ上の階（OpenStreetMap の level）を「地下N階」として付けたもので、駅の表示（B1Fなど）と一致しない場合があります。出口の階段にエスカレーター・エレベーターがあるかはデータにありません。工事やエレベーターの休止は反映していません。</div>
   </footer>
 </main>
@@ -497,11 +558,11 @@ body.nav-on .summary .acts { display: none; } /* 案内中は、案内開始の�
 <script>
 var STATIONS = [{"id":"ikebukuro","name":"池袋","code":"IKB"},{"id":"shinjuku","name":"新宿","code":"SJK"},{"id":"shibuya","name":"渋谷","code":"SBY"},{"id":"tokyo","name":"東京","code":"TYO"},{"id":"ueno","name":"上野","code":"UEN"},{"id":"ginza","name":"銀座","code":"GNZ"},{"id":"otemachi","name":"大手町","code":"OTM"},{"id":"nihonbashi","name":"日本橋","code":"NHB"}];
 var CITY = {"year":"2025","stations":{}};
-var TILES = {"year":2025,"bases":["https://assets.cms.plateau.reearth.io/assets/66/f1f857-965f-4850-827e-4d7aae84d879/13110_meguro-ku_pref_2025_citygml_1_op_bldg_3dtiles_13110_meguro-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/a6/85dfbe-994a-4da4-90fc-ec7f4661d469/13116_toshima-ku_pref_2025_citygml_1_op_bldg_3dtiles_13116_toshima-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/80/e01efb-831d-4752-a10e-63b407ee2201/13108_koto-ku_pref_2025_citygml_1_op_bldg_3dtiles_13108_koto-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/16/b016d3-42ef-4428-ad99-d229310b39fd/13113_shibuya-ku_pref_2025_citygml_1_op_bldg_3dtiles_13113_shibuya-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/fc/e0156d-7dbe-45a0-a379-0d62ae2348d8/13117_kita-ku_pref_2025_citygml_1_op_bldg_3dtiles_13117_kita-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/28/07d0a1-b6be-46ef-bd87-4f0683b5ef6e/13101_chiyoda-ku_pref_2025_citygml_1_op_bldg_3dtiles_13101_chiyoda-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/00/bed0bd-f882-4cde-b942-21d0f8d2ddc2/13104_shinjuku-ku_pref_2025_citygml_1_op_bldg_3dtiles_13104_shinjuku-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/09/83a3f6-6605-477c-84dc-a973008b5a27/13102_chuo-ku_pref_2025_citygml_1_op_bldg_3dtiles_13102_chuo-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/75/76c6bc-df54-4bf4-a869-b513526b5bd2/13106_taito-ku_city_2025_citygml_1_op_bldg_3dtiles_lod2/","https://assets.cms.plateau.reearth.io/assets/c6/c5c89a-859d-4dce-8e25-04e02a39b270/13105_bunkyo-ku_pref_2025_citygml_1_op_bldg_3dtiles_13105_bunkyo-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/b5/b5f79e-0c6c-4fc7-adde-6522014243a2/13103_minato-ku_pref_2025_citygml_1_op_bldg_3dtiles_13103_minato-ku_lod2/"],"stations":{"ikebukuro":[[1,"data/data236.b3dm",[802,304,1029,433],1],[1,"data/data238.b3dm",[792,187,1025,320],1],[1,"data/data240.b3dm",[591,299,816,436],1.3],[1,"data/data241.b3dm",[382,291,604,428],2.3],[1,"data/data242.b3dm",[596,188,814,319],1.8],[1,"data/data243.b3dm",[384,187,596,318],1.4],[1,"data/data246.b3dm",[802,65,1025,214],1.7],[1,"data/data248.b3dm",[773,-42,1035,112],1.1],[1,"data/data250.b3dm",[596,80,821,226],1.2],[1,"data/data251.b3dm",[377,78,596,209],1.8],[1,"data/data252.b3dm",[596,-35,808,87],0.1],[1,"data/data253.b3dm",[381,-45,605,103],3.1],[1,"data/data397.b3dm",[169,300,385,429],2],[1,"data/data398.b3dm",[-44,304,173,437],1.4],[1,"data/data399.b3dm",[154,192,387,319],3],[1,"data/data400.b3dm",[-47,193,181,315],1.6],[1,"data/data402.b3dm",[-251,292,-36,433],2.5],[1,"data/data403.b3dm",[-469,305,-237,437],3],[1,"data/data404.b3dm",[-251,191,-39,315],2.2],[1,"data/data405.b3dm",[-472,195,-247,322],3.6],[1,"data/data407.b3dm",[169,68,389,197],2.3],[1,"data/data408.b3dm",[-39,81,173,210],0.4],[1,"data/data409.b3dm",[167,-42,395,98],3],[1,"data/data410.b3dm",[-54,-137,182,184],1.5],[1,"data/data412.b3dm",[-251,81,-39,204],1.7],[1,"data/data413.b3dm",[-463,76,-251,212],3.2],[1,"data/data414.b3dm",[-251,-124,19,191],2.8],[1,"data/data415.b3dm",[-469,-48,-216,98],1.5],[1,"data/data557.b3dm",[808,-200,1023,16],1.5],[1,"data/data559.b3dm",[808,-272,1019,-151],0.5],[1,"data/data561.b3dm",[593,-159,887,57],3.9],[1,"data/data562.b3dm",[384,-181,618,-34],1.5],[1,"data/data563.b3dm",[574,-277,836,-140],2.2],[1,"data/data564.b3dm",[381,-279,596,-148],1.4],[1,"data/data567.b3dm",[807,-387,1025,-262],2.1],[1,"data/data571.b3dm",[596,-384,809,-254],0.9],[1,"data/data572.b3dm",[362,-423,601,-243],2.4],[1,"data/data632.b3dm",[169,-158,397,-16],3],[1,"data/data633.b3dm",[-70,-272,185,193],5.2],[1,"data/data634.b3dm",[162,-272,384,-139],1.9],[1,"data/data635.b3dm",[-40,-287,182,-142],1.2],[1,"data/data637.b3dm",[-251,-162,-29,-34],0.8],[1,"data/data638.b3dm",[-464,-168,-223,-24],1.5],[1,"data/data639.b3dm",[-259,-273,-36,-130],1.6],[1,"data/data640.b3dm",[-469,-272,-248,-151],1.2],[1,"data/data642.b3dm",[166,-390,391,-259],1.7],[1,"data/data643.b3dm",[-71,-392,189,-256],2.6],[1,"data/data647.b3dm",[-258,-393,-34,-260],0.8],[1,"data/data648.b3dm",[-465,-383,-251,-261],0.7],[1,"data/data649.b3dm",[-253,-505,-39,-354],1.4],[4,"data/data174.b3dm",[815,248,1732,1132],0],[6,"data/data126.b3dm",[-588,-751,-184,-363],0],[9,"data/data22.b3dm",[578,-303,1824,705],0.1],[9,"data/data29.b3dm",[578,-802,1204,-298],1]],"shinjuku":[[3,"data/data9.b3dm",[7,-118,360,233],0],[6,"data/data586.b3dm",[169,504,384,709],5.2],[6,"data/data587.b3dm",[-35,447,189,711],4],[6,"data/data602.b3dm",[-244,503,-29,706],3.4],[6,"data/data603.b3dm",[-449,503,-207,712],5],[6,"data/data612.b3dm",[343,298,579,518],3.9],[6,"data/data614.b3dm",[322,117,578,330],5],[6,"data/data616.b3dm",[165,304,380,515],5.5],[6,"data/data617.b3dm",[-29,308,179,514],4.3],[6,"data/data618.b3dm",[158,108,373,323],3.3],[6,"data/data619.b3dm",[-29,79,183,326],3.2],[6,"data/data626.b3dm",[169,-85,383,132],5.3],[6,"data/data627.b3dm",[-35,-84,179,197],2.2],[6,"data/data631.b3dm",[-235,300,-29,520],3.9],[6,"data/data632.b3dm",[-440,312,-219,513],1.5],[6,"data/data633.b3dm",[-251,121,-29,318],1.3],[6,"data/data634.b3dm",[-432,121,-214,333],2.1],[6,"data/data641.b3dm",[-254,-121,-21,261],3],[6,"data/data642.b3dm",[-446,-73,-227,121],3.2]],"shibuya":[[3,"data/data470.b3dm",[65,368,254,562],2],[3,"data/data471.b3dm",[-121,369,66,559],1.6],[3,"data/data472.b3dm",[66,189,271,398],2.6],[3,"data/data473.b3dm",[-127,191,66,506],2.4],[3,"data/data486.b3dm",[-303,346,-110,558],3.5],[3,"data/data487.b3dm",[-465,367,-284,559],1.8],[3,"data/data488.b3dm",[-296,188,-83,380],4.2],[3,"data/data489.b3dm",[-477,189,-278,385],4.6],[3,"data/data502.b3dm",[66,18,252,232],2.5],[3,"data/data503.b3dm",[-110,19,122,210],1.3],[3,"data/data504.b3dm",[61,-187,250,35],2.9],[3,"data/data505.b3dm",[-111,-169,106,35],2.3],[3,"data/data518.b3dm",[-292,14,-85,218],5],[3,"data/data519.b3dm",[-470,10,-275,207],4.5],[3,"data/data520.b3dm",[-396,-156,-93,49],4.2],[3,"data/data521.b3dm",[-474,-162,-277,39],3]],"tokyo":[[5,"data/data418.b3dm",[208,86,525,402],2.7],[5,"data/data429.b3dm",[79,148,228,277],0.9],[5,"data/data430.b3dm",[-99,147,79,290],0.9],[5,"data/data439.b3dm",[79,-19,228,190],2.6],[5,"data/data440.b3dm",[-70,27,79,152],0],[5,"data/data441.b3dm",[14,-230,228,180],0.2],[5,"data/data442.b3dm",[-104,-226,151,218],1.9],[5,"data/data449.b3dm",[48,-241,228,-14],0.1],[5,"data/data450.b3dm",[-70,-237,79,-98],0.1],[5,"data/data451.b3dm",[-77,-348,79,-223],1.2],[5,"data/data464.b3dm",[-78,-598,228,-323],0.4],[7,"data/data86.b3dm",[354,-66,592,309],6.9],[7,"data/data88.b3dm",[353,-401,571,-34],5.8],[7,"data/data90.b3dm",[189,-66,389,298],1.8],[7,"data/data91.b3dm",[162,-410,388,-27],4.2],[7,"data/data92.b3dm",[2,-405,245,-48],2.8]],"ginza":[[5,"data/data464.b3dm",[202,397,508,671],0.4],[5,"data/data465.b3dm",[62,522,211,647],0.2],[5,"data/data466.b3dm",[-87,518,62,647],0],[5,"data/data467.b3dm",[58,353,211,545],0.6],[5,"data/data468.b3dm",[-101,392,92,619],1.6],[5,"data/data470.b3dm",[62,272,211,397],0],[5,"data/data471.b3dm",[-143,243,86,400],1],[5,"data/data472.b3dm",[-90,131,64,282],0.7],[5,"data/data475.b3dm",[-384,358,-68,675],3.3],[5,"data/data476.b3dm",[-533,520,-384,647],0.1],[5,"data/data477.b3dm",[-681,517,-527,647],0],[5,"data/data478.b3dm",[-533,397,-384,530],0],[5,"data/data479.b3dm",[-681,392,-533,522],0],[5,"data/data481.b3dm",[-247,210,-31,420],1.7],[5,"data/data482.b3dm",[-384,272,-235,397],0.6],[5,"data/data483.b3dm",[-253,117,-64,285],1],[5,"data/data484.b3dm",[-384,143,-221,300],1.3],[5,"data/data486.b3dm",[-533,272,-384,397],0],[5,"data/data487.b3dm",[-691,272,-531,397],0.1],[5,"data/data488.b3dm",[-533,100,-363,275],1.7],[5,"data/data489.b3dm",[-681,147,-533,272],0.1],[5,"data/data492.b3dm",[-87,-352,508,158],0.1],[5,"data/data493.b3dm",[-256,22,-87,147],0.6],[5,"data/data494.b3dm",[-415,12,-235,157],2],[5,"data/data495.b3dm",[-384,-102,-235,22],0],[5,"data/data497.b3dm",[-549,22,-384,147],0.8],[5,"data/data498.b3dm",[-681,7,-533,147],0.1],[5,"data/data499.b3dm",[-587,-118,-377,71],1.9],[5,"data/data500.b3dm",[-681,-151,-526,22],0.5],[5,"data/data502.b3dm",[-548,-271,-384,-87],1.3],[5,"data/data503.b3dm",[-681,-232,-518,-102],0.4],[5,"data/data504.b3dm",[-534,-352,-384,-227],0],[5,"data/data505.b3dm",[-703,-352,-519,-217],0.8],[7,"data/data91.b3dm",[442,585,669,968],4.2],[7,"data/data92.b3dm",[282,589,525,947],2.8],[7,"data/data99.b3dm",[452,239,676,615],5.1],[7,"data/data100.b3dm",[272,239,481,609],4],[7,"data/data101.b3dm",[444,-97,673,259],6.3],[7,"data/data102.b3dm",[270,-106,479,262],6.2],[7,"data/data105.b3dm",[88,248,292,600],1.9],[7,"data/data106.b3dm",[73,-93,297,262],5.7],[7,"data/data107.b3dm",[-97,-107,113,253],4.1],[7,"data/data109.b3dm",[-286,-109,-77,253],2.9],[7,"data/data110.b3dm",[-467,-100,-249,253],0.7],[7,"data/data177.b3dm",[457,-471,675,-75],4.9],[7,"data/data178.b3dm",[272,-443,485,-91],6.1],[7,"data/data179.b3dm",[464,-796,709,-430],7.6],[7,"data/data180.b3dm",[261,-803,496,-426],6.9],[7,"data/data193.b3dm",[89,-440,291,-54],5.4],[7,"data/data194.b3dm",[-111,-445,115,-84],10.8],[7,"data/data195.b3dm",[86,-790,303,-413],7.2],[7,"data/data196.b3dm",[-109,-824,120,-430],9],[7,"data/data198.b3dm",[-294,-456,-75,-85],7.3],[7,"data/data199.b3dm",[-467,-442,-258,-90],5.9],[7,"data/data200.b3dm",[-290,-786,-84,-432],2.6],[7,"data/data201.b3dm",[-467,-786,-275,-420],0.8],[10,"data/data0.b3dm",[-204,-623,4,-403],0],[10,"data/data1.b3dm",[-418,-636,-195,-403],1.4],[10,"data/data3.b3dm",[-641,-415,-412,-183],0.4],[10,"data/data5.b3dm",[-626,-623,-407,-403],1.8]],"otemachi":[[5,"data/data152.b3dm",[501,515,694,777],2.1],[5,"data/data161.b3dm",[499,466,667,672],1.9],[5,"data/data163.b3dm",[500,349,663,480],1.6],[5,"data/data165.b3dm",[508,99,805,349],0.1],[5,"data/data207.b3dm",[-696,582,-488,726],0.2],[5,"data/data210.b3dm",[355,474,510,601],2.6],[5,"data/data211.b3dm",[203,464,366,605],3.5],[5,"data/data212.b3dm",[355,342,513,475],3.2],[5,"data/data213.b3dm",[204,341,361,484],1.8],[5,"data/data215.b3dm",[62,470,216,604],2.2],[5,"data/data216.b3dm",[-95,462,62,609],1.7],[5,"data/data217.b3dm",[58,344,218,483],1.8],[5,"data/data218.b3dm",[-87,349,63,474],0.1],[5,"data/data220.b3dm",[355,224,512,355],0.9],[5,"data/data221.b3dm",[211,224,359,353],0.4],[5,"data/data222.b3dm",[332,40,508,224],0.6],[5,"data/data223.b3dm",[211,99,367,231],1.2],[5,"data/data225.b3dm",[23,196,218,349],1.4],[5,"data/data226.b3dm",[-130,224,62,354],0.9],[5,"data/data227.b3dm",[54,99,211,224],0.8],[5,"data/data228.b3dm",[-87,77,89,224],0.9],[5,"data/data231.b3dm",[-237,474,-68,603],1.3],[5,"data/data232.b3dm",[-384,429,-234,602],0.6],[5,"data/data233.b3dm",[-257,340,-74,474],1],[5,"data/data234.b3dm",[-384,349,-235,474],0.1],[5,"data/data236.b3dm",[-692,349,-351,606],0.5],[5,"data/data237.b3dm",[-384,99,-32,349],3.9],[5,"data/data417.b3dm",[504,-151,805,99],0.2],[5,"data/data418.b3dm",[488,-467,805,-151],2.7],[5,"data/data421.b3dm",[211,-183,550,111],4.4],[5,"data/data422.b3dm",[-27,-26,211,118],2.2],[5,"data/data423.b3dm",[-87,-26,62,99],0],[5,"data/data424.b3dm",[57,-151,217,-19],1.1],[5,"data/data425.b3dm",[-87,-154,62,-9],1.4],[5,"data/data427.b3dm",[359,-301,508,-128],1.1],[5,"data/data428.b3dm",[198,-284,359,-151],0.8],[5,"data/data429.b3dm",[359,-405,508,-276],0.9],[5,"data/data430.b3dm",[181,-405,359,-263],0.9],[5,"data/data432.b3dm",[32,-294,211,-151],0.9],[5,"data/data433.b3dm",[-96,-306,62,-133],2.2],[5,"data/data434.b3dm",[62,-403,211,-276],0.9],[5,"data/data435.b3dm",[-106,-454,104,-244],1.7],[5,"data/data438.b3dm",[-681,-416,-65,99],3.7],[5,"data/data439.b3dm",[359,-572,509,-363],2.6],[5,"data/data440.b3dm",[211,-526,359,-401],0],[5,"data/data441.b3dm",[294,-783,508,-373],0.2],[5,"data/data442.b3dm",[176,-779,431,-334],1.9],[5,"data/data444.b3dm",[62,-526,212,-401],0.1],[5,"data/data445.b3dm",[-87,-526,62,-401],0.1],[5,"data/data446.b3dm",[58,-711,240,-398],0.8],[5,"data/data459.b3dm",[-384,-651,-70,-395],0.6],[7,"data/data80.b3dm",[468,90,673,439],4.6],[7,"data/data81.b3dm",[282,92,478,439],0.1],[7,"data/data82.b3dm",[470,-254,657,92],0.3],[7,"data/data90.b3dm",[470,-619,669,-254],1.8]],"nihonbashi":[[5,"data/data155.b3dm",[216,475,811,983],0],[5,"data/data165.b3dm",[-378,475,-81,725],0.1],[5,"data/data220.b3dm",[-531,600,-374,731],0.9],[5,"data/data221.b3dm",[-676,600,-527,728],0.4],[5,"data/data222.b3dm",[-554,416,-378,600],0.6],[5,"data/data223.b3dm",[-676,475,-519,607],1.2],[5,"data/data417.b3dm",[-382,225,-81,475],0.2],[5,"data/data418.b3dm",[-398,-91,-81,225],2.7],[5,"data/data421.b3dm",[-676,192,-336,487],4.4],[5,"data/data427.b3dm",[-527,75,-378,247],1.1],[5,"data/data428.b3dm",[-688,92,-527,225],0.8],[5,"data/data429.b3dm",[-527,-29,-378,100],0.9],[5,"data/data430.b3dm",[-705,-29,-527,113],0.9],[5,"data/data439.b3dm",[-527,-196,-377,13],2.6],[5,"data/data440.b3dm",[-676,-150,-527,-25],0],[5,"data/data441.b3dm",[-592,-407,-378,3],0.2],[5,"data/data442.b3dm",[-710,-403,-455,42],1.9],[5,"data/data449.b3dm",[-558,-418,-378,-191],0.1],[5,"data/data450.b3dm",[-676,-414,-527,-275],0.1],[5,"data/data451.b3dm",[-683,-525,-527,-400],1.2],[5,"data/data464.b3dm",[-684,-774,-378,-500],0.4],[7,"data/data30.b3dm",[320,463,523,827],2.2],[7,"data/data31.b3dm",[125,446,343,821],3.4],[7,"data/data32.b3dm",[325,117,531,478],2.8],[7,"data/data33.b3dm",[138,121,340,487],5.1],[7,"data/data55.b3dm",[321,-231,536,141],5.4],[7,"data/data56.b3dm",[135,-231,352,121],4.4],[7,"data/data57.b3dm",[325,-581,531,-208],7.2],[7,"data/data58.b3dm",[135,-578,340,-208],6],[7,"data/data75.b3dm",[-54,457,164,827],6.5],[7,"data/data76.b3dm",[-247,468,-25,823],5.3],[7,"data/data77.b3dm",[-97,121,152,486],7],[7,"data/data78.b3dm",[-282,117,-2,509],5.6],[7,"data/data80.b3dm",[-418,466,-213,815],4.6],[7,"data/data81.b3dm",[-604,468,-408,815],0.1],[7,"data/data82.b3dm",[-416,121,-229,468],0.3],[7,"data/data85.b3dm",[-92,-279,148,131],6.2],[7,"data/data86.b3dm",[-252,-243,-14,133],6.9],[7,"data/data87.b3dm",[-51,-581,155,-225],4.5],[7,"data/data88.b3dm",[-253,-578,-35,-211],5.8],[7,"data/data90.b3dm",[-416,-243,-217,121],1.8],[7,"data/data91.b3dm",[-444,-587,-218,-203],4.2],[7,"data/data92.b3dm",[-604,-582,-361,-225],2.8]],"ueno":[[8,"18/232850/39530_bldg_Building.glb",[-543,-151,-422,3],0.1],[8,"18/232851/39530_bldg_Building.glb",[-444,-142,-301,7],0.1],[8,"18/232851/39531_bldg_Building.glb",[-380,-305,-351,-219],0.1],[8,"18/232850/39533_bldg_Building.glb",[-570,-606,-426,-454],0.6],[8,"18/232851/39532_bldg_Building.glb",[-435,-432,-335,-303],0.4],[8,"18/232851/39533_bldg_Building.glb",[-441,-608,-299,-449],1],[8,"18/232850/39534_bldg_Building.glb",[-560,-758,-454,-724],0.1],[8,"18/232850/39535_bldg_Building.glb",[-581,-918,-455,-735],0.6],[8,"18/232851/39534_bldg_Building.glb",[-434,-777,-299,-595],1.1],[8,"18/232851/39535_bldg_Building.glb",[-436,-924,-299,-746],0.7],[8,"18/232852/39530_bldg_Building.glb",[-311,-149,-172,-81],0.1],[8,"18/232852/39531_bldg_Building.glb",[-316,-314,-191,-137],0.8],[8,"18/232853/39530_bldg_Building.glb",[-213,-198,-13,-31],0.1],[8,"18/232853/39531_bldg_Building.glb",[-191,-302,-21,-133],0.5],[8,"18/232854/39529_bldg_Building.glb",[-109,-92,161,151],0.3],[8,"18/232854/39530_bldg_Building.glb",[-122,-154,73,29],0.2],[8,"18/232854/39531_bldg_Building.glb",[-35,-314,68,-127],0.3],[8,"18/232852/39532_bldg_Building.glb",[-296,-458,-225,-301],0.8],[8,"18/232852/39533_bldg_Building.glb",[-323,-618,-206,-419],1.1],[8,"18/232853/39532_bldg_Building.glb",[-177,-458,-57,-271],0.8],[8,"18/232853/39533_bldg_Building.glb",[-168,-607,-66,-446],0.8],[8,"18/232852/39534_bldg_Building.glb",[-314,-842,-185,-602],0.7],[8,"18/232852/39535_bldg_Building.glb",[-324,-912,-184,-752],0.4],[8,"18/232853/39534_bldg_Building.glb",[-178,-772,-79,-599],0.5],[8,"18/232853/39535_bldg_Building.glb",[-192,-918,-91,-753],0.8],[8,"18/232854/39532_bldg_Building.glb",[-63,-456,69,-297],0.4],[8,"18/232854/39533_bldg_Building.glb",[-34,-606,65,-451],0.6],[8,"18/232854/39534_bldg_Building.glb",[-48,-770,60,-606],0.6],[8,"18/232854/39535_bldg_Building.glb",[-60,-922,72,-740],0.6],[9,"data/data36.b3dm",[-1054,-575,-412,-68],1.1],[9,"data/data44.b3dm",[-1043,-1090,-412,-557],6.7]]}};
-var UBLD = {"year":2025,"bases":["https://assets.cms.plateau.reearth.io/assets/4b/59935f-b488-4701-891d-adee4492ab2f/13102_chuo-ku_pref_2025_citygml_1_op_ubld_3dtiles_lod4/","https://assets.cms.plateau.reearth.io/assets/ea/284655-a1e2-46c1-bdb5-ee4a66af67a3/13113_shibuya-ku_pref_2025_citygml_1_op_ubld_3dtiles_lod4/","https://assets.cms.plateau.reearth.io/assets/e4/d33e66-911d-42e5-9507-8791bada2bd1/13106_taito-ku_city_2025_citygml_1_op_ubld_3dtiles_lod1/","https://assets.cms.plateau.reearth.io/assets/d0/b74723-d536-4f18-89fd-1770b143041f/13116_toshima-ku_pref_2025_citygml_1_op_ubld_3dtiles_lod4/","https://assets.cms.plateau.reearth.io/assets/7d/d6f2c5-80ca-4c58-ac34-a67de3786d04/13104_shinjuku-ku_pref_2025_citygml_1_op_ubld_3dtiles_lod4/"],"stations":{"tokyo":{"lod":"LOD4","tiles":[[0,"data/data0.b3dm"],[0,"data/data1.b3dm"],[0,"data/data2.b3dm"],[0,"data/data3.b3dm"],[0,"data/data4.b3dm"],[0,"data/data5.b3dm"],[0,"data/data6.b3dm"],[0,"data/data7.b3dm"],[0,"data/data8.b3dm"],[0,"data/data9.b3dm"],[0,"data/data15.b3dm"],[0,"data/data17.b3dm"],[0,"data/data19.b3dm"],[0,"data/data20.b3dm"],[0,"data/data21.b3dm"],[0,"data/data22.b3dm"],[0,"data/data24.b3dm"],[0,"data/data25.b3dm"],[0,"data/data27.b3dm"],[0,"data/data28.b3dm"],[0,"data/data29.b3dm"],[0,"data/data30.b3dm"],[0,"data/data32.b3dm"],[0,"data/data33.b3dm"]],"box":[139.76766,35.67848,139.77164,35.68275],"ground":40.36},"ginza":{"lod":"LOD4","tiles":[[0,"data/data0.b3dm"],[0,"data/data2.b3dm"],[0,"data/data3.b3dm"],[0,"data/data4.b3dm"],[0,"data/data5.b3dm"],[0,"data/data6.b3dm"],[0,"data/data7.b3dm"],[0,"data/data8.b3dm"],[0,"data/data9.b3dm"],[0,"data/data15.b3dm"],[0,"data/data17.b3dm"],[0,"data/data19.b3dm"],[0,"data/data20.b3dm"],[0,"data/data21.b3dm"],[0,"data/data22.b3dm"],[0,"data/data24.b3dm"],[0,"data/data25.b3dm"],[0,"data/data27.b3dm"],[0,"data/data28.b3dm"],[0,"data/data29.b3dm"],[0,"data/data30.b3dm"],[0,"data/data32.b3dm"],[0,"data/data33.b3dm"]],"box":[139.76766,35.67848,139.77164,35.68275],"ground":40.41},"otemachi":{"lod":"LOD4","tiles":[[0,"data/data0.b3dm"],[0,"data/data1.b3dm"],[0,"data/data2.b3dm"],[0,"data/data3.b3dm"],[0,"data/data4.b3dm"],[0,"data/data5.b3dm"],[0,"data/data6.b3dm"],[0,"data/data7.b3dm"],[0,"data/data8.b3dm"],[0,"data/data9.b3dm"],[0,"data/data15.b3dm"],[0,"data/data17.b3dm"],[0,"data/data19.b3dm"],[0,"data/data20.b3dm"],[0,"data/data21.b3dm"],[0,"data/data22.b3dm"],[0,"data/data24.b3dm"],[0,"data/data25.b3dm"],[0,"data/data27.b3dm"],[0,"data/data28.b3dm"],[0,"data/data29.b3dm"],[0,"data/data30.b3dm"],[0,"data/data32.b3dm"],[0,"data/data33.b3dm"]],"box":[139.76766,35.67848,139.77164,35.68275],"ground":40.01},"nihonbashi":{"lod":"LOD4","tiles":[[0,"data/data0.b3dm"],[0,"data/data1.b3dm"],[0,"data/data2.b3dm"],[0,"data/data3.b3dm"],[0,"data/data4.b3dm"],[0,"data/data5.b3dm"],[0,"data/data6.b3dm"],[0,"data/data7.b3dm"],[0,"data/data8.b3dm"],[0,"data/data9.b3dm"],[0,"data/data15.b3dm"],[0,"data/data17.b3dm"],[0,"data/data19.b3dm"],[0,"data/data20.b3dm"],[0,"data/data21.b3dm"],[0,"data/data22.b3dm"],[0,"data/data24.b3dm"],[0,"data/data25.b3dm"],[0,"data/data27.b3dm"],[0,"data/data28.b3dm"],[0,"data/data29.b3dm"],[0,"data/data30.b3dm"],[0,"data/data32.b3dm"],[0,"data/data33.b3dm"]],"box":[139.76766,35.67848,139.77164,35.68275],"ground":40.55},"shibuya":{"lod":"LOD4","tiles":[[1,"data/data0.b3dm"],[1,"data/data1.b3dm"],[1,"data/data3.b3dm"],[1,"data/data4.b3dm"],[1,"data/data7.b3dm"],[1,"data/data8.b3dm"],[1,"data/data9.b3dm"],[1,"data/data11.b3dm"],[1,"data/data12.b3dm"],[1,"data/data13.b3dm"],[1,"data/data14.b3dm"],[1,"data/data15.b3dm"],[1,"data/data18.b3dm"],[1,"data/data19.b3dm"],[1,"data/data22.b3dm"],[1,"data/data23.b3dm"],[1,"data/data24.b3dm"],[1,"data/data26.b3dm"],[1,"data/data27.b3dm"],[1,"data/data28.b3dm"],[1,"data/data29.b3dm"],[1,"data/data31.b3dm"],[1,"data/data32.b3dm"],[1,"data/data34.b3dm"],[1,"data/data35.b3dm"],[1,"data/data36.b3dm"],[1,"data/data37.b3dm"],[1,"data/data40.b3dm"],[1,"data/data41.b3dm"],[1,"data/data42.b3dm"],[1,"data/data43.b3dm"],[1,"data/data45.b3dm"],[1,"data/data46.b3dm"],[1,"data/data47.b3dm"],[1,"data/data48.b3dm"],[1,"data/data50.b3dm"],[1,"data/data51.b3dm"],[1,"data/data52.b3dm"],[1,"data/data53.b3dm"],[1,"data/data56.b3dm"],[1,"data/data57.b3dm"],[1,"data/data58.b3dm"],[1,"data/data59.b3dm"],[1,"data/data61.b3dm"],[1,"data/data62.b3dm"],[1,"data/data63.b3dm"],[1,"data/data64.b3dm"],[1,"data/data66.b3dm"],[1,"data/data67.b3dm"],[1,"data/data68.b3dm"],[1,"data/data70.b3dm"],[1,"data/data73.b3dm"],[1,"data/data74.b3dm"],[1,"data/data75.b3dm"],[1,"data/data77.b3dm"],[1,"data/data78.b3dm"],[1,"data/data81.b3dm"],[1,"data/data82.b3dm"],[1,"data/data83.b3dm"],[1,"data/data85.b3dm"],[1,"data/data86.b3dm"],[1,"data/data87.b3dm"],[1,"data/data89.b3dm"],[1,"data/data90.b3dm"],[1,"data/data91.b3dm"],[1,"data/data92.b3dm"],[1,"data/data94.b3dm"],[1,"data/data95.b3dm"],[1,"data/data96.b3dm"],[1,"data/data99.b3dm"],[1,"data/data100.b3dm"],[1,"data/data101.b3dm"],[1,"data/data102.b3dm"],[1,"data/data104.b3dm"],[1,"data/data105.b3dm"],[1,"data/data107.b3dm"],[1,"data/data108.b3dm"],[1,"data/data109.b3dm"],[1,"data/data110.b3dm"],[1,"data/data113.b3dm"],[1,"data/data114.b3dm"],[1,"data/data116.b3dm"],[1,"data/data117.b3dm"]],"box":[139.69851,35.65835,139.70305,35.66133],"ground":51.77},"ueno":{"lod":"LOD1","tiles":[[2,"18/232852/39531_uro_UndergroundBuilding.glb"],[2,"18/232853/39531_uro_UndergroundBuilding.glb"],[2,"18/232852/39532_uro_UndergroundBuilding.glb"],[2,"18/232852/39533_uro_UndergroundBuilding.glb"],[2,"18/232852/39534_uro_UndergroundBuilding.glb"],[2,"18/232854/39534_uro_UndergroundBuilding.glb"]],"box":[139.77248,35.70726,139.77689,35.71243],"ground":48.27},"ikebukuro":{"lod":"LOD4","tiles":[[3,"data/data0.b3dm"],[3,"data/data1.b3dm"],[3,"data/data2.b3dm"],[3,"data/data5.b3dm"],[3,"data/data6.b3dm"],[3,"data/data7.b3dm"],[3,"data/data8.b3dm"],[3,"data/data9.b3dm"],[3,"data/data10.b3dm"],[3,"data/data12.b3dm"],[3,"data/data14.b3dm"],[3,"data/data18.b3dm"],[3,"data/data21.b3dm"],[3,"data/data24.b3dm"],[3,"data/data25.b3dm"]],"box":[139.70939,35.72805,139.71337,35.73137],"ground":69.91},"shinjuku":{"lod":"LOD4","tiles":[[4,"data/data0.b3dm"],[4,"data/data1.b3dm"],[4,"data/data3.b3dm"],[4,"data/data4.b3dm"],[4,"data/data5.b3dm"],[4,"data/data6.b3dm"],[4,"data/data8.b3dm"],[4,"data/data9.b3dm"],[4,"data/data10.b3dm"],[4,"data/data11.b3dm"],[4,"data/data14.b3dm"],[4,"data/data15.b3dm"],[4,"data/data16.b3dm"],[4,"data/data18.b3dm"],[4,"data/data19.b3dm"],[4,"data/data20.b3dm"],[4,"data/data21.b3dm"],[4,"data/data23.b3dm"],[4,"data/data24.b3dm"],[4,"data/data26.b3dm"],[4,"data/data29.b3dm"],[4,"data/data30.b3dm"],[4,"data/data32.b3dm"],[4,"data/data33.b3dm"],[4,"data/data34.b3dm"],[4,"data/data35.b3dm"],[4,"data/data37.b3dm"],[4,"data/data40.b3dm"],[4,"data/data41.b3dm"],[4,"data/data42.b3dm"],[4,"data/data43.b3dm"],[4,"data/data46.b3dm"],[4,"data/data47.b3dm"],[4,"data/data48.b3dm"],[4,"data/data49.b3dm"],[4,"data/data51.b3dm"],[4,"data/data52.b3dm"],[4,"data/data54.b3dm"],[4,"data/data55.b3dm"],[4,"data/data56.b3dm"],[4,"data/data57.b3dm"],[4,"data/data59.b3dm"],[4,"data/data60.b3dm"],[4,"data/data61.b3dm"],[4,"data/data62.b3dm"],[4,"data/data66.b3dm"],[4,"data/data67.b3dm"],[4,"data/data69.b3dm"],[4,"data/data70.b3dm"],[4,"data/data73.b3dm"],[4,"data/data74.b3dm"],[4,"data/data75.b3dm"],[4,"data/data77.b3dm"],[4,"data/data78.b3dm"],[4,"data/data79.b3dm"],[4,"data/data81.b3dm"],[4,"data/data82.b3dm"],[4,"data/data83.b3dm"],[4,"data/data85.b3dm"],[4,"data/data86.b3dm"],[4,"data/data87.b3dm"],[4,"data/data88.b3dm"],[4,"data/data91.b3dm"],[4,"data/data92.b3dm"],[4,"data/data94.b3dm"],[4,"data/data95.b3dm"],[4,"data/data96.b3dm"],[4,"data/data97.b3dm"],[4,"data/data99.b3dm"],[4,"data/data101.b3dm"],[4,"data/data102.b3dm"],[4,"data/data103.b3dm"],[4,"data/data104.b3dm"],[4,"data/data108.b3dm"],[4,"data/data110.b3dm"],[4,"data/data112.b3dm"],[4,"data/data113.b3dm"],[4,"data/data115.b3dm"],[4,"data/data116.b3dm"],[4,"data/data117.b3dm"],[4,"data/data118.b3dm"],[4,"data/data121.b3dm"],[4,"data/data122.b3dm"],[4,"data/data124.b3dm"],[4,"data/data125.b3dm"],[4,"data/data127.b3dm"],[4,"data/data128.b3dm"],[4,"data/data129.b3dm"],[4,"data/data130.b3dm"],[4,"data/data132.b3dm"],[4,"data/data133.b3dm"],[4,"data/data134.b3dm"],[4,"data/data135.b3dm"],[4,"data/data138.b3dm"],[4,"data/data139.b3dm"],[4,"data/data140.b3dm"],[4,"data/data142.b3dm"],[4,"data/data143.b3dm"],[4,"data/data144.b3dm"],[4,"data/data146.b3dm"],[4,"data/data148.b3dm"],[4,"data/data149.b3dm"],[4,"data/data152.b3dm"],[4,"data/data154.b3dm"],[4,"data/data155.b3dm"]],"box":[139.69803,35.6907,139.70362,35.69501],"ground":74.57}}};
+var TILES = {"year":2025,"bases":["https://assets.cms.plateau.reearth.io/assets/75/76c6bc-df54-4bf4-a869-b513526b5bd2/13106_taito-ku_city_2025_citygml_1_op_bldg_3dtiles_lod2/","https://assets.cms.plateau.reearth.io/assets/28/07d0a1-b6be-46ef-bd87-4f0683b5ef6e/13101_chiyoda-ku_pref_2025_citygml_1_op_bldg_3dtiles_13101_chiyoda-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/a6/85dfbe-994a-4da4-90fc-ec7f4661d469/13116_toshima-ku_pref_2025_citygml_1_op_bldg_3dtiles_13116_toshima-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/00/bed0bd-f882-4cde-b942-21d0f8d2ddc2/13104_shinjuku-ku_pref_2025_citygml_1_op_bldg_3dtiles_13104_shinjuku-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/80/e01efb-831d-4752-a10e-63b407ee2201/13108_koto-ku_pref_2025_citygml_1_op_bldg_3dtiles_13108_koto-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/fc/e0156d-7dbe-45a0-a379-0d62ae2348d8/13117_kita-ku_pref_2025_citygml_1_op_bldg_3dtiles_13117_kita-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/66/f1f857-965f-4850-827e-4d7aae84d879/13110_meguro-ku_pref_2025_citygml_1_op_bldg_3dtiles_13110_meguro-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/09/83a3f6-6605-477c-84dc-a973008b5a27/13102_chuo-ku_pref_2025_citygml_1_op_bldg_3dtiles_13102_chuo-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/16/b016d3-42ef-4428-ad99-d229310b39fd/13113_shibuya-ku_pref_2025_citygml_1_op_bldg_3dtiles_13113_shibuya-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/b5/b5f79e-0c6c-4fc7-adde-6522014243a2/13103_minato-ku_pref_2025_citygml_1_op_bldg_3dtiles_13103_minato-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/c6/c5c89a-859d-4dce-8e25-04e02a39b270/13105_bunkyo-ku_pref_2025_citygml_1_op_bldg_3dtiles_13105_bunkyo-ku_lod2/"],"stations":{"ueno":[[0,"18/232850/39530_bldg_Building.glb",[-543,-151,-422,3],0.1],[0,"18/232851/39530_bldg_Building.glb",[-444,-142,-301,7],0.1],[0,"18/232851/39531_bldg_Building.glb",[-380,-305,-351,-219],0.1],[0,"18/232850/39533_bldg_Building.glb",[-570,-606,-426,-454],0.6],[0,"18/232851/39532_bldg_Building.glb",[-435,-432,-335,-303],0.4],[0,"18/232851/39533_bldg_Building.glb",[-441,-608,-299,-449],1],[0,"18/232850/39534_bldg_Building.glb",[-560,-758,-454,-724],0.1],[0,"18/232850/39535_bldg_Building.glb",[-581,-918,-455,-735],0.6],[0,"18/232851/39534_bldg_Building.glb",[-434,-777,-299,-595],1.1],[0,"18/232851/39535_bldg_Building.glb",[-436,-924,-299,-746],0.7],[0,"18/232852/39530_bldg_Building.glb",[-311,-149,-172,-81],0.1],[0,"18/232852/39531_bldg_Building.glb",[-316,-314,-191,-137],0.8],[0,"18/232853/39530_bldg_Building.glb",[-213,-198,-13,-31],0.1],[0,"18/232853/39531_bldg_Building.glb",[-191,-302,-21,-133],0.5],[0,"18/232854/39529_bldg_Building.glb",[-109,-92,161,151],0.3],[0,"18/232854/39530_bldg_Building.glb",[-122,-154,73,29],0.2],[0,"18/232854/39531_bldg_Building.glb",[-35,-314,68,-127],0.3],[0,"18/232852/39532_bldg_Building.glb",[-296,-458,-225,-301],0.8],[0,"18/232852/39533_bldg_Building.glb",[-323,-618,-206,-419],1.1],[0,"18/232853/39532_bldg_Building.glb",[-177,-458,-57,-271],0.8],[0,"18/232853/39533_bldg_Building.glb",[-168,-607,-66,-446],0.8],[0,"18/232852/39534_bldg_Building.glb",[-314,-842,-185,-602],0.7],[0,"18/232852/39535_bldg_Building.glb",[-324,-912,-184,-752],0.4],[0,"18/232853/39534_bldg_Building.glb",[-178,-772,-79,-599],0.5],[0,"18/232853/39535_bldg_Building.glb",[-192,-918,-91,-753],0.8],[0,"18/232854/39532_bldg_Building.glb",[-63,-456,69,-297],0.4],[0,"18/232854/39533_bldg_Building.glb",[-34,-606,65,-451],0.6],[0,"18/232854/39534_bldg_Building.glb",[-48,-770,60,-606],0.6],[0,"18/232854/39535_bldg_Building.glb",[-60,-922,72,-740],0.6],[10,"data/data36.b3dm",[-1054,-575,-412,-68],1.1],[10,"data/data44.b3dm",[-1043,-1090,-412,-557],6.7]],"tokyo":[[1,"data/data418.b3dm",[208,86,525,402],2.7],[1,"data/data429.b3dm",[79,148,228,277],0.9],[1,"data/data430.b3dm",[-99,147,79,290],0.9],[1,"data/data439.b3dm",[79,-19,228,190],2.6],[1,"data/data440.b3dm",[-70,27,79,152],0],[1,"data/data441.b3dm",[14,-230,228,180],0.2],[1,"data/data442.b3dm",[-104,-226,151,218],1.9],[1,"data/data449.b3dm",[48,-241,228,-14],0.1],[1,"data/data450.b3dm",[-70,-237,79,-98],0.1],[1,"data/data451.b3dm",[-77,-348,79,-223],1.2],[1,"data/data464.b3dm",[-78,-598,228,-323],0.4],[7,"data/data86.b3dm",[354,-66,592,309],6.9],[7,"data/data88.b3dm",[353,-401,571,-34],5.8],[7,"data/data90.b3dm",[189,-66,389,298],1.8],[7,"data/data91.b3dm",[162,-410,388,-27],4.2],[7,"data/data92.b3dm",[2,-405,245,-48],2.8]],"ginza":[[1,"data/data464.b3dm",[202,397,508,671],0.4],[1,"data/data465.b3dm",[62,522,211,647],0.2],[1,"data/data466.b3dm",[-87,518,62,647],0],[1,"data/data467.b3dm",[58,353,211,545],0.6],[1,"data/data468.b3dm",[-101,392,92,619],1.6],[1,"data/data470.b3dm",[62,272,211,397],0],[1,"data/data471.b3dm",[-143,243,86,400],1],[1,"data/data472.b3dm",[-90,131,64,282],0.7],[1,"data/data475.b3dm",[-384,358,-68,675],3.3],[1,"data/data476.b3dm",[-533,520,-384,647],0.1],[1,"data/data477.b3dm",[-681,517,-527,647],0],[1,"data/data478.b3dm",[-533,397,-384,530],0],[1,"data/data479.b3dm",[-681,392,-533,522],0],[1,"data/data481.b3dm",[-247,210,-31,420],1.7],[1,"data/data482.b3dm",[-384,272,-235,397],0.6],[1,"data/data483.b3dm",[-253,117,-64,285],1],[1,"data/data484.b3dm",[-384,143,-221,300],1.3],[1,"data/data486.b3dm",[-533,272,-384,397],0],[1,"data/data487.b3dm",[-691,272,-531,397],0.1],[1,"data/data488.b3dm",[-533,100,-363,275],1.7],[1,"data/data489.b3dm",[-681,147,-533,272],0.1],[1,"data/data492.b3dm",[-87,-352,508,158],0.1],[1,"data/data493.b3dm",[-256,22,-87,147],0.6],[1,"data/data494.b3dm",[-415,12,-235,157],2],[1,"data/data495.b3dm",[-384,-102,-235,22],0],[1,"data/data497.b3dm",[-549,22,-384,147],0.8],[1,"data/data498.b3dm",[-681,7,-533,147],0.1],[1,"data/data499.b3dm",[-587,-118,-377,71],1.9],[1,"data/data500.b3dm",[-681,-151,-526,22],0.5],[1,"data/data502.b3dm",[-548,-271,-384,-87],1.3],[1,"data/data503.b3dm",[-681,-232,-518,-102],0.4],[1,"data/data504.b3dm",[-534,-352,-384,-227],0],[1,"data/data505.b3dm",[-703,-352,-519,-217],0.8],[7,"data/data91.b3dm",[442,585,669,968],4.2],[7,"data/data92.b3dm",[282,589,525,947],2.8],[7,"data/data99.b3dm",[452,239,676,615],5.1],[7,"data/data100.b3dm",[272,239,481,609],4],[7,"data/data101.b3dm",[444,-97,673,259],6.3],[7,"data/data102.b3dm",[270,-106,479,262],6.2],[7,"data/data105.b3dm",[88,248,292,600],1.9],[7,"data/data106.b3dm",[73,-93,297,262],5.7],[7,"data/data107.b3dm",[-97,-107,113,253],4.1],[7,"data/data109.b3dm",[-286,-109,-77,253],2.9],[7,"data/data110.b3dm",[-467,-100,-249,253],0.7],[7,"data/data177.b3dm",[457,-471,675,-75],4.9],[7,"data/data178.b3dm",[272,-443,485,-91],6.1],[7,"data/data179.b3dm",[464,-796,709,-430],7.6],[7,"data/data180.b3dm",[261,-803,496,-426],6.9],[7,"data/data193.b3dm",[89,-440,291,-54],5.4],[7,"data/data194.b3dm",[-111,-445,115,-84],10.8],[7,"data/data195.b3dm",[86,-790,303,-413],7.2],[7,"data/data196.b3dm",[-109,-824,120,-430],9],[7,"data/data198.b3dm",[-294,-456,-75,-85],7.3],[7,"data/data199.b3dm",[-467,-442,-258,-90],5.9],[7,"data/data200.b3dm",[-290,-786,-84,-432],2.6],[7,"data/data201.b3dm",[-467,-786,-275,-420],0.8],[9,"data/data0.b3dm",[-204,-623,4,-403],0],[9,"data/data1.b3dm",[-418,-636,-195,-403],1.4],[9,"data/data3.b3dm",[-641,-415,-412,-183],0.4],[9,"data/data5.b3dm",[-626,-623,-407,-403],1.8]],"otemachi":[[1,"data/data152.b3dm",[501,515,694,777],2.1],[1,"data/data161.b3dm",[499,466,667,672],1.9],[1,"data/data163.b3dm",[500,349,663,480],1.6],[1,"data/data165.b3dm",[508,99,805,349],0.1],[1,"data/data207.b3dm",[-696,582,-488,726],0.2],[1,"data/data210.b3dm",[355,474,510,601],2.6],[1,"data/data211.b3dm",[203,464,366,605],3.5],[1,"data/data212.b3dm",[355,342,513,475],3.2],[1,"data/data213.b3dm",[204,341,361,484],1.8],[1,"data/data215.b3dm",[62,470,216,604],2.2],[1,"data/data216.b3dm",[-95,462,62,609],1.7],[1,"data/data217.b3dm",[58,344,218,483],1.8],[1,"data/data218.b3dm",[-87,349,63,474],0.1],[1,"data/data220.b3dm",[355,224,512,355],0.9],[1,"data/data221.b3dm",[211,224,359,353],0.4],[1,"data/data222.b3dm",[332,40,508,224],0.6],[1,"data/data223.b3dm",[211,99,367,231],1.2],[1,"data/data225.b3dm",[23,196,218,349],1.4],[1,"data/data226.b3dm",[-130,224,62,354],0.9],[1,"data/data227.b3dm",[54,99,211,224],0.8],[1,"data/data228.b3dm",[-87,77,89,224],0.9],[1,"data/data231.b3dm",[-237,474,-68,603],1.3],[1,"data/data232.b3dm",[-384,429,-234,602],0.6],[1,"data/data233.b3dm",[-257,340,-74,474],1],[1,"data/data234.b3dm",[-384,349,-235,474],0.1],[1,"data/data236.b3dm",[-692,349,-351,606],0.5],[1,"data/data237.b3dm",[-384,99,-32,349],3.9],[1,"data/data417.b3dm",[504,-151,805,99],0.2],[1,"data/data418.b3dm",[488,-467,805,-151],2.7],[1,"data/data421.b3dm",[211,-183,550,111],4.4],[1,"data/data422.b3dm",[-27,-26,211,118],2.2],[1,"data/data423.b3dm",[-87,-26,62,99],0],[1,"data/data424.b3dm",[57,-151,217,-19],1.1],[1,"data/data425.b3dm",[-87,-154,62,-9],1.4],[1,"data/data427.b3dm",[359,-301,508,-128],1.1],[1,"data/data428.b3dm",[198,-284,359,-151],0.8],[1,"data/data429.b3dm",[359,-405,508,-276],0.9],[1,"data/data430.b3dm",[181,-405,359,-263],0.9],[1,"data/data432.b3dm",[32,-294,211,-151],0.9],[1,"data/data433.b3dm",[-96,-306,62,-133],2.2],[1,"data/data434.b3dm",[62,-403,211,-276],0.9],[1,"data/data435.b3dm",[-106,-454,104,-244],1.7],[1,"data/data438.b3dm",[-681,-416,-65,99],3.7],[1,"data/data439.b3dm",[359,-572,509,-363],2.6],[1,"data/data440.b3dm",[211,-526,359,-401],0],[1,"data/data441.b3dm",[294,-783,508,-373],0.2],[1,"data/data442.b3dm",[176,-779,431,-334],1.9],[1,"data/data444.b3dm",[62,-526,212,-401],0.1],[1,"data/data445.b3dm",[-87,-526,62,-401],0.1],[1,"data/data446.b3dm",[58,-711,240,-398],0.8],[1,"data/data459.b3dm",[-384,-651,-70,-395],0.6],[7,"data/data80.b3dm",[468,90,673,439],4.6],[7,"data/data81.b3dm",[282,92,478,439],0.1],[7,"data/data82.b3dm",[470,-254,657,92],0.3],[7,"data/data90.b3dm",[470,-619,669,-254],1.8]],"nihonbashi":[[1,"data/data155.b3dm",[216,475,811,983],0],[1,"data/data165.b3dm",[-378,475,-81,725],0.1],[1,"data/data220.b3dm",[-531,600,-374,731],0.9],[1,"data/data221.b3dm",[-676,600,-527,728],0.4],[1,"data/data222.b3dm",[-554,416,-378,600],0.6],[1,"data/data223.b3dm",[-676,475,-519,607],1.2],[1,"data/data417.b3dm",[-382,225,-81,475],0.2],[1,"data/data418.b3dm",[-398,-91,-81,225],2.7],[1,"data/data421.b3dm",[-676,192,-336,487],4.4],[1,"data/data427.b3dm",[-527,75,-378,247],1.1],[1,"data/data428.b3dm",[-688,92,-527,225],0.8],[1,"data/data429.b3dm",[-527,-29,-378,100],0.9],[1,"data/data430.b3dm",[-705,-29,-527,113],0.9],[1,"data/data439.b3dm",[-527,-196,-377,13],2.6],[1,"data/data440.b3dm",[-676,-150,-527,-25],0],[1,"data/data441.b3dm",[-592,-407,-378,3],0.2],[1,"data/data442.b3dm",[-710,-403,-455,42],1.9],[1,"data/data449.b3dm",[-558,-418,-378,-191],0.1],[1,"data/data450.b3dm",[-676,-414,-527,-275],0.1],[1,"data/data451.b3dm",[-683,-525,-527,-400],1.2],[1,"data/data464.b3dm",[-684,-774,-378,-500],0.4],[7,"data/data30.b3dm",[320,463,523,827],2.2],[7,"data/data31.b3dm",[125,446,343,821],3.4],[7,"data/data32.b3dm",[325,117,531,478],2.8],[7,"data/data33.b3dm",[138,121,340,487],5.1],[7,"data/data55.b3dm",[321,-231,536,141],5.4],[7,"data/data56.b3dm",[135,-231,352,121],4.4],[7,"data/data57.b3dm",[325,-581,531,-208],7.2],[7,"data/data58.b3dm",[135,-578,340,-208],6],[7,"data/data75.b3dm",[-54,457,164,827],6.5],[7,"data/data76.b3dm",[-247,468,-25,823],5.3],[7,"data/data77.b3dm",[-97,121,152,486],7],[7,"data/data78.b3dm",[-282,117,-2,509],5.6],[7,"data/data80.b3dm",[-418,466,-213,815],4.6],[7,"data/data81.b3dm",[-604,468,-408,815],0.1],[7,"data/data82.b3dm",[-416,121,-229,468],0.3],[7,"data/data85.b3dm",[-92,-279,148,131],6.2],[7,"data/data86.b3dm",[-252,-243,-14,133],6.9],[7,"data/data87.b3dm",[-51,-581,155,-225],4.5],[7,"data/data88.b3dm",[-253,-578,-35,-211],5.8],[7,"data/data90.b3dm",[-416,-243,-217,121],1.8],[7,"data/data91.b3dm",[-444,-587,-218,-203],4.2],[7,"data/data92.b3dm",[-604,-582,-361,-225],2.8]],"ikebukuro":[[2,"data/data236.b3dm",[802,304,1029,433],1],[2,"data/data238.b3dm",[792,187,1025,320],1],[2,"data/data240.b3dm",[591,299,816,436],1.3],[2,"data/data241.b3dm",[382,291,604,428],2.3],[2,"data/data242.b3dm",[596,188,814,319],1.8],[2,"data/data243.b3dm",[384,187,596,318],1.4],[2,"data/data246.b3dm",[802,65,1025,214],1.7],[2,"data/data248.b3dm",[773,-42,1035,112],1.1],[2,"data/data250.b3dm",[596,80,821,226],1.2],[2,"data/data251.b3dm",[377,78,596,209],1.8],[2,"data/data252.b3dm",[596,-35,808,87],0.1],[2,"data/data253.b3dm",[381,-45,605,103],3.1],[2,"data/data397.b3dm",[169,300,385,429],2],[2,"data/data398.b3dm",[-44,304,173,437],1.4],[2,"data/data399.b3dm",[154,192,387,319],3],[2,"data/data400.b3dm",[-47,193,181,315],1.6],[2,"data/data402.b3dm",[-251,292,-36,433],2.5],[2,"data/data403.b3dm",[-469,305,-237,437],3],[2,"data/data404.b3dm",[-251,191,-39,315],2.2],[2,"data/data405.b3dm",[-472,195,-247,322],3.6],[2,"data/data407.b3dm",[169,68,389,197],2.3],[2,"data/data408.b3dm",[-39,81,173,210],0.4],[2,"data/data409.b3dm",[167,-42,395,98],3],[2,"data/data410.b3dm",[-54,-137,182,184],1.5],[2,"data/data412.b3dm",[-251,81,-39,204],1.7],[2,"data/data413.b3dm",[-463,76,-251,212],3.2],[2,"data/data414.b3dm",[-251,-124,19,191],2.8],[2,"data/data415.b3dm",[-469,-48,-216,98],1.5],[2,"data/data557.b3dm",[808,-200,1023,16],1.5],[2,"data/data559.b3dm",[808,-272,1019,-151],0.5],[2,"data/data561.b3dm",[593,-159,887,57],3.9],[2,"data/data562.b3dm",[384,-181,618,-34],1.5],[2,"data/data563.b3dm",[574,-277,836,-140],2.2],[2,"data/data564.b3dm",[381,-279,596,-148],1.4],[2,"data/data567.b3dm",[807,-387,1025,-262],2.1],[2,"data/data571.b3dm",[596,-384,809,-254],0.9],[2,"data/data572.b3dm",[362,-423,601,-243],2.4],[2,"data/data632.b3dm",[169,-158,397,-16],3],[2,"data/data633.b3dm",[-70,-272,185,193],5.2],[2,"data/data634.b3dm",[162,-272,384,-139],1.9],[2,"data/data635.b3dm",[-40,-287,182,-142],1.2],[2,"data/data637.b3dm",[-251,-162,-29,-34],0.8],[2,"data/data638.b3dm",[-464,-168,-223,-24],1.5],[2,"data/data639.b3dm",[-259,-273,-36,-130],1.6],[2,"data/data640.b3dm",[-469,-272,-248,-151],1.2],[2,"data/data642.b3dm",[166,-390,391,-259],1.7],[2,"data/data643.b3dm",[-71,-392,189,-256],2.6],[2,"data/data647.b3dm",[-258,-393,-34,-260],0.8],[2,"data/data648.b3dm",[-465,-383,-251,-261],0.7],[2,"data/data649.b3dm",[-253,-505,-39,-354],1.4],[3,"data/data126.b3dm",[-588,-751,-184,-363],0],[5,"data/data174.b3dm",[815,248,1732,1132],0],[10,"data/data22.b3dm",[578,-303,1824,705],0.1],[10,"data/data29.b3dm",[578,-802,1204,-298],1]],"shinjuku":[[3,"data/data586.b3dm",[169,504,384,709],5.2],[3,"data/data587.b3dm",[-35,447,189,711],4],[3,"data/data602.b3dm",[-244,503,-29,706],3.4],[3,"data/data603.b3dm",[-449,503,-207,712],5],[3,"data/data612.b3dm",[343,298,579,518],3.9],[3,"data/data614.b3dm",[322,117,578,330],5],[3,"data/data616.b3dm",[165,304,380,515],5.5],[3,"data/data617.b3dm",[-29,308,179,514],4.3],[3,"data/data618.b3dm",[158,108,373,323],3.3],[3,"data/data619.b3dm",[-29,79,183,326],3.2],[3,"data/data626.b3dm",[169,-85,383,132],5.3],[3,"data/data627.b3dm",[-35,-84,179,197],2.2],[3,"data/data631.b3dm",[-235,300,-29,520],3.9],[3,"data/data632.b3dm",[-440,312,-219,513],1.5],[3,"data/data633.b3dm",[-251,121,-29,318],1.3],[3,"data/data634.b3dm",[-432,121,-214,333],2.1],[3,"data/data641.b3dm",[-254,-121,-21,261],3],[3,"data/data642.b3dm",[-446,-73,-227,121],3.2],[8,"data/data9.b3dm",[7,-118,360,233],0]],"shibuya":[[8,"data/data470.b3dm",[65,368,254,562],2],[8,"data/data471.b3dm",[-121,369,66,559],1.6],[8,"data/data472.b3dm",[66,189,271,398],2.6],[8,"data/data473.b3dm",[-127,191,66,506],2.4],[8,"data/data486.b3dm",[-303,346,-110,558],3.5],[8,"data/data487.b3dm",[-465,367,-284,559],1.8],[8,"data/data488.b3dm",[-296,188,-83,380],4.2],[8,"data/data489.b3dm",[-477,189,-278,385],4.6],[8,"data/data502.b3dm",[66,18,252,232],2.5],[8,"data/data503.b3dm",[-110,19,122,210],1.3],[8,"data/data504.b3dm",[61,-187,250,35],2.9],[8,"data/data505.b3dm",[-111,-169,106,35],2.3],[8,"data/data518.b3dm",[-292,14,-85,218],5],[8,"data/data519.b3dm",[-470,10,-275,207],4.5],[8,"data/data520.b3dm",[-396,-156,-93,49],4.2],[8,"data/data521.b3dm",[-474,-162,-277,39],3]]}};
+var UBLD = {"year":2025,"bases":["https://assets.cms.plateau.reearth.io/assets/4b/59935f-b488-4701-891d-adee4492ab2f/13102_chuo-ku_pref_2025_citygml_1_op_ubld_3dtiles_lod4/","https://assets.cms.plateau.reearth.io/assets/7d/d6f2c5-80ca-4c58-ac34-a67de3786d04/13104_shinjuku-ku_pref_2025_citygml_1_op_ubld_3dtiles_lod4/","https://assets.cms.plateau.reearth.io/assets/d0/b74723-d536-4f18-89fd-1770b143041f/13116_toshima-ku_pref_2025_citygml_1_op_ubld_3dtiles_lod4/","https://assets.cms.plateau.reearth.io/assets/ea/284655-a1e2-46c1-bdb5-ee4a66af67a3/13113_shibuya-ku_pref_2025_citygml_1_op_ubld_3dtiles_lod4/","https://assets.cms.plateau.reearth.io/assets/e4/d33e66-911d-42e5-9507-8791bada2bd1/13106_taito-ku_city_2025_citygml_1_op_ubld_3dtiles_lod1/"],"stations":{"tokyo":{"lod":"LOD4","tiles":[[0,"data/data0.b3dm"],[0,"data/data1.b3dm"],[0,"data/data2.b3dm"],[0,"data/data3.b3dm"],[0,"data/data4.b3dm"],[0,"data/data5.b3dm"],[0,"data/data6.b3dm"],[0,"data/data7.b3dm"],[0,"data/data8.b3dm"],[0,"data/data9.b3dm"],[0,"data/data15.b3dm"],[0,"data/data17.b3dm"],[0,"data/data19.b3dm"],[0,"data/data20.b3dm"],[0,"data/data21.b3dm"],[0,"data/data22.b3dm"],[0,"data/data24.b3dm"],[0,"data/data25.b3dm"],[0,"data/data27.b3dm"],[0,"data/data28.b3dm"],[0,"data/data29.b3dm"],[0,"data/data30.b3dm"],[0,"data/data32.b3dm"],[0,"data/data33.b3dm"]],"box":[139.76766,35.67848,139.77164,35.68275],"ground":40.36},"ginza":{"lod":"LOD4","tiles":[[0,"data/data0.b3dm"],[0,"data/data2.b3dm"],[0,"data/data3.b3dm"],[0,"data/data4.b3dm"],[0,"data/data5.b3dm"],[0,"data/data6.b3dm"],[0,"data/data7.b3dm"],[0,"data/data8.b3dm"],[0,"data/data9.b3dm"],[0,"data/data15.b3dm"],[0,"data/data17.b3dm"],[0,"data/data19.b3dm"],[0,"data/data20.b3dm"],[0,"data/data21.b3dm"],[0,"data/data22.b3dm"],[0,"data/data24.b3dm"],[0,"data/data25.b3dm"],[0,"data/data27.b3dm"],[0,"data/data28.b3dm"],[0,"data/data29.b3dm"],[0,"data/data30.b3dm"],[0,"data/data32.b3dm"],[0,"data/data33.b3dm"]],"box":[139.76766,35.67848,139.77164,35.68275],"ground":40.41},"otemachi":{"lod":"LOD4","tiles":[[0,"data/data0.b3dm"],[0,"data/data1.b3dm"],[0,"data/data2.b3dm"],[0,"data/data3.b3dm"],[0,"data/data4.b3dm"],[0,"data/data5.b3dm"],[0,"data/data6.b3dm"],[0,"data/data7.b3dm"],[0,"data/data8.b3dm"],[0,"data/data9.b3dm"],[0,"data/data15.b3dm"],[0,"data/data17.b3dm"],[0,"data/data19.b3dm"],[0,"data/data20.b3dm"],[0,"data/data21.b3dm"],[0,"data/data22.b3dm"],[0,"data/data24.b3dm"],[0,"data/data25.b3dm"],[0,"data/data27.b3dm"],[0,"data/data28.b3dm"],[0,"data/data29.b3dm"],[0,"data/data30.b3dm"],[0,"data/data32.b3dm"],[0,"data/data33.b3dm"]],"box":[139.76766,35.67848,139.77164,35.68275],"ground":40.01},"nihonbashi":{"lod":"LOD4","tiles":[[0,"data/data0.b3dm"],[0,"data/data1.b3dm"],[0,"data/data2.b3dm"],[0,"data/data3.b3dm"],[0,"data/data4.b3dm"],[0,"data/data5.b3dm"],[0,"data/data6.b3dm"],[0,"data/data7.b3dm"],[0,"data/data8.b3dm"],[0,"data/data9.b3dm"],[0,"data/data15.b3dm"],[0,"data/data17.b3dm"],[0,"data/data19.b3dm"],[0,"data/data20.b3dm"],[0,"data/data21.b3dm"],[0,"data/data22.b3dm"],[0,"data/data24.b3dm"],[0,"data/data25.b3dm"],[0,"data/data27.b3dm"],[0,"data/data28.b3dm"],[0,"data/data29.b3dm"],[0,"data/data30.b3dm"],[0,"data/data32.b3dm"],[0,"data/data33.b3dm"]],"box":[139.76766,35.67848,139.77164,35.68275],"ground":40.55},"shinjuku":{"lod":"LOD4","tiles":[[1,"data/data0.b3dm"],[1,"data/data1.b3dm"],[1,"data/data3.b3dm"],[1,"data/data4.b3dm"],[1,"data/data5.b3dm"],[1,"data/data6.b3dm"],[1,"data/data8.b3dm"],[1,"data/data9.b3dm"],[1,"data/data10.b3dm"],[1,"data/data11.b3dm"],[1,"data/data14.b3dm"],[1,"data/data15.b3dm"],[1,"data/data16.b3dm"],[1,"data/data18.b3dm"],[1,"data/data19.b3dm"],[1,"data/data20.b3dm"],[1,"data/data21.b3dm"],[1,"data/data23.b3dm"],[1,"data/data24.b3dm"],[1,"data/data26.b3dm"],[1,"data/data29.b3dm"],[1,"data/data30.b3dm"],[1,"data/data32.b3dm"],[1,"data/data33.b3dm"],[1,"data/data34.b3dm"],[1,"data/data35.b3dm"],[1,"data/data37.b3dm"],[1,"data/data40.b3dm"],[1,"data/data41.b3dm"],[1,"data/data42.b3dm"],[1,"data/data43.b3dm"],[1,"data/data46.b3dm"],[1,"data/data47.b3dm"],[1,"data/data48.b3dm"],[1,"data/data49.b3dm"],[1,"data/data51.b3dm"],[1,"data/data52.b3dm"],[1,"data/data54.b3dm"],[1,"data/data55.b3dm"],[1,"data/data56.b3dm"],[1,"data/data57.b3dm"],[1,"data/data59.b3dm"],[1,"data/data60.b3dm"],[1,"data/data61.b3dm"],[1,"data/data62.b3dm"],[1,"data/data66.b3dm"],[1,"data/data67.b3dm"],[1,"data/data69.b3dm"],[1,"data/data70.b3dm"],[1,"data/data73.b3dm"],[1,"data/data74.b3dm"],[1,"data/data75.b3dm"],[1,"data/data77.b3dm"],[1,"data/data78.b3dm"],[1,"data/data79.b3dm"],[1,"data/data81.b3dm"],[1,"data/data82.b3dm"],[1,"data/data83.b3dm"],[1,"data/data85.b3dm"],[1,"data/data86.b3dm"],[1,"data/data87.b3dm"],[1,"data/data88.b3dm"],[1,"data/data91.b3dm"],[1,"data/data92.b3dm"],[1,"data/data94.b3dm"],[1,"data/data95.b3dm"],[1,"data/data96.b3dm"],[1,"data/data97.b3dm"],[1,"data/data99.b3dm"],[1,"data/data101.b3dm"],[1,"data/data102.b3dm"],[1,"data/data103.b3dm"],[1,"data/data104.b3dm"],[1,"data/data108.b3dm"],[1,"data/data110.b3dm"],[1,"data/data112.b3dm"],[1,"data/data113.b3dm"],[1,"data/data115.b3dm"],[1,"data/data116.b3dm"],[1,"data/data117.b3dm"],[1,"data/data118.b3dm"],[1,"data/data121.b3dm"],[1,"data/data122.b3dm"],[1,"data/data124.b3dm"],[1,"data/data125.b3dm"],[1,"data/data127.b3dm"],[1,"data/data128.b3dm"],[1,"data/data129.b3dm"],[1,"data/data130.b3dm"],[1,"data/data132.b3dm"],[1,"data/data133.b3dm"],[1,"data/data134.b3dm"],[1,"data/data135.b3dm"],[1,"data/data138.b3dm"],[1,"data/data139.b3dm"],[1,"data/data140.b3dm"],[1,"data/data142.b3dm"],[1,"data/data143.b3dm"],[1,"data/data144.b3dm"],[1,"data/data146.b3dm"],[1,"data/data148.b3dm"],[1,"data/data149.b3dm"],[1,"data/data152.b3dm"],[1,"data/data154.b3dm"],[1,"data/data155.b3dm"]],"box":[139.69803,35.6907,139.70362,35.69501],"ground":74.57},"ikebukuro":{"lod":"LOD4","tiles":[[2,"data/data0.b3dm"],[2,"data/data1.b3dm"],[2,"data/data2.b3dm"],[2,"data/data5.b3dm"],[2,"data/data6.b3dm"],[2,"data/data7.b3dm"],[2,"data/data8.b3dm"],[2,"data/data9.b3dm"],[2,"data/data10.b3dm"],[2,"data/data12.b3dm"],[2,"data/data14.b3dm"],[2,"data/data18.b3dm"],[2,"data/data21.b3dm"],[2,"data/data24.b3dm"],[2,"data/data25.b3dm"]],"box":[139.70939,35.72805,139.71337,35.73137],"ground":69.91},"shibuya":{"lod":"LOD4","tiles":[[3,"data/data0.b3dm"],[3,"data/data1.b3dm"],[3,"data/data3.b3dm"],[3,"data/data4.b3dm"],[3,"data/data7.b3dm"],[3,"data/data8.b3dm"],[3,"data/data9.b3dm"],[3,"data/data11.b3dm"],[3,"data/data12.b3dm"],[3,"data/data13.b3dm"],[3,"data/data14.b3dm"],[3,"data/data15.b3dm"],[3,"data/data18.b3dm"],[3,"data/data19.b3dm"],[3,"data/data22.b3dm"],[3,"data/data23.b3dm"],[3,"data/data24.b3dm"],[3,"data/data26.b3dm"],[3,"data/data27.b3dm"],[3,"data/data28.b3dm"],[3,"data/data29.b3dm"],[3,"data/data31.b3dm"],[3,"data/data32.b3dm"],[3,"data/data34.b3dm"],[3,"data/data35.b3dm"],[3,"data/data36.b3dm"],[3,"data/data37.b3dm"],[3,"data/data40.b3dm"],[3,"data/data41.b3dm"],[3,"data/data42.b3dm"],[3,"data/data43.b3dm"],[3,"data/data45.b3dm"],[3,"data/data46.b3dm"],[3,"data/data47.b3dm"],[3,"data/data48.b3dm"],[3,"data/data50.b3dm"],[3,"data/data51.b3dm"],[3,"data/data52.b3dm"],[3,"data/data53.b3dm"],[3,"data/data56.b3dm"],[3,"data/data57.b3dm"],[3,"data/data58.b3dm"],[3,"data/data59.b3dm"],[3,"data/data61.b3dm"],[3,"data/data62.b3dm"],[3,"data/data63.b3dm"],[3,"data/data64.b3dm"],[3,"data/data66.b3dm"],[3,"data/data67.b3dm"],[3,"data/data68.b3dm"],[3,"data/data70.b3dm"],[3,"data/data73.b3dm"],[3,"data/data74.b3dm"],[3,"data/data75.b3dm"],[3,"data/data77.b3dm"],[3,"data/data78.b3dm"],[3,"data/data81.b3dm"],[3,"data/data82.b3dm"],[3,"data/data83.b3dm"],[3,"data/data85.b3dm"],[3,"data/data86.b3dm"],[3,"data/data87.b3dm"],[3,"data/data89.b3dm"],[3,"data/data90.b3dm"],[3,"data/data91.b3dm"],[3,"data/data92.b3dm"],[3,"data/data94.b3dm"],[3,"data/data95.b3dm"],[3,"data/data96.b3dm"],[3,"data/data99.b3dm"],[3,"data/data100.b3dm"],[3,"data/data101.b3dm"],[3,"data/data102.b3dm"],[3,"data/data104.b3dm"],[3,"data/data105.b3dm"],[3,"data/data107.b3dm"],[3,"data/data108.b3dm"],[3,"data/data109.b3dm"],[3,"data/data110.b3dm"],[3,"data/data113.b3dm"],[3,"data/data114.b3dm"],[3,"data/data116.b3dm"],[3,"data/data117.b3dm"]],"box":[139.69851,35.65835,139.70305,35.66133],"ground":51.77},"ueno":{"lod":"LOD1","tiles":[[4,"18/232852/39531_uro_UndergroundBuilding.glb"],[4,"18/232853/39531_uro_UndergroundBuilding.glb"],[4,"18/232852/39532_uro_UndergroundBuilding.glb"],[4,"18/232852/39533_uro_UndergroundBuilding.glb"],[4,"18/232852/39534_uro_UndergroundBuilding.glb"],[4,"18/232854/39534_uro_UndergroundBuilding.glb"]],"box":[139.77248,35.70726,139.77689,35.71243],"ground":48.27}}};
 var SPACES = null;
 var NET = "data/net/";
-var VER = "?v=33808f1fbe"; // データの版（組み立てごとの印）。前の版の駅データがブラウザに残って、新しいページと組み合わさらないように（2026-10-13） // 乗換案内の時刻表の置き場所（公開ページだけ。data/net/。埋め込みの版は null）
+var VER = "?v=18950ac665"; // データの版（組み立てごとの印）。前の版の駅データがブラウザに残って、新しいページと組み合わさらないように（2026-10-13） // 乗換案内の時刻表の置き場所（公開ページだけ。data/net/。埋め込みの版は null）
 // 駅構内案内エンジン（エキしるべの engine.js を写して、出口・待ち合わせ場所・地上の歩道の案内を足したもの）
 // 経路網（data/stations.json）から人が読める手順を作る
 var Guide = (function () {
@@ -1157,10 +1218,12 @@ var Transit = (function () {
     meta.stations.forEach(function (s, i) {
       var bus = s[2] < 0, key = (bus ? 'b:' : 'r:') + s[1], list = by[key] = by[key] || [];
       var g = list.filter(function (g) { return Math.abs(g.lat - s[3]) < 0.014 && Math.abs(g.lon - s[4]) < 0.017; })[0];
-      if (!g) { g = { name: s[1], lat: s[3], lon: s[4], ids: [], rws: [], bus: bus }; list.push(g); out.push(g); }
+      if (!g) { g = { name: s[1], lat: s[3], lon: s[4], ids: [], rws: [], lines: [], bus: bus, kana: s[5] || '' }; list.push(g); out.push(g); }
       g.ids.push(i);
+      if (!g.kana && s[5]) g.kana = s[5];
       var rt = bus ? (meta.bus && meta.bus.op) || 'バス' : lineName(meta.railways[s[2]]);
-      if (g.rws.indexOf(rt) < 0) g.rws.push(rt);
+      // 路線（名前と色）。検索の候補に、路線の色の札で出す
+      if (g.rws.indexOf(rt) < 0) { g.rws.push(rt); g.lines.push({ name: rt, color: bus ? '#3a9a4f' : meta.railways[s[2]][2] }); }
     });
     // 同じ名前で離れた駅は、路線の名前を添えて分ける
     Object.keys(by).forEach(function (k) {
@@ -1248,10 +1311,12 @@ var Transit = (function () {
       if (!t && !b) continue;
       var ks2 = key(t, b), best = null;
       // 出発の駅・乗り場から乗るか、そこから近くの駅・乗り場まで歩いて乗る（バス停から駅へ歩くなど。歩きは乗り換えに数えない）
-      origins.forEach(function (o) {
+      // origins は駅の番号か [駅の番号, そこまで歩く分]（現在地から近くの駅・バス停へ歩くとき）
+      origins.forEach(function (oo) {
+        var o = Array.isArray(oo) ? oo[0] : oo, w0 = Array.isArray(oo) ? oo[1] : 0;
         [[o, 0]].concat(net.footOut[o]).forEach(function (f) {
-          var v = B[ks2][f[0]] - f[1];
-          if (B[ks2][f[0]] > -Infinity && (!best || v > best.dep + 1e-9 || (Math.abs(v - best.dep) < 1e-9 && f[1] < best.walk0))) best = { dep: v, o: f[0], walk0: f[1], start: o };
+          var v = B[ks2][f[0]] - f[1] - w0;
+          if (B[ks2][f[0]] > -Infinity && (!best || v > best.dep + 1e-9 || (Math.abs(v - best.dep) < 1e-9 && f[1] + w0 < best.walk0))) best = { dep: v, o: f[0], walk0: f[1] + w0, start: o };
         });
       });
       if (!best) continue;
@@ -4151,7 +4216,8 @@ var View3D = (function () {
     gate: '<path d="M5 3v14M15 3v14M8 10h5M11 7.5L13.5 10 11 12.5"/>',
     place: '<path d="M10 18s-5.5-5.2-5.5-9.5a5.5 5.5 0 0 1 11 0C15.5 12.8 10 18 10 18z"/><circle cx="10" cy="8.5" r="2"/>',
     spot: '<circle cx="7" cy="6" r="2.2"/><circle cx="13" cy="6" r="2.2"/><path d="M3 16v-1.5A3.5 3.5 0 0 1 6.5 11h1A3.5 3.5 0 0 1 11 14.5V16M9 16v-1.5A3.5 3.5 0 0 1 12.5 11h1a3.5 3.5 0 0 1 3.5 3.5V16"/>',
-    train: '<rect x="4" y="2.5" width="12" height="12" rx="3"/><path d="M4 9h12M7 17.5l1.5-3M13 17.5l-1.5-3"/><circle cx="7.5" cy="11.8" r=".6"/><circle cx="12.5" cy="11.8" r=".6"/>'
+    train: '<rect x="4" y="2.5" width="12" height="12" rx="3"/><path d="M4 9h12M7 17.5l1.5-3M13 17.5l-1.5-3"/><circle cx="7.5" cy="11.8" r=".6"/><circle cx="12.5" cy="11.8" r=".6"/>',
+    bus: '<rect x="3.5" y="3" width="13" height="12" rx="2"/><path d="M3.5 9.5h13M6.5 17.5v-2.5M13.5 17.5v-2.5"/><circle cx="6.5" cy="12.4" r=".6"/><circle cx="13.5" cy="12.4" r=".6"/>'
   };
   function icon(name, size) {
     size = size || 22;
@@ -4203,7 +4269,7 @@ var View3D = (function () {
     }
     var firstSpot = Math.max(0, (st.spots || []).findIndex(function (s) { return s.kind === '改札'; }));
     keepFrom = normEp(keepFrom); keepTo = normEp(keepTo);
-    if (keepFrom && keepFrom.indexOf('dep:') === 0 && hasOpt('from', 'dep')) { $('from').value = 'dep'; $('from-dep').value = keepFrom.slice(4); }
+    if (keepFrom && keepFrom.indexOf('dep:') === 0 && hasOpt('from', 'dep')) { $('from').value = 'dep'; setDep('from', keepFrom.slice(4)); }
     else $('from').value = keepFrom && hasOpt('from', keepFrom) ? keepFrom : 'place:0';
     $('to').value = keepTo && hasOpt('to', keepTo) ? keepTo : 'spot:' + spotKey(st.spots[firstSpot], firstSpot);
   }
@@ -4285,7 +4351,29 @@ var View3D = (function () {
   function rawEp(k) { return $(k).value === 'dep' ? depEp(k) : parseEp($(k).value); }
   function depName(k) { return ($(k + '-dep').value || '').trim(); }
   // 共有リンク・保存に入れる値（dep:和光市）
-  function epVal(k) { var v = $(k).value; return v === 'dep' ? 'dep:' + depName(k) : v; }
+  function epVal(k) {
+    var v = $(k).value;
+    if (v !== 'dep') return v;
+    var gp = state.geo && state.geo[k];
+    return 'dep:' + (depName(k) === '現在地' && gp ? '@' + gp.lat.toFixed(3) + ',' + gp.lon.toFixed(3) : depName(k)); // 現在地は 100 m ほどに丸めて送る
+  }
+  // 出発駅の欄に入れる（@緯度,経度 は現在地）
+  function setDep(k, v) {
+    var m = /^@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)$/.exec(v || '');
+    state.geo = state.geo || {};
+    if (m) { state.geo[k] = { lat: +m[1], lon: +m[2] }; $(k + '-dep').value = '現在地'; }
+    else $(k + '-dep').value = v || '';
+  }
+  function geoDist(la1, lo1, la2, lo2) { return Math.hypot((la1 - la2) * 110540, (lo1 - lo2) * 111320 * Math.cos(la1 * Math.PI / 180)); }
+  // 現在地から歩いて行ける駅・バス停（1.2 km 以内）。歩く分は 距離×1.3÷75 m/分
+  function hereOrigins(gp) {
+    var out = [];
+    (net.meta ? net.meta.stations : []).forEach(function (s, i) {
+      var d = geoDist(gp.lat, gp.lon, s[3], s[4]);
+      if (d <= 1200) out.push([i, Math.max(1, d * 1.3 / 75)]);
+    });
+    return out;
+  }
   function depEp(k) {
     var it = state.itin && state.itin[k], name = depName(k);
     if (it && it.ok && it.L) return { type: 'line', id: it.label, starts: it.L.starts, L: it.L, d: it.d, key: 'dep:' + name, itin: it };
@@ -4323,8 +4411,8 @@ var View3D = (function () {
     var w = meetWhen(), kind = w ? w.kind : 'w', bk = w ? w.bus : 'w', key = kind + '-' + bk;
     if (!net.metaP) net.metaP = getJson(NET + 'stations.json' + VER).then(function (m) {
       net.meta = m; net.groups = Transit.groups(m); net.idOf = {};
+      net.extra = extraGroups(m, net.groups);
       m.stations.forEach(function (s, i) { net.idOf[s[0]] = i; });
-      $('dep-list').innerHTML = net.groups.map(function (g) { return '<option value="' + esc(g.label) + '">'; }).join('');
     }).catch(function (e) { delete net.metaP; throw e; });
     // 鉄道（平日・土休日）とバス（平日・土曜・日曜祝日）の組ごとに作る。読んだファイルは残す
     var file = function (f) { if (!net[f]) net[f] = getJson(NET + f + '.json' + VER).catch(function (e) { delete net[f]; throw e; }); return net[f]; };
@@ -4336,8 +4424,132 @@ var View3D = (function () {
   function findGroup(name) {
     var gs = net.groups || [], n = name.replace(/駅$/, '');
     return gs.filter(function (g) { return g.label === name; })[0] || gs.filter(function (g) { return g.name === n; })[0] ||
-      gs.filter(function (g) { return g.label.indexOf(n) === 0; })[0] || null;
+      searchStations(name)[0] || null;
   }
+  // ---------- 出発駅・バス停の候補（2026-10-13 利用者「検索結果は分かりやすく表示してね」） ----------
+  // 駅名か読みがな（ひらがな・カタカナどちらでも）に合うものを、同じ名前 → 始まりが合う → 途中に含む の順、駅をバス停より先に 12 まで。
+  // 合流日時の曜日に便が 1 本も無い駅・バス停は出さない（2026-10-13 利用者「案内ができない駅については、選択から非表示に」）
+  // 時刻表の無い駅（西武・小田急・東急など。stations.json の extra）を名前ごとにまとめる。同じ名前の時刻表のある駅が近くにあれば、そちらで探せるので出さない
+  function extraGroups(m, gs) {
+    var by = {}, out = [];
+    (m.extra || []).forEach(function (e) {
+      var near = function (g) { return Math.abs(g.lat - e[4]) < 0.014 && Math.abs(g.lon - e[5]) < 0.017; };
+      if (gs.some(function (g) { return !g.bus && g.name === e[0] && near(g); })) return;
+      var list = by[e[0]] = by[e[0]] || [], g = list.filter(near)[0];
+      if (!g) { g = { name: e[0], label: e[0], kana: e[1], lat: e[4], lon: e[5], lines: [], ops: [], extra: true }; list.push(g); out.push(g); }
+      var ln = (e[2].indexOf(e[3]) === 0 ? '' : e[3]) + e[2];
+      if (!g.lines.some(function (l) { return l.name === ln; })) g.lines.push({ name: ln, color: '#9a9a9a' });
+      if (g.ops.indexOf(e[3]) < 0) g.ops.push(e[3]);
+    });
+    return out;
+  }
+  function hira(t) {
+    return String(t || '').normalize('NFKC').toLowerCase().replace(/[\u30a1-\u30f6]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0x60); }).replace(/[\s・]/g, '');
+  }
+  // 案内できない理由（できれば ''）: 時刻表が無い駅、合流日の曜日に便が無い駅・バス停
+  function whyNot(g) {
+    if (g.extra) return '時刻表がありません（' + g.ops.join('・') + '）';
+    if (!g.bus && (state.st.lines || []).some(function (L) { return g.ids.indexOf(net.idOf[L.sid]) >= 0; })) return '待ち合わせの駅です（出発地は「電車で着く」か地上の場所を選んでください）';
+    var w = meetWhen(), N = w && net[w.kind + '-' + w.bus];
+    if (N && !g.ids.some(function (i) { return N.byStop[i] && N.byStop[i].length; }))
+      return '合流日（' + (g.bus ? { w: '平日', sa: '土曜', su: '日曜・祝日' }[w.bus] : w.kind === 'h' ? '土休日' : '平日') + '）は' + (g.bus ? 'バス' : '電車') + 'がありません';
+    return '';
+  }
+  // 候補: 案内できる所を先に。案内できない所も出して、理由を添える（2026-10-13 利用者「検索はできるが、案内できないバス停や駅は、その旨を表示したほうがいいな」）
+  function searchStations(q, withNg) {
+    var h = hira(String(q || '').replace(/駅$/, '').replace(/（.*$/, ''));
+    if (!h || !net.groups) return [];
+    var out = [];
+    net.groups.concat(withNg ? net.extra || [] : []).forEach(function (g) {
+      var n = hira(g.name), k = hira(g.kana), sc = n === h || k === h ? 0 : n.indexOf(h) === 0 || k.indexOf(h) === 0 ? 1 : n.indexOf(h) >= 0 || k.indexOf(h) >= 0 ? 2 : -1;
+      if (sc < 0) return;
+      var why = whyNot(g);
+      if (why && !withNg) return;
+      out.push({ g: g, why: why, sc: sc + (g.bus ? 0.5 : 0) + (why ? 3 : 0) });
+    });
+    out.sort(function (a, b) { return a.sc - b.sc || a.g.name.length - b.g.name.length || (a.g.label < b.g.label ? -1 : 1); });
+    return withNg ? out.slice(0, 14) : out.slice(0, 12).map(function (x) { return x.g; });
+  }
+  function bindSuggest(k) {
+    var inp = $(k + '-dep'), ul = $(k + '-dep-list'), items = [], cur = -1;
+    function open(on) { ul.hidden = !on; inp.setAttribute('aria-expanded', on); }
+    function mark() {
+      ul.querySelectorAll('[data-i]').forEach(function (li) { li.setAttribute('aria-selected', +li.dataset.i === cur); });
+      var on = ul.querySelector('[aria-selected="true"]');
+      if (on) { on.scrollIntoView({ block: 'nearest' }); inp.setAttribute('aria-activedescendant', on.id); }
+    }
+    function show() {
+      var q = inp.value.trim();
+      if (!net.groups) {
+        ul.innerHTML = '<li class="empty">駅とバス停の一覧を読み込んでいます…</li>'; open(true);
+        loadNet().then(function () { if (document.activeElement === inp) show(); }, function () { ul.innerHTML = '<li class="empty">一覧を読み込めませんでした</li>'; });
+        return;
+      }
+      if (!q || q === '現在地') {
+        items = [{ act: 'geo' }]; cur = 0;
+        ul.innerHTML = '<li role="option" id="' + k + '-sg-0" data-i="0"><span class="nm">◎ 現在地から</span><span class="hint2">近くの駅・バス停を探します（位置情報を使います）</span></li>' +
+          '<li class="empty">または、駅名かバス停名を入れてください（ひらがなでも探せます）</li>';
+        open(true); mark(); return;
+      }
+      items = searchStations(q, true); cur = items.length && !items[0].why ? 0 : -1;
+      var hq = q.replace(/駅$/, '');
+      ul.innerHTML = items.length ? items.map(function (it, i) {
+        var g = it.g;
+        var at = g.name.indexOf(hq), nm = at >= 0 ? esc(g.name.slice(0, at)) + '<mark>' + esc(hq) + '</mark>' + esc(g.name.slice(at + hq.length)) : esc(g.name);
+        var ls = g.lines.slice(0, 5).map(function (l) { return '<span class="lb" style="' + lbStyle(l.color) + '">' + esc(l.name) + '</span>'; }).join('') +
+          (g.lines.length > 5 ? '<span class="more">ほか' + (g.lines.length - 5) + '路線</span>' : '');
+        return '<li role="option" id="' + k + '-sg-' + i + '" data-i="' + i + '"' + (it.why ? ' class="ng" aria-disabled="true"' : '') + '><span class="nm">' + nm + (g.bus ? '<span class="tag">バス停</span>' : '') +
+          (g.kana ? '<span class="kn">' + esc(g.kana) + '</span>' : '') + '</span><span class="ls">' + ls + '</span>' +
+          (it.why ? '<span class="ngtx">案内できません: ' + esc(it.why) + '</span>' : '') + '</li>';
+      }).join('') : '<li class="empty">「' + esc(q) + '」に合う駅・バス停がありません。東京メトロ・都営地下鉄・JR東日本・東武・京王の駅と、都営バスのバス停から探せます。</li>';
+      open(true); mark();
+    }
+    // 現在地を取り、近い順に駅・バス停を出す（先頭は「おまかせ」: 近くのどこからでも、いちばん遅く出られる所を探す）
+    function nearHere() {
+      ul.innerHTML = '<li class="empty">現在地を調べています…</li>'; open(true);
+      if (!navigator.geolocation) { ul.innerHTML = '<li class="empty">この端末では現在地を取れません</li>'; return; }
+      navigator.geolocation.getCurrentPosition(function (pos) {
+        var gp = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+        state.geo = state.geo || {}; state.geo[k] = gp;
+        loadNet().then(function () {
+          var list = net.groups.concat(net.extra || []).map(function (g) { return { g: g, d: geoDist(gp.lat, gp.lon, g.lat, g.lon) }; })
+            .filter(function (x) { return x.d <= 2000; }).sort(function (a, b) { return a.d - b.d; }).slice(0, 10);
+          items = [{ here: true }].concat(list.map(function (x) { return { g: x.g, d: x.d, why: whyNot(x.g) }; }));
+          cur = 0;
+          ul.innerHTML = '<li role="option" id="' + k + '-sg-0" data-i="0"><span class="nm">◎ 現在地からおまかせ</span><span class="hint2">歩いて行ける駅・バス停（1.2 km 以内）から、いちばん遅く出られる所を探します</span></li>' +
+            (list.length ? '' : '<li class="empty">現在地から 2 km 以内に、時刻表のある駅・バス停がありません</li>') +
+            items.slice(1).map(function (it, j) {
+              var g = it.g, i = j + 1, ls = g.lines.slice(0, 4).map(function (l) { return '<span class="lb" style="' + lbStyle(l.color) + '">' + esc(l.name) + '</span>'; }).join('');
+              return '<li role="option" id="' + k + '-sg-' + i + '" data-i="' + i + '"' + (it.why ? ' class="ng" aria-disabled="true"' : '') + '><span class="nm">' + esc(g.name) + (g.bus ? '<span class="tag">バス停</span>' : '') +
+                '<span class="kn">約' + (Math.round(it.d / 10) * 10) + 'm・歩いて約' + Math.max(1, Math.round(it.d * 1.3 / 75)) + '分</span></span><span class="ls">' + ls + '</span>' +
+                (it.why ? '<span class="ngtx">案内できません: ' + esc(it.why) + '</span>' : '') + '</li>';
+            }).join('');
+          open(true); mark();
+        }, function () { ul.innerHTML = '<li class="empty">駅とバス停の一覧を読み込めませんでした</li>'; });
+      }, function () { ul.innerHTML = '<li class="empty">現在地を取れませんでした（端末の位置情報の許可を確かめてください）</li>'; }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+    }
+    function pick(i) {
+      var it = items[i];
+      if (!it) return;
+      if (it.act === 'geo') { nearHere(); return; }
+      if (it.here) { inp.value = '現在地'; open(false); runBusy(); return; }
+      if (it.why) { toast(it.g.name + 'は案内できません（' + it.why + '）'); return; }
+      inp.value = it.g.label; open(false); runBusy();
+    }
+    inp.addEventListener('input', show);
+    inp.addEventListener('focus', show);
+    inp.addEventListener('keydown', function (e) {
+      if (ul.hidden) { if (e.key === 'ArrowDown') show(); return; }
+      if (e.key === 'ArrowDown') { cur = Math.min(items.length - 1, cur + 1); mark(); e.preventDefault(); }
+      else if (e.key === 'ArrowUp') { cur = Math.max(0, cur - 1); mark(); e.preventDefault(); }
+      else if (e.key === 'Enter' && cur >= 0 && items[cur].why) { e.preventDefault(); pick(cur); }
+      else if (e.key === 'Enter') { e.preventDefault(); if (cur >= 0) pick(cur); else open(false); }
+      else if (e.key === 'Escape') open(false);
+    });
+    ul.addEventListener('mousedown', function (e) { var li = e.target.closest('[data-i]'); if (li) { e.preventDefault(); pick(+li.dataset.i); } });
+    inp.addEventListener('blur', function () { setTimeout(function () { open(false); }, 120); });
+  }
+  bindSuggest('from'); bindSuggest('partner');
   // わたし（from）・あいて（partner）の乗換案内。待ち合わせの駅の路線ごとに「そのホームに着いていたい時刻」（合流時刻 −
   // ホームから改札まで − 改札から待ち合わせ場所まで）を決め、それに間に合う、いちばん遅く出られる電車を探す
   function planDep(k) {
@@ -4345,7 +4557,14 @@ var View3D = (function () {
     if (!name) return { err: '出発駅を入れてください（例：和光市）。' };
     if (!NET) return { err: '乗換案内は公開ページ（https://tyra0119.github.io/pj_Machiawase/）でだけ使えます。' };
     if (!net.meta) return { err: '乗換案内の時刻表を読み込めませんでした。通信の状態を確かめて、もう一度選んでください。' };
-    var g = findGroup(name);
+    var gp = state.geo && state.geo[k], g;
+    if (name === '現在地') {
+      if (!gp) return { err: '現在地を取れていません。出発駅の欄を押して「現在地から」を選んでください。' };
+      if (!net.meta) return { err: '乗換案内の時刻表を読み込めませんでした。通信の状態を確かめて、もう一度選んでください。' };
+      var ho = hereOrigins(gp);
+      if (!ho.length) return { err: '現在地から歩いて行ける所（1.2 km 以内）に、時刻表のある駅・バス停がありません。' };
+      g = { label: '現在地', name: '現在地', ids: ho.map(function (o) { return o[0]; }), here: ho };
+    } else g = findGroup(name);
     if (!g) return { err: '「' + name + '」という駅・バス停が時刻表にありません。候補から選んでください（東京メトロ・都営地下鉄・JR東日本・東武・京王の駅と、都営バスのバス停。西武・小田急・東急は時刻表が無いので選べません）。' };
     var w = meetWhen();
     if (!w) return { err: '合流日時を入れてください。' };
@@ -4378,13 +4597,13 @@ var View3D = (function () {
     });
     if (here) return { err: '出発地が' + st.name + '駅のそばです。出発地は「電車で着く」か、地上の場所・出口を選んでください。' };
     if (!Object.keys(targets).length) return { err: 'この待ち合わせ場所へ、乗換案内の時刻表のある路線（東京メトロ・都営地下鉄・JR東日本・東武・京王・都営バス）で着く道が見つかりません。' };
-    var res = Transit.plan(N, g.ids, targets);
+    var res = Transit.plan(N, g.here || g.ids, targets);
     if (!res.length) return { err: hm(w.min) + ' に間に合う電車・バスが見つかりません（電車の乗り換えは 2 回、バスの乗り換えは 1 回まで）。合流日時を遅くするか、出発駅を確かめてください。' };
     var r = res[0], last = r.legs[r.legs.length - 1], info = Transit.legInfo(N, last), L = tmap[r.target];
-    var base = { ok: true, name: g.label, arr: last.arr, dep: r.dep, plan: r, alts: res.slice(1, 3), net: N, when: w };
-    if (L.bus) { base.node = L.node; base.stopName = L.name; base.label = g.name + 'から' + info.line + 'で'; return base; }
+    var base = { ok: true, name: g.label, arr: last.arr, dep: r.dep, plan: r, alts: res.slice(1, 3), net: N, when: w, here: !!g.here };
+    if (L.bus) { base.node = L.node; base.stopName = L.name; base.label = g.name + 'から' + info.line; return base; }
     base.L = L; base.d = L.dirs.filter(function (x) { return x.dir === 'odpt.RailDirection:' + info.endDir; })[0] || L.dirs[0];
-    base.label = g.name + 'から' + L.name + 'で';
+    base.label = g.name + 'から' + L.name; // 手順では「◯◯から◯◯線で着いて、…を出る」
     return base;
   }
   // 降りる車両の推定（2026-10-13）: 出る改札にいちばん近い、その路線のホームの所（ホームの両端を結ぶ線に改札の位置を落とした所）が、
@@ -4422,14 +4641,14 @@ var View3D = (function () {
     var N = it.net, r = it.plan, legs = r.legs;
     var gate = g && ep.starts ? ep.starts.filter(function (s) { return s[0] === g.route.start; })[0] : null;
     var lastInfo = Transit.legInfo(N, legs[legs.length - 1]), car = it.L ? carEstimate(it.L, gate, lastInfo.prevStop) : null;
-    var lis = '';
-    if (r.walk0) { var f0 = Transit.legInfo(N, legs[0]); lis += '<li><span class="lt">' + hm(r.dep) + '</span><b>' + esc(N.st[r.start][1]) + '</b>を出て、' + esc(f0.from) + (f0.bus ? 'の乗り場' : '駅') + 'まで歩く<small>約' + Math.max(1, Math.round(r.walk0)) + '分の見込み（駅・バス停の位置から）</small></li>'; }
+    var lis = '', rk = 0;
+    if (r.walk0) { var f0 = Transit.legInfo(N, legs[0]); lis += '<li data-ride="' + (rk++) + '"><span class="lt">' + hm(r.dep) + '</span><b>' + esc(it.here ? '現在地' : N.st[r.start][1]) + '</b>を出て、' + esc(f0.from) + (f0.bus ? 'の乗り場' : '駅') + 'まで歩く<small>約' + Math.max(1, Math.round(r.walk0)) + '分の見込み（' + (it.here ? '現在地と' : '') + '駅・バス停の位置から）</small></li>'; }
     legs.forEach(function (l, i) {
       var x = Transit.legInfo(N, l), next = legs[i + 1] ? Transit.legInfo(N, legs[i + 1]) : null;
-      lis += '<li><span class="lt">' + hm(l.dep) + '</span><b>' + esc(x.from) + '</b>' + (i ? 'で乗り換え' : r.walk0 ? 'で乗る' : 'を出る') + '<small>' +
+      lis += '<li data-ride="' + (rk++) + '"><span class="lt">' + hm(l.dep) + '</span><b>' + esc(x.from) + '</b>' + (i ? 'で乗り換え' : r.walk0 ? 'で乗る' : 'を出る') + '<small>' +
         '<span class="lb" style="' + lbStyle(x.color) + '">' + esc(x.line) + '</span> ' + esc(x.type && x.type !== '普通' && x.type !== '各駅停車' ? x.type + '・' : '') + esc(x.dest) + '行き' +
         (x.through.length ? '（' + esc(x.through.join('・')) + 'に直通）' : '') + '・' + x.stops + (x.stops < 10 ? 'つ目' : '番目') + (x.bus ? 'の停留所' : 'の停車駅') + 'で降りる</small></li>';
-      lis += '<li><span class="lt">' + hm(l.arr) + '</span><b>' + esc(x.to) + '</b>で降りる';
+      lis += '<li data-ride="' + (rk++) + '"><span class="lt">' + hm(l.arr) + '</span><b>' + esc(x.to) + '</b>で降りる';
       if (next) lis += '<small>' + (next.from !== x.to || l.walk ? esc(next.from + (next.bus ? 'の' + next.route + 'の乗り場' : next.from === x.to ? 'の' + next.line + 'のホーム' : '駅')) + 'まで歩いて乗り換え（約' + Math.max(1, Math.round(l.walk || Transit.CHG)) + '分の見込み）' : next.bus || x.bus ? '同じ乗り場で乗り換え' : '同じホームか、となりのホームで乗り換え') + '</small>';
       else lis += '<small>' + (car ? '<span class="car">' + esc(carText(car)) + '</span>で降りると、改札に近い所に着きます（ホームと改札の位置からの推定）。' : '') +
         (gate && gate[2] && gate[2].charAt(0) !== '*' ? '「' + esc(gate[2].replace(/の前$/, '')) + '」を出ます（下の歩く順番）。' : '') +
@@ -4523,12 +4742,14 @@ var View3D = (function () {
     fillEndpoints(from, to);
     // あいての来かたと乗ってくる電車（共有リンク・前回の選択）
     var pd = state.pend || {}; state.pend = null;
-    if (pd.b && pd.b.indexOf('dep:') === 0 && hasOpt('partner', 'dep')) { $('partner').value = 'dep'; $('partner-dep').value = pd.b.slice(4); }
+    if (pd.b && pd.b.indexOf('dep:') === 0 && hasOpt('partner', 'dep')) { $('partner').value = 'dep'; setDep('partner', pd.b.slice(4)); }
     else $('partner').value = pd.b && hasOpt('partner', pd.b) ? pd.b : '';
     // 合流日時（共有リンク・前回の選択）。前回の選択の日が過ぎていれば今日に
     if (pd.md && /^\d{4}-\d{2}-\d{2}$/.test(pd.md) && (pd.url || pd.md >= ymd(new Date()))) { $('md').value = pd.md; if (pd.mt) $('mt').value = pd.mt.replace(/^(\d):/, '0$1:'); }
     $('partner-pr').value = ['stair', 'esc', 'ev'].indexOf(pd.bp) >= 0 ? pd.bp : 'std';
     if (pd.v) state.view = pd.v;
+    // 部屋（あいてに入力してもらう）: 共有リンク・前回の選択から
+    if (pd.room && /^[A-Za-z0-9_-]{16,32}$/.test(pd.room) && (pd.role === 'a' || pd.role === 'b')) state.room = { id: pd.room, role: pd.role };
     fillTime('from', pd.at); fillTime('partner', pd.bt);
     syncCarSel('from'); syncCarSel('to');
     $('from-car').value = fc >= 1 && fc <= Guide.CARS ? String(fc) : '';
@@ -4553,7 +4774,8 @@ var View3D = (function () {
   $('from').addEventListener('change', function () { $('from-car').value = ''; fillTime('from'); runBusy(); });
   $('partner').addEventListener('change', function () { fillTime('partner'); runBusy(); });
   $('partner-pr').addEventListener('change', runBusy);
-  ['from-dep', 'partner-dep', 'md', 'mt'].forEach(function (id) { $(id).addEventListener('change', runBusy); });
+  ['md', 'mt'].forEach(function (id) { $(id).addEventListener('change', runBusy); });
+  ['from-dep', 'partner-dep'].forEach(function (id) { $(id).addEventListener('change', function () { if ($(id + '-list').hidden) runBusy(); }); });
   ['from', 'partner'].forEach(function (k) {
     $(k + '-time').addEventListener('change', function () { $(k + '-tin').hidden = this.value !== 'in'; if (this.value === 'in' && !$(k + '-tin').value) $(k + '-tin').value = hm(nowMin() + 10).replace(/^(\d):/, '0$1:'); runBusy(); });
     $(k + '-tin').addEventListener('change', runBusy);
@@ -4590,7 +4812,7 @@ var View3D = (function () {
     var at = timeOf('from'), bt = timeOf('partner');
     try { localStorage.setItem(SAVE_KEY, JSON.stringify({ st: state.st.id, from: epVal('from'), to: $('to').value, pr: profile(), fc: epOf('from').car, tc: epOf('to').car,
       at: at != null && $('from').value !== 'dep' ? hm(at) : null, b: epVal('partner'), bt: bt != null && $('partner').value !== 'dep' ? hm(bt) : null, bp: partnerPr(),
-      md: needNet() ? $('md').value : null, mt: needNet() ? $('mt').value : null, v: state.view })); } catch (e) {}
+      md: needNet() ? $('md').value : null, mt: needNet() ? $('mt').value : null, v: state.view, room: state.room ? state.room.id : null, role: state.room ? state.room.role : null })); } catch (e) {}
     // アドレス欄も選んだ内容に合わせる（そのままコピーしても同じ案内が開く）。埋め込み（アーティファクト）では変えない
     try { if (/^https?:/.test(location.protocol) && window.top === window) history.replaceState(null, '', location.pathname + choiceQuery()); } catch (e) {}
   }
@@ -4608,7 +4830,7 @@ var View3D = (function () {
     try {
       var p = new URLSearchParams(location.search);
       return p.get('st') ? { st: p.get('st'), from: p.get('from'), to: p.get('to'), pr: p.get('pr'), fc: +p.get('fc') || null, tc: +p.get('tc') || null,
-        at: p.get('at'), b: p.get('b'), bt: p.get('bt'), bp: p.get('bp'), md: p.get('md'), mt: p.get('mt'), v: p.get('v'), url: true } : null;
+        at: p.get('at'), b: p.get('b'), bt: p.get('bt'), bp: p.get('bp'), md: p.get('md'), mt: p.get('mt'), v: p.get('v'), room: p.get('room'), role: p.get('role'), url: true } : null;
     } catch (e) { return null; }
   }
   function epText(ep) {
@@ -4832,6 +5054,123 @@ var View3D = (function () {
     if (P.ep.type === 'line') return P.ep.L.name + 'で着く';
     return epText(P.ep) + 'から';
   }
+  // ---------- あいてに入力してもらう（部屋。2026-10-13 利用者「相手に入力してもらう仕組みも欲しい」） ----------
+  // 中継サーバ（tyra.jp）の /room/<ID> に、わたし（部屋を作った人＝a）とあいて（b）の来かたを置き、5 秒ごとに読み合う。
+  // 待ち合わせの駅・場所・日時は a が決める（b の画面では変えられない）。ID は推測できない 20 文字（知っている人だけが読み書きできる）。
+  // 手元で試すときは ?roomapi=http://127.0.0.1:8787/ で、手元の中継サーバに向けられる（localhost と 127.0.0.1 だけ）
+  var ROOMAPI = (function () {
+    try { var u = new URLSearchParams(location.search).get('roomapi'); if (u && /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/$/.test(u)) return u + 'room/'; } catch (e) {}
+    return 'https://tyra.jp/odpt/api/room/';
+  })();
+  function roomId() { var a = new Uint8Array(15), c = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789', o = ''; crypto.getRandomValues(a); for (var i = 0; i < a.length; i++) o += c[a[i] % c.length]; return 'm' + o + 'xyzw'.charAt(a[0] % 4); }
+  // わたしの分（部屋に置くもの）。a は待ち合わせの駅・場所・日時も
+  function roomMine() {
+    var o = { v: 1, from: epVal('from'), pr: profile() };
+    if (state.room.role === 'a') { o.st = state.st.id; o.to = $('to').value; o.md = $('md').value; o.mt = $('mt').value; }
+    return o;
+  }
+  function roomPut() {
+    if (!state.room || !state.st) return;
+    var body = JSON.stringify(roomMine());
+    if (body === state.room.sent) return;
+    state.room.sent = body;
+    fetch(ROOMAPI + state.room.id + '/' + state.room.role, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: body })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); state.room.err = ''; syncRoom(); })
+      .catch(function () { state.room.sent = ''; state.room.err = 'あいてに届けられませんでした（通信の状態を確かめてください）'; syncRoom(); });
+  }
+  // あいての分を画面に入れる（変わったときだけ）。b の画面では、a が決めた待ち合わせの駅・場所・日時も
+  function roomApply(o) {
+    var other = state.room.role === 'a' ? o.b : o.a;
+    if (!other) return;
+    var js = JSON.stringify(other);
+    if (js === state.room.got) return;
+    var first = !state.room.got;
+    state.room.got = js;
+    var go = function () {
+      if (state.room.role === 'b') {
+        if (other.to && hasOpt('to', other.to)) $('to').value = other.to;
+        if (other.md) $('md').value = other.md;
+        if (other.mt) $('mt').value = other.mt;
+      }
+      if (other.from && other.from.indexOf('dep:') === 0) { $('partner').value = 'dep'; setDep('partner', other.from.slice(4)); }
+      else if (other.from && hasOpt('partner', other.from)) $('partner').value = other.from;
+      $('partner-pr').value = ['stair', 'esc', 'ev'].indexOf(other.pr) >= 0 ? other.pr : 'std';
+      fillTime('partner');
+      if (first && state.room.role === 'a') toast('あいてが来かたを入れました');
+      runBusy();
+    };
+    // b の画面で、a が駅を変えたとき
+    if (state.room.role === 'b' && other.st && other.st !== state.st.id) {
+      var i = STATIONS.findIndex(function (x) { return x.id === other.st; });
+      if (i >= 0) { openStation(i, function () { setStation(i, $('from').value === 'dep' ? 'dep:' + depName('from') : $('from').value, other.to); go(); }); return; }
+    }
+    go();
+  }
+  function roomPoll() {
+    if (!state.room || document.visibilityState !== 'visible') return;
+    fetch(ROOMAPI + state.room.id, { cache: 'no-store' }).then(function (r) { if (r.status === 404) return null; if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (o) { if (o) roomApply(o); state.room.err = ''; syncRoom(); }, function () { state.room.err = 'あいての入力を読めませんでした（通信の状態を確かめてください）'; syncRoom(); });
+  }
+  setInterval(roomPoll, 5000);
+  document.addEventListener('visibilitychange', roomPoll);
+  function roomLink() {
+    var a = state.room;
+    return PUBLIC_URL + '?st=' + encodeURIComponent(state.st.id) + '&to=' + encodeURIComponent($('to').value) + '&md=' + $('md').value + '&mt=' + $('mt').value +
+      '&from=dep%3A&b=' + encodeURIComponent(epVal('from')) + '&bp=' + profile() + '&room=' + a.id + '&role=b&v=me' +
+      (ROOMAPI.indexOf('tyra.jp') < 0 ? '&roomapi=' + encodeURIComponent(ROOMAPI.replace(/room\/$/, '')) : '');
+  }
+  // 部屋の様子（あいてのまとまりの中）と、b の画面では待ち合わせの駅・場所・日時を変えられないように
+  // 中継サーバが部屋に対応しているか（入れ替える前の中継は /room/ を 400 で断る）。対応していなければ誘うボタンを出さない
+  var roomOk = null;
+  fetch(ROOMAPI + 'probe0000000000000000', { cache: 'no-store' }).then(function (r) { roomOk = r.status === 404; syncRoom(); }, function () { roomOk = false; syncRoom(); });
+  function syncRoom() {
+    var box = $('roomst'), r = state.room;
+    $('invite').hidden = !!r || roomOk !== true;
+    box.hidden = !r;
+    ['station', 'to', 'md', 'mt'].forEach(function (id) { $(id).disabled = !!(r && r.role === 'b'); });
+    if (!r) { box.innerHTML = ''; return; }
+    var got = !!r.got;
+    box.innerHTML = (r.role === 'a'
+      ? '<span><span class="roombadge">● あいてと共有中</span>　' + (got ? 'あいての来かたが届いています（変わると自動で更新）。' : 'あいての入力を待っています…') + '</span>'
+      : '<span><span class="roombadge">● あいてと共有中</span>　あいてから待ち合わせの誘いです。上の「わたしの出発地」に来かたを入れると、あいての画面にも出ます。待ち合わせの駅・場所・日時は、あいてが決めます。</span>') +
+      (r.err ? '<span class="late">' + esc(r.err) + '</span>' : '') +
+      '<span class="row">' + (r.role === 'a' ? '<button type="button" id="room-qr">QR コードをもう一度出す</button>' : '') + '<button type="button" id="room-end">共有をやめる</button></span>';
+    if ($('room-qr')) $('room-qr').addEventListener('click', showQr);
+    $('room-end').addEventListener('click', function () {
+      state.room = null; saveChoice(); syncRoom(); toast('共有をやめました（あいての画面には、いまの内容が残ります）');
+    });
+  }
+  function loadQrLib() {
+    if (window.qrcode) return Promise.resolve();
+    return new Promise(function (ok, ng) {
+      var sc = document.createElement('script');
+      sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js';
+      sc.onload = ok; sc.onerror = ng; document.head.appendChild(sc);
+    });
+  }
+  function showQr() {
+    var url = roomLink(), dlg = $('qr-dlg');
+    $('qr-url').textContent = url;
+    $('qr-box').textContent = 'QR コードを作っています…';
+    if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
+    loadQrLib().then(function () {
+      var q = qrcode(0, 'M'); q.addData(url); q.make();
+      $('qr-box').innerHTML = q.createSvgTag({ cellSize: 6, margin: 2, scalable: true });
+    }, function () { $('qr-box').textContent = 'QR コードを作れませんでした。下のリンクを送ってください。'; });
+  }
+  $('invite').addEventListener('click', function () {
+    if (!state.room) { state.room = { id: roomId(), role: 'a' }; saveChoice(); }
+    roomPut(); syncRoom(); showQr();
+  });
+  $('qr-close').addEventListener('click', function () { var d = $('qr-dlg'); if (d.close) d.close(); else d.removeAttribute('open'); });
+  $('qr-share').addEventListener('click', function () {
+    var url = roomLink(), text = state.st.name + '駅で待ち合わせ。あなたの来かたを入れてください:';
+    var touch = window.matchMedia && matchMedia('(pointer: coarse)').matches;
+    if (touch && navigator.share) { navigator.share({ title: 'Machiawase', text: text, url: url }).catch(function () {}); return; }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text + ' ' + url).then(function () { toast('リンクをコピーしました'); }, function () { window.prompt('このリンクを送ってください', url); });
+    else window.prompt('このリンクを送ってください', url);
+  });
+
   function syncHead(A, B, to, view) {
     var mw = meetWhen(), st = state.st;
     $('sumtx').innerHTML = (needNet() && mw ? '<span><b>' + esc($('md').value.replace(/^\d{4}-0?(\d+)-0?(\d+)$/, '$1/$2')) + ' ' + hm(mw.min) + '</b></span>' : '') +
@@ -4866,6 +5205,8 @@ var View3D = (function () {
     if (M.same) { out.innerHTML = '<div class="notice">' + M.who + 'の出発地と待ち合わせ場所が同じです。どちらかを変えてください。</div>'; return; }
     if (!M.g) { out.innerHTML = noRoute(st, M.ep, to, M.pr); bindAlts(); return; }
     state.g = M.g; state.gp = O ? O.g : null;
+    // 電車・バスの案内カード（乗換案内のときだけ。歩く手順の前に出す。2026-10-13 利用者「案内に図を入れて欲しい」→「電車・バスも案内カードに」）
+    state.rides = view === 'duo' ? [] : rideCards(M); state.ride = -1; clearTimeout(state.rideT);
     if (view === 'duo') {
       out.innerHTML = '<div class="main duo"><div class="side">' + flowHTML(A, B, to) + meetHTML(st, A.ep, to, A.g, A.pr, B.g) + '</div>' + p3dHTML(st) + '</div>';
     } else {
@@ -4883,15 +5224,17 @@ var View3D = (function () {
     View3D.setPartner(O ? O.g : null); // もう一人の道順（だいだい）
     bind3D();
     syncResume();
-    if ($('nav-start')) $('nav-start').addEventListener('click', function () { var r = View3D.resumeStep; startNav(r > 0 ? r : 0); });
+    if ($('nav-start')) $('nav-start').addEventListener('click', function () { var r = View3D.resumeStep; if (r > 0 || !state.rides.length) startNav(r > 0 ? r : 0); else startRide(0); });
     if ($('fpv-opt')) $('fpv-opt').addEventListener('change', function () { try { localStorage.setItem('machiawase.fpvOpt', this.checked ? '1' : '0'); } catch (e) {} });
     if ($('auto-walk')) $('auto-walk').addEventListener('click', startAuto);
     if ($('share')) $('share').addEventListener('click', shareRoute);
     document.querySelectorAll('[data-meet]').forEach(function (b) { b.addEventListener('click', function () { $('to').value = b.dataset.meet; runBusy(); }); });
     if ($('send-partner')) $('send-partner').addEventListener('click', sendToPartner);
     if (liveLines().length && Date.now() - live.at > 30000) liveFetch(rerenderMeet); // 遅れ・運行情報（30 秒より新しければそのまま）
+    document.querySelectorAll('ol.legs li[data-ride]').forEach(function (li) { li.addEventListener('click', function () { if (state.rides && state.rides[+li.dataset.ride]) startRide(+li.dataset.ride); }); });
     bindHover();
     bindAlts();
+    if (state.room) { roomPut(); syncRoom(); }
   }
   // わたし・あいての画面の左の欄: 電車（乗換案内）と歩く順番
   function stepsPanel(M, O) {
@@ -4911,7 +5254,7 @@ var View3D = (function () {
       if (P.ep.type === 'dep') li.push('<li>' + esc(P.ep.err) + '</li>');
       else if (it) {
         var N = it.net, r = it.plan;
-        if (r.walk0) li.push('<li><span class="lt">' + hm(r.dep) + '</span>' + esc(N.st[r.start][1]) + 'から歩く</li>');
+        if (r.walk0) li.push('<li><span class="lt">' + hm(r.dep) + '</span>' + esc(it.here ? '現在地' : N.st[r.start][1]) + 'から歩く</li>');
         r.legs.forEach(function (l, i) {
           var x = Transit.legInfo(N, l);
           li.push('<li><span class="lt">' + hm(l.dep) + '</span><b>' + esc(x.from) + '</b>' + (i ? 'で乗り換え' : '') + '<small><span class="lb" style="' + lbStyle(x.color) + '">' + esc(x.line) + '</span> ' + esc(x.dest) + '行き</small></li>');
@@ -4946,7 +5289,7 @@ var View3D = (function () {
       (View3D.hasCity ? '<label class="depth" for="city-a" id="city-a-wrap"' + (View3D.city ? '' : ' hidden') + '>街並みの濃さ<input type="range" id="city-a" min="0" max="1" step="0.05" value="' + View3D.cityAlpha + '"><output id="city-a-v">' + Math.round(View3D.cityAlpha * 100) + '%</output></label>' : '') +
       // 地下街の濃さ（2026-10-11 利用者「地下空間の透明度を調整できるようにして」）。地下街を出しているときだけ
       (View3D.hasUbld(st) ? '<label class="depth" for="ubld-a" id="ubld-a-wrap"' + (View3D.ubld ? '' : ' hidden') + ' title="PLATEAU の地下街モデルの壁・床・天井の濃さ。案内中はこの半分ほど。リアル視点ではいつも不透明">地下街の濃さ<input type="range" id="ubld-a" min="0" max="1" step="0.05" value="' + View3D.ubldAlpha + '"><output id="ubld-a-v">' + Math.round(View3D.ubldAlpha * 100) + '%</output></label>' : '') +
-      '</div></div></section>';
+      '</div><div class="routemap" id="routemap" hidden></div></div></section>';
   }
   function bind3D() {
     // 経路を選び直すと立体図は外からの見え方に戻る（リアル視点も切れる）ので、ボタンの見た目も合わせる
@@ -5028,6 +5371,7 @@ var View3D = (function () {
     if (s.icon === 'place') return '<div class="ico place">' + icon('place') + '</div>';
     if (s.icon === 'spot') return '<div class="ico spot">' + icon('spot') + '</div>';
     if (s.icon === 'train') return '<div class="ico train">' + icon('train') + '</div>';
+    if (s.icon === 'bus') return '<div class="ico train">' + icon('bus') + '</div>';
     if (s.icon === 'walk') return '<div class="ico">' + icon('walk') + '</div>';
     if (s.icon === 'uturn' || s.icon === 'turnR' || s.icon === 'turnL') return '<div class="ico">' + icon(s.icon) + '</div>';
     if (s.icon === 'gate') return '<div class="ico gate">' + icon('gate') + '</div>';
@@ -5036,12 +5380,23 @@ var View3D = (function () {
     return '<div class="ico v">' + icon(s.up ? 'stairUp' : 'stairDown') + '</div>';
   }
 
+  // 手順の階の札: 地上・地下N階（上り下りの手順は「地下1階 → 地上」）
+  function lvTag(z) {
+    var u = z < -0.01, nm = Math.abs(z) < 0.01 ? '地上' : Guide.levelLabel(state.st, z);
+    if (u && nm.indexOf('地下') < 0) nm = '地下・' + nm;
+    return '<span class="lv ' + (u ? 'lv-u' : 'lv-g') + '">' + esc(nm) + '</span>';
+  }
+  function lvBadge(s) {
+    if (s.z == null) return '';
+    if (s.z1 != null && Math.abs(s.z1 - s.z) > 0.01) return '<span class="lvs">' + lvTag(s.z) + '→' + lvTag(s.z1) + '</span>';
+    return '<span class="lvs">' + lvTag(s.z) + '</span>';
+  }
   function stepsHTML(g) {
     return '<ol class="steps">' + g.steps.map(function (s, i) {
       var minor = s.kind === 'walk' && !s.detail;
       return '<li data-i="' + i + '" class="' + (minor ? 'minor' : '') + '">' +
         '<div class="no">' + (i + 1) + '</div>' + stepIcon(s) +
-        '<div style="min-width:0"><div class="st-title">' + esc(s.title) + '</div>' +
+        '<div style="min-width:0"><div class="st-title">' + lvBadge(s) + esc(s.title) + '</div>' +
         (s.detail ? '<div class="st-detail">' + esc(s.detail) + '</div>' : '') +
         (s.note ? '<div class="st-detail">' + esc(s.note) + '</div>' : '') +
         (s.where ? '<span class="where">' + esc(s.where) + '</span>' : '') +
@@ -5262,6 +5617,12 @@ var View3D = (function () {
     state.auto = true;
     enterView();
     var r = View3D.resumeStep;
+    if (r <= 0 && state.rides && state.rides.length) {
+      state.ride = 0; state.nav = 0; state.ridePause = false;
+      document.body.classList.add('nav-on');
+      renderNav(); rideTick(); scrollToStage();
+      return;
+    }
     state.nav = r > 0 ? r : 0;
     document.body.classList.add('nav-on');
     renderNav(); listSel(state.nav);
@@ -5280,6 +5641,9 @@ var View3D = (function () {
   // 終了: 手動と同じく、止めた所を覚えて「続きから（自動進行）」で再開できるようにする（歩き終えていれば最初から）
   function endAutoNav() {
     state.auto = false;
+    document.body.classList.remove('ride-on');
+    showRouteMap(null);
+    state.ride = -1; clearTimeout(state.rideT);
     if (state.playing) View3D.view('play'); // その場で止める（続きの位置を覚える）
     leaveView();
     state.nav = -1;
@@ -5296,7 +5660,24 @@ var View3D = (function () {
     if (on && window.matchMedia && matchMedia('(min-width: 961px) and (min-height: 600px)').matches) on.scrollIntoView({ block: 'nearest' });
     document.querySelectorAll('.seg-g').forEach(function (gg) { gg.classList.toggle('on', +gg.dataset.i === i); });
   }
+  // 電車・バスのカード（state.rides）を出す。そのあいだ state.nav は 0（案内中のしるし）で、state.ride がカードの番号
+  function startRide(k) {
+    if (state.auto) { if (state.playing) View3D.view('play'); }
+    state.ride = k; state.nav = 0;
+    document.body.classList.add('nav-on');
+    renderNav(); syncSel(-1); View3D.focus(-1); scrollToStage();
+    if (state.auto) rideTick();
+  }
+  function rideTick() {
+    clearTimeout(state.rideT);
+    state.rideT = setTimeout(function () {
+      if (!state.auto || state.ride < 0 || state.ridePause) return;
+      moveNav(1);
+      if (state.ride >= 0) rideTick();
+    }, 5000);
+  }
   function startNav(i) {
+    state.ride = -1; clearTimeout(state.rideT);
     if (state.auto) { autoJump(i); return; } // 自動進行中に手順を押したら、その手順から歩き直す
     enterView();
     state.nav = i;
@@ -5321,7 +5702,10 @@ var View3D = (function () {
     }
   }
   function stopNav() {
+    document.body.classList.remove('ride-on');
+    showRouteMap(null);
     if (state.auto) { endAutoNav(); return; }
+    state.ride = -1; clearTimeout(state.rideT);
     View3D.setResumeStep(state.nav); // 閉じた手順から再開できるように（最後の手順なら最初から）
     leaveView();
     state.nav = -1;
@@ -5332,6 +5716,19 @@ var View3D = (function () {
     syncResume();
   }
   function moveNav(d) {
+    var R = state.rides || [];
+    if (state.ride >= 0) { // 電車・バスのカードの中
+      var k = state.ride + d;
+      if (k < 0) return;
+      if (k >= R.length) { state.ride = -1; clearTimeout(state.rideT); if (state.auto) autoJump(0); else startNav(0); return; }
+      state.ride = k; renderNav();
+      if (state.auto) rideTick();
+      return;
+    }
+    if (state.nav === 0 && d < 0 && R.length) { // 歩く手順の 1 つ目から戻ると、電車のカードの最後へ
+      if (state.playing) View3D.view('play');
+      startRide(R.length - 1); return;
+    }
     var n = state.g.steps.length, i = Math.max(0, Math.min(n - 1, state.nav + d));
     if (i === state.nav) return;
     if (state.auto) autoJump(i); else startNav(i);
@@ -5345,21 +5742,26 @@ var View3D = (function () {
   }
 
   function renderNav() {
+    if (state.ride >= 0) { renderRide(); return; }
+    document.body.classList.remove('ride-on');
+    showRouteMap(null);
     var g = state.g, i = state.nav, n = g.steps.length, s = g.steps[i], next = g.steps[i + 1];
     var sub = s.kind === 'vert' ? s.detail : s.detail || '';
-    $('navbox').innerHTML = '<section class="nav" aria-label="案内" aria-live="polite">' +
+    var R = (state.rides || []).length, tot = R + n, pos = R + i; // 電車・バスのカードも通しで数える
+    var zz = s.z1 != null ? s.z1 : s.z;
+    $('navbox').innerHTML = '<section class="nav ' + (zz == null ? '' : zz < -0.01 ? 'on-u' : 'on-g') + '" aria-label="案内" aria-live="polite">' +
       // 終了ボタンは文字付き（✕ だけでは終わり方が分からなかった。2026-10-09 利用者「案内中に案内を終了することができるようにしてほしい」）
       '<div class="navbar"><button type="button" class="navx" data-nav="stop" title="案内を終了する（Esc キー）">✕ 案内を終了</button>' +
-        '<div class="prog" aria-hidden="true"><span style="width:' + (100 * i / (n - 1)) + '%"></span></div><b>' + (i + 1) + ' / ' + n + '</b></div>' +
+        '<div class="prog" aria-hidden="true"><span style="width:' + (100 * pos / Math.max(1, tot - 1)) + '%"></span></div><b>' + (pos + 1) + ' / ' + tot + '</b></div>' +
       // ボタンは内容より上に置く（内容の長さでボタンの位置が上下しないように）
-      '<div class="navctl"><button type="button" data-nav="prev"' + (i === 0 ? ' disabled' : '') + '>◀ もどる</button>' +
+      '<div class="navctl"><button type="button" data-nav="prev"' + (pos === 0 ? ' disabled' : '') + '>◀ もどる</button>' +
         // 最後の手順では「到着・案内を終了」で終える（前は押せない「到着」で、終わり方が無かった）
         (i === n - 1 ? '<button type="button" class="primary" data-nav="stop">到着・案内を終了</button></div>'
           : '<button type="button" class="primary" data-nav="next">つぎへ ▶</button></div>') +
       // 自動進行は、止める・再開のボタンを添える（ほかは手動と同じカード）
       (state.auto ? '<div class="navkeys navauto">' + (i === n - 1 ? '到着しました' : '自動で進んでいます <button type="button" data-nav="pause">' + (state.playing ? '■ 止める' : '▶ 再開') + '</button>') + '</div>'
         : '<div class="navkeys">キーボードの ← → でも進めます</div>') +
-      '<div class="navmain">' + stepIcon(s) + '<div class="navtx"><b>' + esc(s.title) + '</b>' +
+      '<div class="navmain">' + stepIcon(s) + '<div class="navtx">' + (lvBadge(s) ? '<span style="display:block;margin-bottom:2px">' + lvBadge(s) + '</span>' : '') + '<b>' + esc(s.title) + '</b>' +
         (sub ? '<small>' + esc(sub) + '</small>' : '') + (s.note ? '<small>' + esc(s.note) + '</small>' : '') + (s.where ? '<span class="where">' + esc(s.where) + '</span>' : '') + '</div></div>' +
       illust(s) +
       (next ? '<div class="navnext">つぎに ' + stepIcon(next) + '<span>' + esc(next.title) + '</span></div>' : '') +
@@ -5370,6 +5772,210 @@ var View3D = (function () {
         if (a === 'stop') stopNav(); else if (a === 'pause') View3D.view('play'); else moveNav(a === 'next' ? 1 : -1);
       });
     });
+  }
+  // 電車・バスのカード: 乗る・乗り換える・降りる（何両目か）を、路線の帯・乗り換え・編成の図で
+  function renderRide() {
+    document.body.classList.add('ride-on');
+    showRouteMap(state.rides[state.ride]);
+    var R = state.rides, k = state.ride, s = R[k], n = state.g.steps.length, tot = R.length + n;
+    var next = R[k + 1] || state.g.steps[0];
+    $('navbox').innerHTML = '<section class="nav" aria-label="案内" aria-live="polite">' +
+      '<div class="navbar"><button type="button" class="navx" data-nav="stop" title="案内を終了する（Esc キー）">✕ 案内を終了</button>' +
+        '<div class="prog" aria-hidden="true"><span style="width:' + (100 * k / Math.max(1, tot - 1)) + '%"></span></div><b>' + (k + 1) + ' / ' + tot + '</b></div>' +
+      '<div class="navctl"><button type="button" data-nav="prev"' + (k === 0 ? ' disabled' : '') + '>◀ もどる</button><button type="button" class="primary" data-nav="next">つぎへ ▶</button></div>' +
+      (state.auto ? '<div class="navkeys navauto">自動で進んでいます <button type="button" data-nav="pause">' + (state.ridePause ? '▶ 再開' : '■ 止める') + '</button></div>'
+        : '<div class="navkeys">キーボードの ← → でも進めます</div>') +
+      '<div class="navmain">' + stepIcon(s) + '<div class="navtx"><b>' + esc(s.title) + '</b>' + (s.detail ? '<small>' + esc(s.detail) + '</small>' : '') + '</div></div>' +
+      (s.fig ? '<div class="illust">' + s.fig + '</div>' : '') +
+      '<div class="navnext">つぎに ' + stepIcon(next) + '<span>' + esc(next.title) + '</span></div>' +
+      '</section>';
+    $('navbox').querySelectorAll('[data-nav]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var a = b.dataset.nav;
+        if (a === 'stop') stopNav();
+        else if (a === 'pause') { state.ridePause = !state.ridePause; b.textContent = state.ridePause ? '▶ 再開' : '■ 止める'; if (!state.ridePause) rideTick(); }
+        else moveNav(a === 'next' ? 1 : -1);
+      });
+    });
+  }
+  // 路線図: 乗る区間を路線の色で太く、乗り換え・歩く所を点線、いま見ている区間を濃く。まわりの鉄道網を薄い線で
+  function showRouteMap(card) {
+    var box = $('routemap');
+    if (!box) return;
+    var it = state.main && state.main.ep && state.main.ep.itin;
+    if (!card || !it) { box.hidden = true; box.innerHTML = ''; return; }
+    var N = it.net, r = it.plan, legs = r.legs, st = N.st;
+    var W = Math.max(320, box.parentNode.clientWidth || 800), H = Math.max(240, box.parentNode.clientHeight || 500);
+    // 区間ごとの停車駅の位置
+    var segs = legs.map(function (l) { var p = N.pats[l.p], pts = []; for (var j = l.from; j <= l.to; j++) pts.push(st[p.s[j]]); return pts; });
+    var all = [].concat.apply([], segs), gp = it.here && state.geo && state.geo[state.main.k];
+    if (gp) all.push([0, '', 0, gp.lat, gp.lon]);
+    var la0 = Math.min.apply(null, all.map(function (q) { return q[3]; })), la1 = Math.max.apply(null, all.map(function (q) { return q[3]; }));
+    var lo0 = Math.min.apply(null, all.map(function (q) { return q[4]; })), lo1 = Math.max.apply(null, all.map(function (q) { return q[4]; }));
+    // 地図と同じ Web メルカトル（背景の地理院タイルとずれないように）。全体が収まる倍率（小数のズーム）を決める
+    var padX = 70, padY = 56, mx = function (lo) { return (lo + 180) / 360; },
+      my = function (la) { var r = la * Math.PI / 180; return (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2; };
+    var wx = Math.max(mx(lo1) - mx(lo0), 2e-6), wy = Math.max(my(la0) - my(la1), 2e-6);
+    var zf = Math.min(16, Math.log2(Math.min((W - 2 * padX) / (wx * 256), (H - 2 * padY) / (wy * 256))));
+    var sc = 256 * Math.pow(2, zf), cmx = (mx(lo0) + mx(lo1)) / 2, cmy = (my(la0) + my(la1)) / 2;
+    var X = function (lo) { return W / 2 + (mx(lo) - cmx) * sc; }, Y = function (la) { return H / 2 + (my(la) - cmy) * sc; };
+    // 背景の地図（地理院タイル 淡色地図）。整数のズームのタイルを、倍率に合わせて並べる
+    var zt = Math.max(5, Math.min(16, Math.floor(zf))), n2 = Math.pow(2, zt), tpx = sc / n2, tiles = '';
+    var tx0 = Math.floor((cmx - W / 2 / sc) * n2), tx1 = Math.floor((cmx + W / 2 / sc) * n2), ty0 = Math.floor((cmy - H / 2 / sc) * n2), ty1 = Math.floor((cmy + H / 2 / sc) * n2);
+    if ((tx1 - tx0 + 1) * (ty1 - ty0 + 1) <= 80) for (var tx = tx0; tx <= tx1; tx++) for (var ty = ty0; ty <= ty1; ty++) {
+      tiles += '<image href="https://cyberjapandata.gsi.go.jp/xyz/pale/' + zt + '/' + tx + '/' + ty + '.png" x="' + (W / 2 + (tx / n2 - cmx) * sc).toFixed(1) + '" y="' + (H / 2 + (ty / n2 - cmy) * sc).toFixed(1) +
+        '" width="' + (tpx + 0.6).toFixed(1) + '" height="' + (tpx + 0.6).toFixed(1) + '" preserveAspectRatio="none"/>';
+    }
+    var inView = function (q) { var x = X(q[4]), y = Y(q[3]); return x > -40 && x < W + 40 && y > -40 && y < H + 40; };
+    // まわりの鉄道網（同じ駅どうしの線は 1 本だけ）
+    var seen = {}, net = '';
+    N.pats.forEach(function (p) {
+      if (p.mode) return;
+      for (var j = 1; j < p.L; j++) {
+        var a = p.s[j - 1], b = p.s[j], key = a < b ? a + '-' + b : b + '-' + a;
+        if (seen[key]) continue;
+        seen[key] = 1;
+        var A = st[a], Bq = st[b];
+        if (!inView(A) && !inView(Bq)) continue;
+        net += 'M' + X(A[4]).toFixed(1) + ' ' + Y(A[3]).toFixed(1) + 'L' + X(Bq[4]).toFixed(1) + ' ' + Y(Bq[3]).toFixed(1);
+      }
+    });
+    var focus = card.part === 'ride' || card.part === 'arrive' ? [card.leg] : card.part === 'transfer' ? [card.leg, card.leg + 1] : [0];
+    var lines = '', dots = '', labels = '', walks = '';
+    segs.forEach(function (pts, i) {
+      var x = Transit.legInfo(N, legs[i]), c = esc(x.color || '#777'), on = focus.indexOf(i) >= 0;
+      var d = pts.map(function (q, j) { return (j ? 'L' : 'M') + X(q[4]).toFixed(1) + ' ' + Y(q[3]).toFixed(1); }).join('');
+      lines += '<path d="' + d + '" fill="none" stroke="' + c + '" stroke-width="' + (on ? 9 : 6) + '" stroke-linecap="round" stroke-linejoin="round" opacity="' + (on ? 1 : .45) + '"' + (x.bus ? ' stroke-dasharray="1 0"' : '') + '/>';
+      pts.forEach(function (q, j) {
+        var end = j === 0 || j === pts.length - 1;
+        dots += '<circle cx="' + X(q[4]).toFixed(1) + '" cy="' + Y(q[3]).toFixed(1) + '" r="' + (end ? 7 : 3.5) + '" fill="#fff" stroke="' + c + '" stroke-width="' + (end ? 4 : 2) + '" opacity="' + (on || end ? 1 : .6) + '"/>';
+      });
+      // 乗り換えの歩き（降りた駅 → 次に乗る駅）
+      if (segs[i + 1]) {
+        var e = pts[pts.length - 1], n0 = segs[i + 1][0];
+        if (e[0] !== n0[0]) walks += '<path d="M' + X(e[4]) + ' ' + Y(e[3]) + 'L' + X(n0[4]) + ' ' + Y(n0[3]) + '" stroke="var(--ink)" stroke-width="3" stroke-dasharray="4 4" fill="none"/>';
+      }
+      // 名前: 乗る駅・乗り換えの駅・降りる駅
+      var a = pts[0], b = pts[pts.length - 1];
+      if (i === 0) labels += rmLabel(X(a[4]), Y(a[3]), a[1], (gp ? '' : '出発 ') + hm(legs[0].dep));
+      labels += rmLabel(X(b[4]), Y(b[3]), b[1], (i === segs.length - 1 ? '到着 ' : '乗り換え ') + hm(legs[i].arr));
+      if (on) { var mid = pts[Math.floor(pts.length / 2)]; labels += '<text class="rm-sub" x="' + (X(mid[4]) + 12).toFixed(1) + '" y="' + (Y(mid[3]) + 18).toFixed(1) + '">' + esc(x.line + '・' + x.dest + '行き') + '</text>'; }
+    });
+    if (gp) {
+      var f0 = segs[0][0];
+      walks += '<path d="M' + X(gp.lon) + ' ' + Y(gp.lat) + 'L' + X(f0[4]) + ' ' + Y(f0[3]) + '" stroke="var(--ink)" stroke-width="3" stroke-dasharray="4 4" fill="none"/>';
+      dots += '<circle cx="' + X(gp.lon) + '" cy="' + Y(gp.lat) + '" r="8" fill="#2a7de1" stroke="#fff" stroke-width="3"/>';
+      labels += rmLabel(X(gp.lon), Y(gp.lat), '現在地', '出発 ' + hm(r.dep));
+    }
+    box.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="電車・バスの路線図"><g class="rm-map">' + tiles + '</g><path class="rm-net" d="' + net + '"/>' + walks + lines + dots + labels + '</svg>' +
+      '<span class="rm-credit">地図：地理院タイル（淡色地図）</span>' +
+      '<span class="rm-title">路線図（' + esc(card.part === 'transfer' ? '乗り換え' : card.part === 'walk0' ? '乗る駅まで歩く' : Transit.legInfo(N, legs[card.leg]).line) + '）</span>';
+    box.hidden = false;
+  }
+  function rmLabel(x, y, name, sub) {
+    return '<text class="rm-lbl" x="' + (x + 11).toFixed(1) + '" y="' + (y - 6).toFixed(1) + '">' + esc(name) + '</text>' +
+      (sub ? '<text class="rm-sub" x="' + (x + 11).toFixed(1) + '" y="' + (y + 10).toFixed(1) + '">' + esc(sub) + '</text>' : '');
+  }
+  // 電車・バスのカードを、乗換案内（itin）から作る
+  function rideCards(P) {
+    var it = P.ep.itin;
+    if (!it) return [];
+    var N = it.net, r = it.plan, legs = r.legs, out = [];
+    var gate = P.g && P.ep.starts ? P.ep.starts.filter(function (x) { return x[0] === P.g.route.start; })[0] : null;
+    var gname = gate && gate[2].charAt(0) !== '*' ? gate[2].replace(/の前$/, '') : '';
+    var lastInfo = Transit.legInfo(N, legs[legs.length - 1]), car = it.L ? carEstimate(it.L, gate, lastInfo.prevStop) : null;
+    if (r.walk0) {
+      var f0 = Transit.legInfo(N, legs[0]), w0 = Math.max(1, Math.round(r.walk0));
+      var nm0 = it.here ? '現在地' : N.st[r.start][1];
+      out.push({ leg: 0, part: 'walk0', icon: 'walk', title: hm(r.dep) + ' ' + nm0 + 'を出て、' + f0.from + (f0.bus ? 'の乗り場' : '駅') + 'まで歩く',
+        detail: '約' + w0 + '分の見込みです（' + (it.here ? '現在地と' : '') + '駅・バス停の位置から）。', fig: walkFig(nm0, f0.from + (f0.bus ? '（乗り場）' : '駅'), w0) });
+    }
+    legs.forEach(function (l, i) {
+      var x = Transit.legInfo(N, l), nx = legs[i + 1] ? Transit.legInfo(N, legs[i + 1]) : null;
+      var ty = x.type && x.type !== '普通' && x.type !== '各駅停車' ? x.type + '・' : '';
+      out.push({ leg: i, part: 'ride', icon: x.bus ? 'bus' : 'train', title: hm(l.dep) + ' ' + x.from + 'で、' + x.line + '（' + ty + x.dest + '行き）に乗る',
+        detail: x.stops + (x.stops < 10 ? 'つ目' : '番目') + (x.bus ? 'の停留所' : 'の停車駅') + '、' + x.to + 'で降ります（' + hm(l.arr) + ' 着）。' +
+          (x.through.length ? x.through.join('・') + 'に直通する電車です。' : ''), fig: rideFig(x, l) });
+      if (nx) {
+        var wk = Math.max(1, Math.round(l.walk || Transit.CHG));
+        out.push({ leg: i, part: 'transfer', icon: nx.bus ? 'bus' : 'train', title: hm(l.arr) + ' ' + x.to + 'で降りて、' + nx.line + 'に乗り換え',
+          detail: (nx.from !== x.to ? nx.from + (nx.bus ? 'の乗り場' : '駅') + 'まで歩きます。' : '') + '乗り換えは約' + wk + '分の見込み（駅・バス停の位置から）。' + hm(legs[i + 1].dep) + ' に出ます。',
+          fig: transferFig(x, nx, l, legs[i + 1], wk) });
+      } else {
+        out.push({ leg: i, part: 'arrive', icon: x.bus ? 'bus' : 'train', title: hm(l.arr) + ' ' + x.to + 'で降りる' + (car ? '（' + carText(car).replace(/（.*$/, '') + '）' : ''),
+          detail: (car ? carText(car) + 'で降りると、改札に近い所に着きます（ホームと改札の位置からの推定）。' : '') +
+            (gname ? '「' + gname + '」を出ます。' : '') + (x.bus ? 'バス停から待ち合わせ場所まで歩きます。' : '') + 'このあとは歩く順番で案内します。',
+          fig: car ? carFig(car, x) : arriveFig(x, l) });
+      }
+    });
+    return out;
+  }
+  // 路線の帯: 乗る駅から降りる駅まで（途中の停車駅は小さな点）
+  function rideFig(x, l) {
+    var W = 420, y = 84, x0 = 46, x1 = 374, n = Math.min(x.stops - 1, 18), dots = '', c = esc(x.color || '#777');
+    for (var k = 1; k <= n; k++) dots += '<circle cx="' + (x0 + (x1 - x0) * k / (n + 1)) + '" cy="' + y + '" r="3.2" fill="#fff"/>';
+    var veh = x.bus
+      ? '<g transform="translate(' + (x0 + 18) + ' ' + (y - 46) + ')"><rect width="46" height="26" rx="5" fill="' + c + '"/><rect x="5" y="5" width="36" height="9" rx="2" fill="#fff" opacity=".85"/><circle cx="11" cy="27" r="4" class="il-p-head"/><circle cx="35" cy="27" r="4" class="il-p-head"/></g>'
+      : '<g transform="translate(' + (x0 + 18) + ' ' + (y - 44) + ')"><path d="M0 4 a4 4 0 0 1 4 -4 H40 a14 14 0 0 1 14 14 V22 H0 Z" fill="' + c + '"/><rect x="6" y="5" width="9" height="7" rx="1.5" fill="#fff" opacity=".85"/><rect x="19" y="5" width="9" height="7" rx="1.5" fill="#fff" opacity=".85"/><rect x="32" y="5" width="9" height="7" rx="1.5" fill="#fff" opacity=".85"/></g>';
+    return '<svg viewBox="0 0 ' + W + ' 150" role="img" aria-label="' + esc(x.from + 'から' + x.to + 'まで' + x.line) + '">' +
+      '<line x1="' + x0 + '" x2="' + x1 + '" y1="' + y + '" y2="' + y + '" stroke="' + c + '" stroke-width="12" stroke-linecap="round"/>' + dots +
+      '<circle cx="' + x0 + '" cy="' + y + '" r="10" fill="#fff" stroke="' + c + '" stroke-width="5"/><circle cx="' + x1 + '" cy="' + y + '" r="10" fill="#fff" stroke="' + c + '" stroke-width="5"/>' +
+      veh + '<path class="il-arrow" style="stroke-width:5" d="M' + (x0 + 84) + ' ' + (y - 31) + ' H' + (x0 + 130) + ' M' + (x0 + 120) + ' ' + (y - 39) + ' L' + (x0 + 130) + ' ' + (y - 31) + ' L' + (x0 + 120) + ' ' + (y - 23) + '"/>' +
+      '<text class="il-sub" x="' + x0 + '" y="' + (y + 30) + '" text-anchor="middle">乗る ' + hm(l.dep) + '</text><text class="il-txt" x="' + x0 + '" y="' + (y + 50) + '" text-anchor="middle">' + esc(x.from) + '</text>' +
+      '<text class="il-sub" x="' + x1 + '" y="' + (y + 30) + '" text-anchor="middle">降りる ' + hm(l.arr) + '</text><text class="il-txt" x="' + x1 + '" y="' + (y + 50) + '" text-anchor="middle">' + esc(x.to) + '</text>' +
+      '<text class="il-txt" x="' + (W / 2) + '" y="18" text-anchor="middle">' + esc(x.line + '　' + x.dest + '行き') + '</text>' +
+      (x.stops > 1 ? '<text class="il-sub" x="' + ((x0 + x1) / 2) + '" y="' + (y + 30) + '" text-anchor="middle">' + x.stops + (x.bus ? '停留所' : '駅') + '目</text>' : '') +
+      '</svg>';
+  }
+  // 乗り換え: 着いた路線の帯 → 乗り換えの駅（歩く所は点線） → 次の路線の帯
+  function transferFig(x, nx, l, l2, wk) {
+    var W = 420, y = 70, c1 = esc(x.color || '#777'), c2 = esc(nx.color || '#777'), sx = 175, ex = 245;
+    return '<svg viewBox="0 0 ' + W + ' 150" role="img" aria-label="' + esc(x.to + 'で' + nx.line + 'に乗り換え') + '">' +
+      '<line x1="20" x2="' + sx + '" y1="' + y + '" y2="' + y + '" stroke="' + c1 + '" stroke-width="12" stroke-linecap="round"/>' +
+      '<line x1="' + ex + '" x2="400" y1="' + y + '" y2="' + y + '" stroke="' + c2 + '" stroke-width="12" stroke-linecap="round"/>' +
+      '<path class="il-line" style="stroke-width:4" d="M' + sx + ' ' + y + ' H' + ex + '"/>' +
+      '<circle cx="' + sx + '" cy="' + y + '" r="10" fill="#fff" stroke="' + c1 + '" stroke-width="5"/><circle cx="' + ex + '" cy="' + y + '" r="10" fill="#fff" stroke="' + c2 + '" stroke-width="5"/>' +
+      '<g transform="translate(' + ((sx + ex) / 2 - 10) + ' ' + (y - 44) + ') scale(1.2)"><circle cx="9" cy="3.4" r="2.8" class="il-p-head"/><path class="il-p" d="M8 7.5 L6 15 M7.6 9 L12 11.6 M7.6 9 L3.4 12.6 M6 15 L10.2 22 M6 15 L2.4 21.6"/></g>' +
+      '<text class="il-txt" x="' + ((sx + ex) / 2) + '" y="' + (y + 34) + '" text-anchor="middle">' + esc(x.to) + '</text>' +
+      '<text class="il-sub" x="' + ((sx + ex) / 2) + '" y="' + (y + 52) + '" text-anchor="middle">乗り換え 約' + wk + '分</text>' +
+      '<text class="il-sub" x="22" y="' + (y - 18) + '">' + esc(x.line) + '</text><text class="il-sub" x="22" y="' + (y + 30) + '">' + hm(l.arr) + ' 着</text>' +
+      '<text class="il-sub" x="398" y="' + (y - 18) + '" text-anchor="end">' + esc(nx.line) + '</text><text class="il-sub" x="398" y="' + (y + 30) + '" text-anchor="end">' + hm(l2.dep) + ' 発・' + esc(nx.dest) + '行き</text>' +
+      '</svg>';
+  }
+  // 降りる車両: 編成を横に並べ、進行方向（右）と降りる車両を示す
+  function carFig(car, x) {
+    var W = 420, n = car.cars, gap = 3, w = Math.min(34, (380 - gap * (n - 1)) / n), total = n * w + (n - 1) * gap, x0 = (W - total) / 2, y = 62, c = esc(x.color || '#777'), cars = '';
+    for (var i = 0; i < n; i++) {
+      var fromFront = n - i, cx = x0 + i * (w + gap), hi = fromFront === car.car;
+      var shape = i === n - 1 ? 'M' + cx + ' ' + y + ' h' + (w - 8) + ' q8 0 8 10 v16 h-' + w + ' z' : 'M' + cx + ' ' + y + ' h' + w + ' v26 h-' + w + ' z';
+      cars += '<path d="' + shape + '" fill="' + (hi ? c : 'var(--surface)') + '" stroke="' + (hi ? c : 'var(--ink)') + '" stroke-width="2"/>' +
+        '<text class="il-sub" x="' + (cx + w / 2) + '" y="' + (y + 44) + '" text-anchor="middle"' + (hi ? ' style="fill:var(--ink);font-weight:700"' : '') + '>' + fromFront + '</text>';
+    }
+    var hx = x0 + (n - car.car) * (w + gap) + w / 2;
+    return '<svg viewBox="0 0 ' + W + ' 150" role="img" aria-label="' + esc('進行方向の前から' + car.car + '両目') + '">' +
+      '<path class="il-arrow" style="stroke-width:5" d="M' + (W / 2 - 60) + ' 28 H' + (W / 2 + 60) + ' M' + (W / 2 + 48) + ' 18 L' + (W / 2 + 60) + ' 28 L' + (W / 2 + 48) + ' 38"/>' +
+      '<text class="il-sub" x="' + (W / 2 - 70) + '" y="32" text-anchor="end">進行方向</text>' + cars +
+      '<path class="il-here" d="M' + hx + ' ' + (y + 52) + ' l-8 12 h16 z"/>' +
+      '<text class="il-txt" x="' + hx + '" y="' + (y + 82) + '" text-anchor="middle">前から' + car.car + '両目</text>' +
+      '</svg>';
+  }
+  // 着く（バス・降りる車両が分からないとき）: 路線の帯の終わりと、そこから歩く
+  function arriveFig(x, l) {
+    var c = esc(x.color || '#777');
+    return '<svg viewBox="0 0 420 150" role="img" aria-label="' + esc(x.to + 'で降りる') + '">' +
+      '<line x1="30" x2="230" y1="70" y2="70" stroke="' + c + '" stroke-width="12" stroke-linecap="round"/><circle cx="230" cy="70" r="11" fill="#fff" stroke="' + c + '" stroke-width="5"/>' +
+      '<path class="il-line" style="stroke-width:4" d="M242 70 H360"/><path class="il-arrow" style="stroke-width:5" d="M350 60 L362 70 L350 80"/>' +
+      '<text class="il-txt" x="230" y="108" text-anchor="middle">' + esc(x.to) + '</text><text class="il-sub" x="230" y="126" text-anchor="middle">' + hm(l.arr) + ' 着</text>' +
+      '<text class="il-sub" x="300" y="56" text-anchor="middle">歩いて待ち合わせ場所へ</text></svg>';
+  }
+  // 出発地から乗る駅・乗り場まで歩く
+  function walkFig(a, b, min) {
+    return '<svg viewBox="0 0 420 150" role="img" aria-label="' + esc(a + 'から' + b + 'まで歩く') + '">' +
+      '<circle class="il-here" cx="60" cy="72" r="9"/><path class="il-line" style="stroke-width:4" d="M72 72 H340"/><path class="il-arrow" style="stroke-width:5" d="M330 62 L342 72 L330 82"/>' +
+      '<g transform="translate(184 32) scale(1.4)"><circle cx="9" cy="3.4" r="2.8" class="il-p-head"/><path class="il-p" d="M8 7.5 L6 15 M7.6 9 L12 11.6 M7.6 9 L3.4 12.6 M6 15 L10.2 22 M6 15 L2.4 21.6"/></g>' +
+      '<rect class="il-box" x="346" y="58" width="28" height="28" rx="5"/>' +
+      '<text class="il-txt" x="60" y="110" text-anchor="middle">' + esc(a) + '</text><text class="il-txt" x="360" y="110" text-anchor="middle">' + esc(b) + '</text>' +
+      '<text class="il-sub" x="206" y="104" text-anchor="middle">約' + min + '分</text></svg>';
   }
   document.addEventListener('keydown', function (e) {
     if (!state.g || state.nav < 0 || /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
@@ -5486,10 +6092,11 @@ var View3D = (function () {
     start = STATIONS.findIndex(function (s) { return s.id === saved.st; });
     if (saved.pr && ['std', 'stair', 'esc', 'ev'].indexOf(saved.pr) >= 0) $('from-pr').value = saved.pr;
   }
-  setSetup(!saved); // 前の選択・共有リンクがあれば、設定は閉じてまとめだけ
+  setSetup(!saved || (saved.role === 'b' && saved.url)); // 前の選択・共有リンクがあれば閉じてまとめだけ（誘われて開いたときは開いて、わたしの来かたを入れてもらう）
   openStation(start >= 0 ? start : 0, function () {
     if (start >= 0) { state.pend = saved; setStation(start, saved.from, saved.to, saved.fc, saved.tc); }
     else setStation(0);
+    if (state.room) { syncRoom(); roomPoll(); }
     // 日本語フォントが届いたら、立体図のラベルを描き直す
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { busy('表示を整えています…', run); });
   });
