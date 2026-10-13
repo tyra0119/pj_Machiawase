@@ -76,8 +76,34 @@ body { background: var(--bg); color: var(--ink); font-family: var(--f-body); fon
 .howto:hover { background: rgba(255,255,255,.12); }
 .sign h1 small { display: block; font-size: 12px; font-weight: 500; letter-spacing: .08em; opacity: .75; }
 
-/* 条件の入力 */
-.controls { display: grid; grid-template-columns: 1.1fr 1.4fr auto 1.4fr; gap: 10px 12px; align-items: end; margin-top: 18px; }
+/* 設定（2026-10-13 利用者「画面上部の設定箇所が使いにくい」）: 「いつ・どこで」「わたし」「あいて」の 3 つのまとまり。
+   決めたら 1 行のまとめ（sumbar）だけを残して閉じる */
+.setup { margin-top: 14px; display: grid; gap: 10px; }
+.sumbar { display: flex; align-items: center; gap: 8px 14px; flex-wrap: wrap; padding: 8px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+.sumtx { display: flex; flex-wrap: wrap; gap: 2px 18px; font-size: 14px; min-width: 0; flex: 1; }
+.sumtx span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.sumtx b { font-weight: 700; }
+.sumbtn { font: inherit; font-size: 14px; font-weight: 700; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 6px 14px; cursor: pointer; white-space: nowrap; }
+.sumbtn:hover { border-color: var(--oedo); color: var(--oedo); }
+.setup-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+body.setup-closed .setup-body { display: none; }
+.grp { margin: 0; padding: 8px 14px 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); display: grid; gap: 8px; min-width: 0; align-content: start; }
+.grp legend { padding: 0 6px; font-size: 14px; font-weight: 700; }
+.grp .row { display: flex; gap: 6px; flex-wrap: wrap; }
+.grp .tin { font-size: 15px; padding: 7px 10px; }
+.hint2 { font-size: 12px; color: var(--muted); }
+/* 見る画面の切り替え: ふたり・わたし・あいて */
+.viewtabs { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.viewtabs[hidden] { display: none; }
+.viewtabs button { font: inherit; font-size: 14px; font-weight: 700; padding: 7px 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.viewtabs button:hover { border-color: var(--oedo); }
+.viewtabs button[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+/* ふたりの流れ: ふたりの出発から待ち合わせ場所までを 2 列に並べ、下でひとつにまとめる */
+.lanes { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
+.lane h3 { margin: 0 0 2px; font-size: 14px; }
+.lane ol.legs { margin-top: 4px; }
+.merge { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: var(--oedo-soft); color: var(--ink); font-weight: 700; text-align: center; }
+.merge small { display: block; font-weight: 500; color: var(--muted); font-size: 12px; }
 .field { display: grid; gap: 4px; min-width: 0; }
 /* ホームの車両（おすすめ・前から 1〜8 両目）。ホームを選んだときだけ出す */
 .field select.carsel { font-size: 13px; padding: 4px 8px; }
@@ -88,24 +114,11 @@ body { background: var(--bg); color: var(--ink); font-family: var(--f-body); fon
 select { font: inherit; font-size: 15px; color: var(--ink); background: var(--surface); border: 1px solid var(--line);
   border-radius: 8px; padding: 9px 10px; width: 100%; min-width: 0; }
 select:focus-visible, button:focus-visible, input:focus-visible + span { outline: 3px solid var(--oedo); outline-offset: 2px; }
-.swap { font: inherit; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px;
-  height: 42px; width: 42px; cursor: pointer; display: grid; place-items: center; }
-.swap:hover { border-color: var(--oedo); color: var(--oedo); }
-.profiles { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.profiles .lbl { margin-right: 4px; }
-/* ふたりで待ち合わせ（あいての来かた・乗ってくる電車）と、ふたりの到着・うまく会える場所 */
-.duo { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; }
-.duo .lbl { font-size: 12px; color: var(--muted); letter-spacing: .06em; }
-.duo select { width: auto; max-width: 100%; }
 .trainsel { display: flex; gap: 6px; }
 .trainsel select { flex: 1; }
 .tin { font: inherit; font-size: 14px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; }
 /* 乗換案内（出発駅から待ち合わせの駅まで。2026-10-13 利用者「Machiawaseに足して」） */
 .depin { font: inherit; font-size: 15px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; min-width: 0; margin-top: 6px; }
-.duo .depin, .meetwhen .depin { width: 13em; margin-top: 0; }
-.meetwhen { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; }
-.meetwhen .lbl { font-size: 12px; color: var(--muted); letter-spacing: .06em; }
-.meetwhen small { font-size: 12px; color: var(--muted); }
 ol.legs { list-style: none; margin: 6px 0 0 6px; padding: 0 0 0 14px; border-left: 3px solid var(--line); display: grid; gap: 8px; font-size: 14px; }
 ol.legs li { position: relative; }
 ol.legs li::before { content: ''; position: absolute; left: -22px; top: 5px; width: 9px; height: 9px; border-radius: 50%; background: var(--surface); border: 2px solid var(--muted); }
@@ -359,10 +372,10 @@ body.nav-on .summary .acts { display: none; } /* 案内中は、案内開始の�
 .il-flap { fill: none; stroke: var(--oedo); stroke-width: 4; stroke-linecap: round; }
 
 @media (max-width: 960px) {
-  .controls { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
-  .controls .f-station { grid-column: 1 / -1; }
   .main, .figs2 { grid-template-columns: minmax(0, 1fr); }
   .p3d { position: static; order: -1; }
+  .main.duo > .p3d { order: 0; } /* ふたりの画面は、ふたりの流れを先に */
+  .viewtabs button { padding: 6px 12px; font-size: 13px; }
   .stage { height: clamp(360px, 58vh, 560px); }
   /* スマホでは、もどる・つぎへを画面の下に固定（カードの高さが変わってもボタンが動かない） */
   .navctl { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
@@ -396,7 +409,7 @@ body.nav-on .summary .acts { display: none; } /* 案内中は、案内開始の�
   .numbering b { font-size: 9px; } .numbering span { font-size: 14px; }
   .sign h1 { font-size: 18px; line-height: 1.3; } .sign h1 small { font-size: 11px; }
   main.wrap { flex: 1; min-height: 0; width: 100%; display: flex; flex-direction: column; padding-block: 0 6px; }
-  .controls { margin-top: 10px; gap: 6px 12px; }
+  .setup { margin-top: 8px; gap: 6px; }
   /* 左の列: 要約・案内カード・歩く順番。右: 立体図（大きく）と、その下に 2 つの図 */
   #out { flex: 1; min-height: 0; margin-top: 10px; display: grid; gap: 10px 14px;
     grid-template-columns: minmax(300px, 360px) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; }
@@ -408,7 +421,11 @@ body.nav-on .summary .acts { display: none; } /* 案内中は、案内開始の�
   .side { grid-column: 1; grid-row: 2 / 4; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
   .p3d { grid-column: 2; grid-row: 1 / 3; }
   .side > .panel { flex: 1; min-height: 0; overflow-y: auto; }
-  .side > .meet { flex: 0 1 auto; min-height: 0; max-height: 60%; overflow-y: auto; } /* ふたりの到着が長くても、左の列の中で縮んで歩く順番も見えるように */
+  .side > .meet { flex: 0 1 auto; min-height: 0; max-height: 60%; overflow-y: auto; }
+  .main.duo > .side, .main.duo > .p3d { grid-row: 1 / 4; }
+  #out:has(> .main.duo) { grid-template-columns: minmax(360px, 480px) minmax(0, 1fr); } /* ふたりの流れは 2 列なので左を広く */
+  .main.duo > .side > .flow { flex: 0 1 auto; max-height: 62%; } /* ふたりの画面は要約と下の図が無いので、上から下まで */
+  .viewtabs { margin-top: 6px; } /* ふたりの到着が長くても、左の列の中で縮んで歩く順番も見えるように */
   .p3d { position: static; min-height: 0; display: flex; flex-direction: column; padding: 12px 14px; }
   .p3d .hint { margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* 1 行に。全文はマウスを乗せると出る */
   .stage { flex: 1; height: auto; min-height: 0; }
@@ -422,13 +439,6 @@ body.nav-on .summary .acts { display: none; } /* 案内中は、案内開始の�
 }
 @media (min-width: 961px) and (min-height: 600px) and (max-height: 800px) {
   .figs2 .hint { display: none; } /* 低い画面では図の説明を省いて図を大きく */
-}
-@media (min-width: 1360px) and (min-height: 600px) {
-  /* 横に余裕があれば、移動の条件も同じ行に（見出しの「移動の条件」は、まとまりの名前として読み上げにだけ残す） */
-  .controls { grid-template-columns: minmax(130px, .7fr) minmax(0, 1fr) auto minmax(0, 1fr) auto; }
-  .profiles { grid-column: auto; flex-wrap: nowrap; gap: 6px; padding-bottom: 4px; }
-  .profiles .lbl { display: none; }
-  .seg span { padding: 6px 11px; }
 }
 @media (prefers-reduced-motion: no-preference) {
   ol.steps li, .seg-g .route { transition: background-color .15s, stroke-width .15s; }
@@ -444,41 +454,33 @@ body.nav-on .summary .acts { display: none; } /* 案内中は、案内開始の�
 </header>
 
 <main class="wrap">
-  <form class="controls" id="form" autocomplete="off">
-    <div class="field f-station"><label for="station">駅</label><select id="station"></select></div>
-    <div class="field"><label for="from">出発地（わたし）</label><select id="from"></select><select id="from-car" class="carsel" hidden aria-label="出発のホームの車両"></select>
-      <div class="trainsel"><select id="from-time" class="carsel" hidden aria-label="わたしの乗ってくる電車（この駅に着く時刻）"></select><input type="time" id="from-tin" class="tin" hidden aria-label="わたしの電車がこの駅に着く時刻"></div></div>
-    <button class="swap" type="button" id="swap" title="出発地と待ち合わせ場所を入れ替える" aria-label="出発地と待ち合わせ場所を入れ替える">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h12M12 3l4 4-4 4M16 13H4M8 9l-4 4 4 4"/></svg>
-    </button>
-    <div class="field"><label for="to">待ち合わせ場所</label><select id="to"></select><select id="to-car" class="carsel" hidden aria-label="目的地のホームの車両"></select></div>
-    <div class="profiles" role="radiogroup" aria-label="移動の条件">
-      <span class="lbl">移動の条件</span>
-      <label class="seg"><input type="radio" name="profile" id="p-std" value="std" checked><span>標準（いちばん早い）</span></label>
-      <label class="seg"><input type="radio" name="profile" id="p-stair" value="stair"><span>階段を使う</span></label>
-      <label class="seg"><input type="radio" name="profile" id="p-esc" value="esc"><span>エスカレーターを使う</span></label>
-      <label class="seg"><input type="radio" name="profile" id="p-ev" value="ev"><span>エレベーターを使う（段差なし・車いす・ベビーカー）</span></label>
-    </div>
-    <!-- ふたりで待ち合わせ: あいての来かたと乗ってくる電車（ODPT の時刻表。2026-10-11 利用者「1，2」） -->
-    <div class="duo">
-      <label for="partner" class="lbl">あいての来かた</label>
-      <select id="partner"></select>
-      <select id="partner-pr" aria-label="あいての移動の条件"><option value="std">標準</option><option value="ev">段差なし（車いす・ベビーカー）</option></select>
-      <select id="partner-time" class="carsel" hidden aria-label="あいての乗ってくる電車（この駅に着く時刻）"></select>
-      <input type="time" id="partner-tin" class="tin" hidden aria-label="あいての電車がこの駅に着く時刻">
-      <input type="text" id="partner-dep" class="depin" list="dep-list" hidden placeholder="あいての出発駅・バス停（例：荻窪）" aria-label="あいての出発駅・バス停" enterkeyhint="search">
-    </div>
-    <!-- 合流日時（出発駅から乗り換えて来るとき。この時刻に待ち合わせ場所に着く電車を探す） -->
-    <div class="meetwhen" id="meetwhen" hidden>
-      <label for="from-dep" class="lbl" id="from-dep-l">わたしの出発駅</label>
-      <input type="text" id="from-dep" class="depin" list="dep-list" placeholder="出発駅・バス停（例：和光市）" enterkeyhint="search">
-      <label for="md" class="lbl">合流日時</label>
-      <input type="date" id="md" class="tin" aria-label="合流する日">
-      <input type="time" id="mt" class="tin" step="300" aria-label="合流する時刻">
-      <small id="md-kind"></small>
+  <form class="setup" id="form" autocomplete="off">
+    <div class="sumbar"><div class="sumtx" id="sumtx"></div><button type="button" class="sumbtn" id="setup-toggle" aria-expanded="true" aria-controls="setup-body">設定を閉じる</button></div>
+    <div class="setup-body" id="setup-body">
+      <fieldset class="grp"><legend>いつ・どこで</legend>
+        <div class="field f-station"><label for="station">駅</label><select id="station"></select></div>
+        <div class="field"><label for="to">待ち合わせ場所</label><select id="to"></select><select id="to-car" class="carsel" hidden aria-label="目的地のホームの車両"></select></div>
+        <div class="field"><label for="md">合流日時</label><div class="row"><input type="date" id="md" class="tin" aria-label="合流する日"><input type="time" id="mt" class="tin" step="300" aria-label="合流する時刻"></div><small id="md-kind" class="hint2"></small></div>
+      </fieldset>
+      <fieldset class="grp"><legend><span class="mmark"></span>わたし</legend>
+        <div class="field"><label for="from">来かた</label><select id="from"></select><select id="from-car" class="carsel" hidden aria-label="出発のホームの車両"></select>
+          <input type="text" id="from-dep" class="depin" list="dep-list" hidden placeholder="出発駅・バス停（例：和光市）" aria-label="わたしの出発駅・バス停" enterkeyhint="search">
+          <div class="trainsel"><select id="from-time" class="carsel" hidden aria-label="わたしの乗ってくる電車（この駅に着く時刻）"></select><input type="time" id="from-tin" class="tin" hidden aria-label="わたしの電車がこの駅に着く時刻"></div></div>
+        <div class="field"><label for="from-pr">移動の条件</label><select id="from-pr"><option value="std">標準（いちばん早い）</option><option value="stair">階段を使う</option><option value="esc">エスカレーターを使う</option><option value="ev">段差なし（エレベーター・車いす・ベビーカー）</option></select></div>
+      </fieldset>
+      <fieldset class="grp"><legend><span class="pmark"></span>あいて</legend>
+        <div class="field"><label for="partner">来かた</label><select id="partner"></select>
+          <input type="text" id="partner-dep" class="depin" list="dep-list" hidden placeholder="あいての出発駅・バス停（例：荻窪）" aria-label="あいての出発駅・バス停" enterkeyhint="search">
+          <div class="trainsel"><select id="partner-time" class="carsel" hidden aria-label="あいての乗ってくる電車（この駅に着く時刻）"></select><input type="time" id="partner-tin" class="tin" hidden aria-label="あいての電車がこの駅に着く時刻"></div></div>
+        <div class="field"><label for="partner-pr">移動の条件</label><select id="partner-pr"><option value="std">標準（いちばん早い）</option><option value="stair">階段を使う</option><option value="esc">エスカレーターを使う</option><option value="ev">段差なし（エレベーター・車いす・ベビーカー）</option></select></div>
+      </fieldset>
     </div>
     <datalist id="dep-list"></datalist>
   </form>
+  <!-- 見る画面: ふたり（ふたりの流れと、構内のふたりの道順）・わたし・あいて（それぞれの案内）。あいてを選んだときだけ -->
+  <div class="viewtabs" id="viewtabs" role="tablist" aria-label="見る画面" hidden>
+    <button type="button" role="tab" data-v="duo">ふたり</button><button type="button" role="tab" data-v="me">わたし</button><button type="button" role="tab" data-v="you">あいて</button>
+  </div>
 
   <div id="out"></div>
   <div class="busy" id="busy" role="status" aria-live="polite" hidden><div class="busy-box"><i class="spin" aria-hidden="true"></i><span id="busy-msg">処理しています…</span></div></div>
@@ -495,8 +497,8 @@ body.nav-on .summary .acts { display: none; } /* 案内中は、案内開始の�
 <script>
 var STATIONS = [{"id":"ikebukuro","name":"池袋","code":"IKB"},{"id":"shinjuku","name":"新宿","code":"SJK"},{"id":"shibuya","name":"渋谷","code":"SBY"},{"id":"tokyo","name":"東京","code":"TYO"},{"id":"ueno","name":"上野","code":"UEN"},{"id":"ginza","name":"銀座","code":"GNZ"},{"id":"otemachi","name":"大手町","code":"OTM"},{"id":"nihonbashi","name":"日本橋","code":"NHB"}];
 var CITY = {"year":"2025","stations":{}};
-var TILES = {"year":2025,"bases":["https://assets.cms.plateau.reearth.io/assets/75/76c6bc-df54-4bf4-a869-b513526b5bd2/13106_taito-ku_city_2025_citygml_1_op_bldg_3dtiles_lod2/","https://assets.cms.plateau.reearth.io/assets/66/f1f857-965f-4850-827e-4d7aae84d879/13110_meguro-ku_pref_2025_citygml_1_op_bldg_3dtiles_13110_meguro-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/fc/e0156d-7dbe-45a0-a379-0d62ae2348d8/13117_kita-ku_pref_2025_citygml_1_op_bldg_3dtiles_13117_kita-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/80/e01efb-831d-4752-a10e-63b407ee2201/13108_koto-ku_pref_2025_citygml_1_op_bldg_3dtiles_13108_koto-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/16/b016d3-42ef-4428-ad99-d229310b39fd/13113_shibuya-ku_pref_2025_citygml_1_op_bldg_3dtiles_13113_shibuya-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/28/07d0a1-b6be-46ef-bd87-4f0683b5ef6e/13101_chiyoda-ku_pref_2025_citygml_1_op_bldg_3dtiles_13101_chiyoda-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/00/bed0bd-f882-4cde-b942-21d0f8d2ddc2/13104_shinjuku-ku_pref_2025_citygml_1_op_bldg_3dtiles_13104_shinjuku-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/b5/b5f79e-0c6c-4fc7-adde-6522014243a2/13103_minato-ku_pref_2025_citygml_1_op_bldg_3dtiles_13103_minato-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/a6/85dfbe-994a-4da4-90fc-ec7f4661d469/13116_toshima-ku_pref_2025_citygml_1_op_bldg_3dtiles_13116_toshima-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/09/83a3f6-6605-477c-84dc-a973008b5a27/13102_chuo-ku_pref_2025_citygml_1_op_bldg_3dtiles_13102_chuo-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/c6/c5c89a-859d-4dce-8e25-04e02a39b270/13105_bunkyo-ku_pref_2025_citygml_1_op_bldg_3dtiles_13105_bunkyo-ku_lod2/"],"stations":{"ueno":[[0,"18/232850/39530_bldg_Building.glb",[-543,-151,-422,3],0.1],[0,"18/232851/39530_bldg_Building.glb",[-444,-142,-301,7],0.1],[0,"18/232851/39531_bldg_Building.glb",[-380,-305,-351,-219],0.1],[0,"18/232850/39533_bldg_Building.glb",[-570,-606,-426,-454],0.6],[0,"18/232851/39532_bldg_Building.glb",[-435,-432,-335,-303],0.4],[0,"18/232851/39533_bldg_Building.glb",[-441,-608,-299,-449],1],[0,"18/232850/39534_bldg_Building.glb",[-560,-758,-454,-724],0.1],[0,"18/232850/39535_bldg_Building.glb",[-581,-918,-455,-735],0.6],[0,"18/232851/39534_bldg_Building.glb",[-434,-777,-299,-595],1.1],[0,"18/232851/39535_bldg_Building.glb",[-436,-924,-299,-746],0.7],[0,"18/232852/39530_bldg_Building.glb",[-311,-149,-172,-81],0.1],[0,"18/232852/39531_bldg_Building.glb",[-316,-314,-191,-137],0.8],[0,"18/232853/39530_bldg_Building.glb",[-213,-198,-13,-31],0.1],[0,"18/232853/39531_bldg_Building.glb",[-191,-302,-21,-133],0.5],[0,"18/232854/39529_bldg_Building.glb",[-109,-92,161,151],0.3],[0,"18/232854/39530_bldg_Building.glb",[-122,-154,73,29],0.2],[0,"18/232854/39531_bldg_Building.glb",[-35,-314,68,-127],0.3],[0,"18/232852/39532_bldg_Building.glb",[-296,-458,-225,-301],0.8],[0,"18/232852/39533_bldg_Building.glb",[-323,-618,-206,-419],1.1],[0,"18/232853/39532_bldg_Building.glb",[-177,-458,-57,-271],0.8],[0,"18/232853/39533_bldg_Building.glb",[-168,-607,-66,-446],0.8],[0,"18/232852/39534_bldg_Building.glb",[-314,-842,-185,-602],0.7],[0,"18/232852/39535_bldg_Building.glb",[-324,-912,-184,-752],0.4],[0,"18/232853/39534_bldg_Building.glb",[-178,-772,-79,-599],0.5],[0,"18/232853/39535_bldg_Building.glb",[-192,-918,-91,-753],0.8],[0,"18/232854/39532_bldg_Building.glb",[-63,-456,69,-297],0.4],[0,"18/232854/39533_bldg_Building.glb",[-34,-606,65,-451],0.6],[0,"18/232854/39534_bldg_Building.glb",[-48,-770,60,-606],0.6],[0,"18/232854/39535_bldg_Building.glb",[-60,-922,72,-740],0.6],[10,"data/data36.b3dm",[-1054,-575,-412,-68],1.1],[10,"data/data44.b3dm",[-1043,-1090,-412,-557],6.7]],"ikebukuro":[[2,"data/data174.b3dm",[815,248,1732,1132],0],[6,"data/data126.b3dm",[-588,-751,-184,-363],0],[8,"data/data236.b3dm",[802,304,1029,433],1],[8,"data/data238.b3dm",[792,187,1025,320],1],[8,"data/data240.b3dm",[591,299,816,436],1.3],[8,"data/data241.b3dm",[382,291,604,428],2.3],[8,"data/data242.b3dm",[596,188,814,319],1.8],[8,"data/data243.b3dm",[384,187,596,318],1.4],[8,"data/data246.b3dm",[802,65,1025,214],1.7],[8,"data/data248.b3dm",[773,-42,1035,112],1.1],[8,"data/data250.b3dm",[596,80,821,226],1.2],[8,"data/data251.b3dm",[377,78,596,209],1.8],[8,"data/data252.b3dm",[596,-35,808,87],0.1],[8,"data/data253.b3dm",[381,-45,605,103],3.1],[8,"data/data397.b3dm",[169,300,385,429],2],[8,"data/data398.b3dm",[-44,304,173,437],1.4],[8,"data/data399.b3dm",[154,192,387,319],3],[8,"data/data400.b3dm",[-47,193,181,315],1.6],[8,"data/data402.b3dm",[-251,292,-36,433],2.5],[8,"data/data403.b3dm",[-469,305,-237,437],3],[8,"data/data404.b3dm",[-251,191,-39,315],2.2],[8,"data/data405.b3dm",[-472,195,-247,322],3.6],[8,"data/data407.b3dm",[169,68,389,197],2.3],[8,"data/data408.b3dm",[-39,81,173,210],0.4],[8,"data/data409.b3dm",[167,-42,395,98],3],[8,"data/data410.b3dm",[-54,-137,182,184],1.5],[8,"data/data412.b3dm",[-251,81,-39,204],1.7],[8,"data/data413.b3dm",[-463,76,-251,212],3.2],[8,"data/data414.b3dm",[-251,-124,19,191],2.8],[8,"data/data415.b3dm",[-469,-48,-216,98],1.5],[8,"data/data557.b3dm",[808,-200,1023,16],1.5],[8,"data/data559.b3dm",[808,-272,1019,-151],0.5],[8,"data/data561.b3dm",[593,-159,887,57],3.9],[8,"data/data562.b3dm",[384,-181,618,-34],1.5],[8,"data/data563.b3dm",[574,-277,836,-140],2.2],[8,"data/data564.b3dm",[381,-279,596,-148],1.4],[8,"data/data567.b3dm",[807,-387,1025,-262],2.1],[8,"data/data571.b3dm",[596,-384,809,-254],0.9],[8,"data/data572.b3dm",[362,-423,601,-243],2.4],[8,"data/data632.b3dm",[169,-158,397,-16],3],[8,"data/data633.b3dm",[-70,-272,185,193],5.2],[8,"data/data634.b3dm",[162,-272,384,-139],1.9],[8,"data/data635.b3dm",[-40,-287,182,-142],1.2],[8,"data/data637.b3dm",[-251,-162,-29,-34],0.8],[8,"data/data638.b3dm",[-464,-168,-223,-24],1.5],[8,"data/data639.b3dm",[-259,-273,-36,-130],1.6],[8,"data/data640.b3dm",[-469,-272,-248,-151],1.2],[8,"data/data642.b3dm",[166,-390,391,-259],1.7],[8,"data/data643.b3dm",[-71,-392,189,-256],2.6],[8,"data/data647.b3dm",[-258,-393,-34,-260],0.8],[8,"data/data648.b3dm",[-465,-383,-251,-261],0.7],[8,"data/data649.b3dm",[-253,-505,-39,-354],1.4],[10,"data/data22.b3dm",[578,-303,1824,705],0.1],[10,"data/data29.b3dm",[578,-802,1204,-298],1]],"shinjuku":[[4,"data/data9.b3dm",[7,-118,360,233],0],[6,"data/data586.b3dm",[169,504,384,709],5.2],[6,"data/data587.b3dm",[-35,447,189,711],4],[6,"data/data602.b3dm",[-244,503,-29,706],3.4],[6,"data/data603.b3dm",[-449,503,-207,712],5],[6,"data/data612.b3dm",[343,298,579,518],3.9],[6,"data/data614.b3dm",[322,117,578,330],5],[6,"data/data616.b3dm",[165,304,380,515],5.5],[6,"data/data617.b3dm",[-29,308,179,514],4.3],[6,"data/data618.b3dm",[158,108,373,323],3.3],[6,"data/data619.b3dm",[-29,79,183,326],3.2],[6,"data/data626.b3dm",[169,-85,383,132],5.3],[6,"data/data627.b3dm",[-35,-84,179,197],2.2],[6,"data/data631.b3dm",[-235,300,-29,520],3.9],[6,"data/data632.b3dm",[-440,312,-219,513],1.5],[6,"data/data633.b3dm",[-251,121,-29,318],1.3],[6,"data/data634.b3dm",[-432,121,-214,333],2.1],[6,"data/data641.b3dm",[-254,-121,-21,261],3],[6,"data/data642.b3dm",[-446,-73,-227,121],3.2]],"shibuya":[[4,"data/data470.b3dm",[65,368,254,562],2],[4,"data/data471.b3dm",[-121,369,66,559],1.6],[4,"data/data472.b3dm",[66,189,271,398],2.6],[4,"data/data473.b3dm",[-127,191,66,506],2.4],[4,"data/data486.b3dm",[-303,346,-110,558],3.5],[4,"data/data487.b3dm",[-465,367,-284,559],1.8],[4,"data/data488.b3dm",[-296,188,-83,380],4.2],[4,"data/data489.b3dm",[-477,189,-278,385],4.6],[4,"data/data502.b3dm",[66,18,252,232],2.5],[4,"data/data503.b3dm",[-110,19,122,210],1.3],[4,"data/data504.b3dm",[61,-187,250,35],2.9],[4,"data/data505.b3dm",[-111,-169,106,35],2.3],[4,"data/data518.b3dm",[-292,14,-85,218],5],[4,"data/data519.b3dm",[-470,10,-275,207],4.5],[4,"data/data520.b3dm",[-396,-156,-93,49],4.2],[4,"data/data521.b3dm",[-474,-162,-277,39],3]],"tokyo":[[5,"data/data418.b3dm",[208,86,525,402],2.7],[5,"data/data429.b3dm",[79,148,228,277],0.9],[5,"data/data430.b3dm",[-99,147,79,290],0.9],[5,"data/data439.b3dm",[79,-19,228,190],2.6],[5,"data/data440.b3dm",[-70,27,79,152],0],[5,"data/data441.b3dm",[14,-230,228,180],0.2],[5,"data/data442.b3dm",[-104,-226,151,218],1.9],[5,"data/data449.b3dm",[48,-241,228,-14],0.1],[5,"data/data450.b3dm",[-70,-237,79,-98],0.1],[5,"data/data451.b3dm",[-77,-348,79,-223],1.2],[5,"data/data464.b3dm",[-78,-598,228,-323],0.4],[9,"data/data86.b3dm",[354,-66,592,309],6.9],[9,"data/data88.b3dm",[353,-401,571,-34],5.8],[9,"data/data90.b3dm",[189,-66,389,298],1.8],[9,"data/data91.b3dm",[162,-410,388,-27],4.2],[9,"data/data92.b3dm",[2,-405,245,-48],2.8]],"ginza":[[5,"data/data464.b3dm",[202,397,508,671],0.4],[5,"data/data465.b3dm",[62,522,211,647],0.2],[5,"data/data466.b3dm",[-87,518,62,647],0],[5,"data/data467.b3dm",[58,353,211,545],0.6],[5,"data/data468.b3dm",[-101,392,92,619],1.6],[5,"data/data470.b3dm",[62,272,211,397],0],[5,"data/data471.b3dm",[-143,243,86,400],1],[5,"data/data472.b3dm",[-90,131,64,282],0.7],[5,"data/data475.b3dm",[-384,358,-68,675],3.3],[5,"data/data476.b3dm",[-533,520,-384,647],0.1],[5,"data/data477.b3dm",[-681,517,-527,647],0],[5,"data/data478.b3dm",[-533,397,-384,530],0],[5,"data/data479.b3dm",[-681,392,-533,522],0],[5,"data/data481.b3dm",[-247,210,-31,420],1.7],[5,"data/data482.b3dm",[-384,272,-235,397],0.6],[5,"data/data483.b3dm",[-253,117,-64,285],1],[5,"data/data484.b3dm",[-384,143,-221,300],1.3],[5,"data/data486.b3dm",[-533,272,-384,397],0],[5,"data/data487.b3dm",[-691,272,-531,397],0.1],[5,"data/data488.b3dm",[-533,100,-363,275],1.7],[5,"data/data489.b3dm",[-681,147,-533,272],0.1],[5,"data/data492.b3dm",[-87,-352,508,158],0.1],[5,"data/data493.b3dm",[-256,22,-87,147],0.6],[5,"data/data494.b3dm",[-415,12,-235,157],2],[5,"data/data495.b3dm",[-384,-102,-235,22],0],[5,"data/data497.b3dm",[-549,22,-384,147],0.8],[5,"data/data498.b3dm",[-681,7,-533,147],0.1],[5,"data/data499.b3dm",[-587,-118,-377,71],1.9],[5,"data/data500.b3dm",[-681,-151,-526,22],0.5],[5,"data/data502.b3dm",[-548,-271,-384,-87],1.3],[5,"data/data503.b3dm",[-681,-232,-518,-102],0.4],[5,"data/data504.b3dm",[-534,-352,-384,-227],0],[5,"data/data505.b3dm",[-703,-352,-519,-217],0.8],[7,"data/data0.b3dm",[-204,-623,4,-403],0],[7,"data/data1.b3dm",[-418,-636,-195,-403],1.4],[7,"data/data3.b3dm",[-641,-415,-412,-183],0.4],[7,"data/data5.b3dm",[-626,-623,-407,-403],1.8],[9,"data/data91.b3dm",[442,585,669,968],4.2],[9,"data/data92.b3dm",[282,589,525,947],2.8],[9,"data/data99.b3dm",[452,239,676,615],5.1],[9,"data/data100.b3dm",[272,239,481,609],4],[9,"data/data101.b3dm",[444,-97,673,259],6.3],[9,"data/data102.b3dm",[270,-106,479,262],6.2],[9,"data/data105.b3dm",[88,248,292,600],1.9],[9,"data/data106.b3dm",[73,-93,297,262],5.7],[9,"data/data107.b3dm",[-97,-107,113,253],4.1],[9,"data/data109.b3dm",[-286,-109,-77,253],2.9],[9,"data/data110.b3dm",[-467,-100,-249,253],0.7],[9,"data/data177.b3dm",[457,-471,675,-75],4.9],[9,"data/data178.b3dm",[272,-443,485,-91],6.1],[9,"data/data179.b3dm",[464,-796,709,-430],7.6],[9,"data/data180.b3dm",[261,-803,496,-426],6.9],[9,"data/data193.b3dm",[89,-440,291,-54],5.4],[9,"data/data194.b3dm",[-111,-445,115,-84],10.8],[9,"data/data195.b3dm",[86,-790,303,-413],7.2],[9,"data/data196.b3dm",[-109,-824,120,-430],9],[9,"data/data198.b3dm",[-294,-456,-75,-85],7.3],[9,"data/data199.b3dm",[-467,-442,-258,-90],5.9],[9,"data/data200.b3dm",[-290,-786,-84,-432],2.6],[9,"data/data201.b3dm",[-467,-786,-275,-420],0.8]],"otemachi":[[5,"data/data152.b3dm",[501,515,694,777],2.1],[5,"data/data161.b3dm",[499,466,667,672],1.9],[5,"data/data163.b3dm",[500,349,663,480],1.6],[5,"data/data165.b3dm",[508,99,805,349],0.1],[5,"data/data207.b3dm",[-696,582,-488,726],0.2],[5,"data/data210.b3dm",[355,474,510,601],2.6],[5,"data/data211.b3dm",[203,464,366,605],3.5],[5,"data/data212.b3dm",[355,342,513,475],3.2],[5,"data/data213.b3dm",[204,341,361,484],1.8],[5,"data/data215.b3dm",[62,470,216,604],2.2],[5,"data/data216.b3dm",[-95,462,62,609],1.7],[5,"data/data217.b3dm",[58,344,218,483],1.8],[5,"data/data218.b3dm",[-87,349,63,474],0.1],[5,"data/data220.b3dm",[355,224,512,355],0.9],[5,"data/data221.b3dm",[211,224,359,353],0.4],[5,"data/data222.b3dm",[332,40,508,224],0.6],[5,"data/data223.b3dm",[211,99,367,231],1.2],[5,"data/data225.b3dm",[23,196,218,349],1.4],[5,"data/data226.b3dm",[-130,224,62,354],0.9],[5,"data/data227.b3dm",[54,99,211,224],0.8],[5,"data/data228.b3dm",[-87,77,89,224],0.9],[5,"data/data231.b3dm",[-237,474,-68,603],1.3],[5,"data/data232.b3dm",[-384,429,-234,602],0.6],[5,"data/data233.b3dm",[-257,340,-74,474],1],[5,"data/data234.b3dm",[-384,349,-235,474],0.1],[5,"data/data236.b3dm",[-692,349,-351,606],0.5],[5,"data/data237.b3dm",[-384,99,-32,349],3.9],[5,"data/data417.b3dm",[504,-151,805,99],0.2],[5,"data/data418.b3dm",[488,-467,805,-151],2.7],[5,"data/data421.b3dm",[211,-183,550,111],4.4],[5,"data/data422.b3dm",[-27,-26,211,118],2.2],[5,"data/data423.b3dm",[-87,-26,62,99],0],[5,"data/data424.b3dm",[57,-151,217,-19],1.1],[5,"data/data425.b3dm",[-87,-154,62,-9],1.4],[5,"data/data427.b3dm",[359,-301,508,-128],1.1],[5,"data/data428.b3dm",[198,-284,359,-151],0.8],[5,"data/data429.b3dm",[359,-405,508,-276],0.9],[5,"data/data430.b3dm",[181,-405,359,-263],0.9],[5,"data/data432.b3dm",[32,-294,211,-151],0.9],[5,"data/data433.b3dm",[-96,-306,62,-133],2.2],[5,"data/data434.b3dm",[62,-403,211,-276],0.9],[5,"data/data435.b3dm",[-106,-454,104,-244],1.7],[5,"data/data438.b3dm",[-681,-416,-65,99],3.7],[5,"data/data439.b3dm",[359,-572,509,-363],2.6],[5,"data/data440.b3dm",[211,-526,359,-401],0],[5,"data/data441.b3dm",[294,-783,508,-373],0.2],[5,"data/data442.b3dm",[176,-779,431,-334],1.9],[5,"data/data444.b3dm",[62,-526,212,-401],0.1],[5,"data/data445.b3dm",[-87,-526,62,-401],0.1],[5,"data/data446.b3dm",[58,-711,240,-398],0.8],[5,"data/data459.b3dm",[-384,-651,-70,-395],0.6],[9,"data/data80.b3dm",[468,90,673,439],4.6],[9,"data/data81.b3dm",[282,92,478,439],0.1],[9,"data/data82.b3dm",[470,-254,657,92],0.3],[9,"data/data90.b3dm",[470,-619,669,-254],1.8]],"nihonbashi":[[5,"data/data155.b3dm",[216,475,811,983],0],[5,"data/data165.b3dm",[-378,475,-81,725],0.1],[5,"data/data220.b3dm",[-531,600,-374,731],0.9],[5,"data/data221.b3dm",[-676,600,-527,728],0.4],[5,"data/data222.b3dm",[-554,416,-378,600],0.6],[5,"data/data223.b3dm",[-676,475,-519,607],1.2],[5,"data/data417.b3dm",[-382,225,-81,475],0.2],[5,"data/data418.b3dm",[-398,-91,-81,225],2.7],[5,"data/data421.b3dm",[-676,192,-336,487],4.4],[5,"data/data427.b3dm",[-527,75,-378,247],1.1],[5,"data/data428.b3dm",[-688,92,-527,225],0.8],[5,"data/data429.b3dm",[-527,-29,-378,100],0.9],[5,"data/data430.b3dm",[-705,-29,-527,113],0.9],[5,"data/data439.b3dm",[-527,-196,-377,13],2.6],[5,"data/data440.b3dm",[-676,-150,-527,-25],0],[5,"data/data441.b3dm",[-592,-407,-378,3],0.2],[5,"data/data442.b3dm",[-710,-403,-455,42],1.9],[5,"data/data449.b3dm",[-558,-418,-378,-191],0.1],[5,"data/data450.b3dm",[-676,-414,-527,-275],0.1],[5,"data/data451.b3dm",[-683,-525,-527,-400],1.2],[5,"data/data464.b3dm",[-684,-774,-378,-500],0.4],[9,"data/data30.b3dm",[320,463,523,827],2.2],[9,"data/data31.b3dm",[125,446,343,821],3.4],[9,"data/data32.b3dm",[325,117,531,478],2.8],[9,"data/data33.b3dm",[138,121,340,487],5.1],[9,"data/data55.b3dm",[321,-231,536,141],5.4],[9,"data/data56.b3dm",[135,-231,352,121],4.4],[9,"data/data57.b3dm",[325,-581,531,-208],7.2],[9,"data/data58.b3dm",[135,-578,340,-208],6],[9,"data/data75.b3dm",[-54,457,164,827],6.5],[9,"data/data76.b3dm",[-247,468,-25,823],5.3],[9,"data/data77.b3dm",[-97,121,152,486],7],[9,"data/data78.b3dm",[-282,117,-2,509],5.6],[9,"data/data80.b3dm",[-418,466,-213,815],4.6],[9,"data/data81.b3dm",[-604,468,-408,815],0.1],[9,"data/data82.b3dm",[-416,121,-229,468],0.3],[9,"data/data85.b3dm",[-92,-279,148,131],6.2],[9,"data/data86.b3dm",[-252,-243,-14,133],6.9],[9,"data/data87.b3dm",[-51,-581,155,-225],4.5],[9,"data/data88.b3dm",[-253,-578,-35,-211],5.8],[9,"data/data90.b3dm",[-416,-243,-217,121],1.8],[9,"data/data91.b3dm",[-444,-587,-218,-203],4.2],[9,"data/data92.b3dm",[-604,-582,-361,-225],2.8]]}};
-var UBLD = {"year":2025,"bases":["https://assets.cms.plateau.reearth.io/assets/e4/d33e66-911d-42e5-9507-8791bada2bd1/13106_taito-ku_city_2025_citygml_1_op_ubld_3dtiles_lod1/","https://assets.cms.plateau.reearth.io/assets/ea/284655-a1e2-46c1-bdb5-ee4a66af67a3/13113_shibuya-ku_pref_2025_citygml_1_op_ubld_3dtiles_lod4/","https://assets.cms.plateau.reearth.io/assets/a6/9bd820-9d7c-4d7e-ba79-369f9b245d09/13101_chiyoda-ku_pref_2025_citygml_1_op_ubld_3dtiles_lod4/","https://assets.cms.plateau.reearth.io/assets/7d/d6f2c5-80ca-4c58-ac34-a67de3786d04/13104_shinjuku-ku_pref_2025_citygml_1_op_ubld_3dtiles_lod4/","https://assets.cms.plateau.reearth.io/assets/d0/b74723-d536-4f18-89fd-1770b143041f/13116_toshima-ku_pref_2025_citygml_1_op_ubld_3dtiles_lod4/"],"stations":{"ueno":{"lod":"LOD1","tiles":[[0,"18/232852/39531_uro_UndergroundBuilding.glb"],[0,"18/232853/39531_uro_UndergroundBuilding.glb"],[0,"18/232852/39532_uro_UndergroundBuilding.glb"],[0,"18/232852/39533_uro_UndergroundBuilding.glb"],[0,"18/232852/39534_uro_UndergroundBuilding.glb"],[0,"18/232854/39534_uro_UndergroundBuilding.glb"]],"box":[139.77248,35.70726,139.77689,35.71243],"ground":48.27},"shibuya":{"lod":"LOD4","tiles":[[1,"data/data0.b3dm"],[1,"data/data1.b3dm"],[1,"data/data3.b3dm"],[1,"data/data4.b3dm"],[1,"data/data7.b3dm"],[1,"data/data8.b3dm"],[1,"data/data9.b3dm"],[1,"data/data11.b3dm"],[1,"data/data12.b3dm"],[1,"data/data13.b3dm"],[1,"data/data14.b3dm"],[1,"data/data15.b3dm"],[1,"data/data18.b3dm"],[1,"data/data19.b3dm"],[1,"data/data22.b3dm"],[1,"data/data23.b3dm"],[1,"data/data24.b3dm"],[1,"data/data26.b3dm"],[1,"data/data27.b3dm"],[1,"data/data28.b3dm"],[1,"data/data29.b3dm"],[1,"data/data31.b3dm"],[1,"data/data32.b3dm"],[1,"data/data34.b3dm"],[1,"data/data35.b3dm"],[1,"data/data36.b3dm"],[1,"data/data37.b3dm"],[1,"data/data40.b3dm"],[1,"data/data41.b3dm"],[1,"data/data42.b3dm"],[1,"data/data43.b3dm"],[1,"data/data45.b3dm"],[1,"data/data46.b3dm"],[1,"data/data47.b3dm"],[1,"data/data48.b3dm"],[1,"data/data50.b3dm"],[1,"data/data51.b3dm"],[1,"data/data52.b3dm"],[1,"data/data53.b3dm"],[1,"data/data56.b3dm"],[1,"data/data57.b3dm"],[1,"data/data58.b3dm"],[1,"data/data59.b3dm"],[1,"data/data61.b3dm"],[1,"data/data62.b3dm"],[1,"data/data63.b3dm"],[1,"data/data64.b3dm"],[1,"data/data66.b3dm"],[1,"data/data67.b3dm"],[1,"data/data68.b3dm"],[1,"data/data70.b3dm"],[1,"data/data73.b3dm"],[1,"data/data74.b3dm"],[1,"data/data75.b3dm"],[1,"data/data77.b3dm"],[1,"data/data78.b3dm"],[1,"data/data81.b3dm"],[1,"data/data82.b3dm"],[1,"data/data83.b3dm"],[1,"data/data85.b3dm"],[1,"data/data86.b3dm"],[1,"data/data87.b3dm"],[1,"data/data89.b3dm"],[1,"data/data90.b3dm"],[1,"data/data91.b3dm"],[1,"data/data92.b3dm"],[1,"data/data94.b3dm"],[1,"data/data95.b3dm"],[1,"data/data96.b3dm"],[1,"data/data99.b3dm"],[1,"data/data100.b3dm"],[1,"data/data101.b3dm"],[1,"data/data102.b3dm"],[1,"data/data104.b3dm"],[1,"data/data105.b3dm"],[1,"data/data107.b3dm"],[1,"data/data108.b3dm"],[1,"data/data109.b3dm"],[1,"data/data110.b3dm"],[1,"data/data113.b3dm"],[1,"data/data114.b3dm"],[1,"data/data116.b3dm"],[1,"data/data117.b3dm"]],"box":[139.69851,35.65835,139.70305,35.66133],"ground":51.77},"tokyo":{"lod":"LOD4","tiles":[[2,"data/data0.b3dm"],[2,"data/data1.b3dm"],[2,"data/data2.b3dm"],[2,"data/data3.b3dm"],[2,"data/data4.b3dm"],[2,"data/data5.b3dm"],[2,"data/data6.b3dm"],[2,"data/data7.b3dm"],[2,"data/data8.b3dm"],[2,"data/data9.b3dm"],[2,"data/data15.b3dm"],[2,"data/data17.b3dm"],[2,"data/data19.b3dm"],[2,"data/data20.b3dm"],[2,"data/data21.b3dm"],[2,"data/data22.b3dm"],[2,"data/data24.b3dm"],[2,"data/data25.b3dm"],[2,"data/data27.b3dm"],[2,"data/data28.b3dm"],[2,"data/data29.b3dm"],[2,"data/data30.b3dm"],[2,"data/data32.b3dm"],[2,"data/data33.b3dm"]],"box":[139.76766,35.67848,139.77164,35.68275],"ground":40.36},"ginza":{"lod":"LOD4","tiles":[[2,"data/data0.b3dm"],[2,"data/data2.b3dm"],[2,"data/data3.b3dm"],[2,"data/data4.b3dm"],[2,"data/data5.b3dm"],[2,"data/data6.b3dm"],[2,"data/data7.b3dm"],[2,"data/data8.b3dm"],[2,"data/data9.b3dm"],[2,"data/data15.b3dm"],[2,"data/data17.b3dm"],[2,"data/data19.b3dm"],[2,"data/data20.b3dm"],[2,"data/data21.b3dm"],[2,"data/data22.b3dm"],[2,"data/data24.b3dm"],[2,"data/data25.b3dm"],[2,"data/data27.b3dm"],[2,"data/data28.b3dm"],[2,"data/data29.b3dm"],[2,"data/data30.b3dm"],[2,"data/data32.b3dm"],[2,"data/data33.b3dm"]],"box":[139.76766,35.67848,139.77164,35.68275],"ground":40.41},"otemachi":{"lod":"LOD4","tiles":[[2,"data/data0.b3dm"],[2,"data/data1.b3dm"],[2,"data/data2.b3dm"],[2,"data/data3.b3dm"],[2,"data/data4.b3dm"],[2,"data/data5.b3dm"],[2,"data/data6.b3dm"],[2,"data/data7.b3dm"],[2,"data/data8.b3dm"],[2,"data/data9.b3dm"],[2,"data/data15.b3dm"],[2,"data/data17.b3dm"],[2,"data/data19.b3dm"],[2,"data/data20.b3dm"],[2,"data/data21.b3dm"],[2,"data/data22.b3dm"],[2,"data/data24.b3dm"],[2,"data/data25.b3dm"],[2,"data/data27.b3dm"],[2,"data/data28.b3dm"],[2,"data/data29.b3dm"],[2,"data/data30.b3dm"],[2,"data/data32.b3dm"],[2,"data/data33.b3dm"]],"box":[139.76766,35.67848,139.77164,35.68275],"ground":40.01},"nihonbashi":{"lod":"LOD4","tiles":[[2,"data/data0.b3dm"],[2,"data/data1.b3dm"],[2,"data/data2.b3dm"],[2,"data/data3.b3dm"],[2,"data/data4.b3dm"],[2,"data/data5.b3dm"],[2,"data/data6.b3dm"],[2,"data/data7.b3dm"],[2,"data/data8.b3dm"],[2,"data/data9.b3dm"],[2,"data/data15.b3dm"],[2,"data/data17.b3dm"],[2,"data/data19.b3dm"],[2,"data/data20.b3dm"],[2,"data/data21.b3dm"],[2,"data/data22.b3dm"],[2,"data/data24.b3dm"],[2,"data/data25.b3dm"],[2,"data/data27.b3dm"],[2,"data/data28.b3dm"],[2,"data/data29.b3dm"],[2,"data/data30.b3dm"],[2,"data/data32.b3dm"],[2,"data/data33.b3dm"]],"box":[139.76766,35.67848,139.77164,35.68275],"ground":40.55},"shinjuku":{"lod":"LOD4","tiles":[[3,"data/data0.b3dm"],[3,"data/data1.b3dm"],[3,"data/data3.b3dm"],[3,"data/data4.b3dm"],[3,"data/data5.b3dm"],[3,"data/data6.b3dm"],[3,"data/data8.b3dm"],[3,"data/data9.b3dm"],[3,"data/data10.b3dm"],[3,"data/data11.b3dm"],[3,"data/data14.b3dm"],[3,"data/data15.b3dm"],[3,"data/data16.b3dm"],[3,"data/data18.b3dm"],[3,"data/data19.b3dm"],[3,"data/data20.b3dm"],[3,"data/data21.b3dm"],[3,"data/data23.b3dm"],[3,"data/data24.b3dm"],[3,"data/data26.b3dm"],[3,"data/data29.b3dm"],[3,"data/data30.b3dm"],[3,"data/data32.b3dm"],[3,"data/data33.b3dm"],[3,"data/data34.b3dm"],[3,"data/data35.b3dm"],[3,"data/data37.b3dm"],[3,"data/data40.b3dm"],[3,"data/data41.b3dm"],[3,"data/data42.b3dm"],[3,"data/data43.b3dm"],[3,"data/data46.b3dm"],[3,"data/data47.b3dm"],[3,"data/data48.b3dm"],[3,"data/data49.b3dm"],[3,"data/data51.b3dm"],[3,"data/data52.b3dm"],[3,"data/data54.b3dm"],[3,"data/data55.b3dm"],[3,"data/data56.b3dm"],[3,"data/data57.b3dm"],[3,"data/data59.b3dm"],[3,"data/data60.b3dm"],[3,"data/data61.b3dm"],[3,"data/data62.b3dm"],[3,"data/data66.b3dm"],[3,"data/data67.b3dm"],[3,"data/data69.b3dm"],[3,"data/data70.b3dm"],[3,"data/data73.b3dm"],[3,"data/data74.b3dm"],[3,"data/data75.b3dm"],[3,"data/data77.b3dm"],[3,"data/data78.b3dm"],[3,"data/data79.b3dm"],[3,"data/data81.b3dm"],[3,"data/data82.b3dm"],[3,"data/data83.b3dm"],[3,"data/data85.b3dm"],[3,"data/data86.b3dm"],[3,"data/data87.b3dm"],[3,"data/data88.b3dm"],[3,"data/data91.b3dm"],[3,"data/data92.b3dm"],[3,"data/data94.b3dm"],[3,"data/data95.b3dm"],[3,"data/data96.b3dm"],[3,"data/data97.b3dm"],[3,"data/data99.b3dm"],[3,"data/data101.b3dm"],[3,"data/data102.b3dm"],[3,"data/data103.b3dm"],[3,"data/data104.b3dm"],[3,"data/data108.b3dm"],[3,"data/data110.b3dm"],[3,"data/data112.b3dm"],[3,"data/data113.b3dm"],[3,"data/data115.b3dm"],[3,"data/data116.b3dm"],[3,"data/data117.b3dm"],[3,"data/data118.b3dm"],[3,"data/data121.b3dm"],[3,"data/data122.b3dm"],[3,"data/data124.b3dm"],[3,"data/data125.b3dm"],[3,"data/data127.b3dm"],[3,"data/data128.b3dm"],[3,"data/data129.b3dm"],[3,"data/data130.b3dm"],[3,"data/data132.b3dm"],[3,"data/data133.b3dm"],[3,"data/data134.b3dm"],[3,"data/data135.b3dm"],[3,"data/data138.b3dm"],[3,"data/data139.b3dm"],[3,"data/data140.b3dm"],[3,"data/data142.b3dm"],[3,"data/data143.b3dm"],[3,"data/data144.b3dm"],[3,"data/data146.b3dm"],[3,"data/data148.b3dm"],[3,"data/data149.b3dm"],[3,"data/data152.b3dm"],[3,"data/data154.b3dm"],[3,"data/data155.b3dm"]],"box":[139.69803,35.6907,139.70362,35.69501],"ground":74.57},"ikebukuro":{"lod":"LOD4","tiles":[[4,"data/data0.b3dm"],[4,"data/data1.b3dm"],[4,"data/data2.b3dm"],[4,"data/data5.b3dm"],[4,"data/data6.b3dm"],[4,"data/data7.b3dm"],[4,"data/data8.b3dm"],[4,"data/data9.b3dm"],[4,"data/data10.b3dm"],[4,"data/data12.b3dm"],[4,"data/data14.b3dm"],[4,"data/data18.b3dm"],[4,"data/data21.b3dm"],[4,"data/data24.b3dm"],[4,"data/data25.b3dm"]],"box":[139.70939,35.72805,139.71337,35.73137],"ground":69.91}}};
+var TILES = {"year":2025,"bases":["https://assets.cms.plateau.reearth.io/assets/66/f1f857-965f-4850-827e-4d7aae84d879/13110_meguro-ku_pref_2025_citygml_1_op_bldg_3dtiles_13110_meguro-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/a6/85dfbe-994a-4da4-90fc-ec7f4661d469/13116_toshima-ku_pref_2025_citygml_1_op_bldg_3dtiles_13116_toshima-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/80/e01efb-831d-4752-a10e-63b407ee2201/13108_koto-ku_pref_2025_citygml_1_op_bldg_3dtiles_13108_koto-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/16/b016d3-42ef-4428-ad99-d229310b39fd/13113_shibuya-ku_pref_2025_citygml_1_op_bldg_3dtiles_13113_shibuya-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/fc/e0156d-7dbe-45a0-a379-0d62ae2348d8/13117_kita-ku_pref_2025_citygml_1_op_bldg_3dtiles_13117_kita-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/28/07d0a1-b6be-46ef-bd87-4f0683b5ef6e/13101_chiyoda-ku_pref_2025_citygml_1_op_bldg_3dtiles_13101_chiyoda-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/00/bed0bd-f882-4cde-b942-21d0f8d2ddc2/13104_shinjuku-ku_pref_2025_citygml_1_op_bldg_3dtiles_13104_shinjuku-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/09/83a3f6-6605-477c-84dc-a973008b5a27/13102_chuo-ku_pref_2025_citygml_1_op_bldg_3dtiles_13102_chuo-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/75/76c6bc-df54-4bf4-a869-b513526b5bd2/13106_taito-ku_city_2025_citygml_1_op_bldg_3dtiles_lod2/","https://assets.cms.plateau.reearth.io/assets/c6/c5c89a-859d-4dce-8e25-04e02a39b270/13105_bunkyo-ku_pref_2025_citygml_1_op_bldg_3dtiles_13105_bunkyo-ku_lod2/","https://assets.cms.plateau.reearth.io/assets/b5/b5f79e-0c6c-4fc7-adde-6522014243a2/13103_minato-ku_pref_2025_citygml_1_op_bldg_3dtiles_13103_minato-ku_lod2/"],"stations":{"ikebukuro":[[1,"data/data236.b3dm",[802,304,1029,433],1],[1,"data/data238.b3dm",[792,187,1025,320],1],[1,"data/data240.b3dm",[591,299,816,436],1.3],[1,"data/data241.b3dm",[382,291,604,428],2.3],[1,"data/data242.b3dm",[596,188,814,319],1.8],[1,"data/data243.b3dm",[384,187,596,318],1.4],[1,"data/data246.b3dm",[802,65,1025,214],1.7],[1,"data/data248.b3dm",[773,-42,1035,112],1.1],[1,"data/data250.b3dm",[596,80,821,226],1.2],[1,"data/data251.b3dm",[377,78,596,209],1.8],[1,"data/data252.b3dm",[596,-35,808,87],0.1],[1,"data/data253.b3dm",[381,-45,605,103],3.1],[1,"data/data397.b3dm",[169,300,385,429],2],[1,"data/data398.b3dm",[-44,304,173,437],1.4],[1,"data/data399.b3dm",[154,192,387,319],3],[1,"data/data400.b3dm",[-47,193,181,315],1.6],[1,"data/data402.b3dm",[-251,292,-36,433],2.5],[1,"data/data403.b3dm",[-469,305,-237,437],3],[1,"data/data404.b3dm",[-251,191,-39,315],2.2],[1,"data/data405.b3dm",[-472,195,-247,322],3.6],[1,"data/data407.b3dm",[169,68,389,197],2.3],[1,"data/data408.b3dm",[-39,81,173,210],0.4],[1,"data/data409.b3dm",[167,-42,395,98],3],[1,"data/data410.b3dm",[-54,-137,182,184],1.5],[1,"data/data412.b3dm",[-251,81,-39,204],1.7],[1,"data/data413.b3dm",[-463,76,-251,212],3.2],[1,"data/data414.b3dm",[-251,-124,19,191],2.8],[1,"data/data415.b3dm",[-469,-48,-216,98],1.5],[1,"data/data557.b3dm",[808,-200,1023,16],1.5],[1,"data/data559.b3dm",[808,-272,1019,-151],0.5],[1,"data/data561.b3dm",[593,-159,887,57],3.9],[1,"data/data562.b3dm",[384,-181,618,-34],1.5],[1,"data/data563.b3dm",[574,-277,836,-140],2.2],[1,"data/data564.b3dm",[381,-279,596,-148],1.4],[1,"data/data567.b3dm",[807,-387,1025,-262],2.1],[1,"data/data571.b3dm",[596,-384,809,-254],0.9],[1,"data/data572.b3dm",[362,-423,601,-243],2.4],[1,"data/data632.b3dm",[169,-158,397,-16],3],[1,"data/data633.b3dm",[-70,-272,185,193],5.2],[1,"data/data634.b3dm",[162,-272,384,-139],1.9],[1,"data/data635.b3dm",[-40,-287,182,-142],1.2],[1,"data/data637.b3dm",[-251,-162,-29,-34],0.8],[1,"data/data638.b3dm",[-464,-168,-223,-24],1.5],[1,"data/data639.b3dm",[-259,-273,-36,-130],1.6],[1,"data/data640.b3dm",[-469,-272,-248,-151],1.2],[1,"data/data642.b3dm",[166,-390,391,-259],1.7],[1,"data/data643.b3dm",[-71,-392,189,-256],2.6],[1,"data/data647.b3dm",[-258,-393,-34,-260],0.8],[1,"data/data648.b3dm",[-465,-383,-251,-261],0.7],[1,"data/data649.b3dm",[-253,-505,-39,-354],1.4],[4,"data/data174.b3dm",[815,248,1732,1132],0],[6,"data/data126.b3dm",[-588,-751,-184,-363],0],[9,"data/data22.b3dm",[578,-303,1824,705],0.1],[9,"data/data29.b3dm",[578,-802,1204,-298],1]],"shinjuku":[[3,"data/data9.b3dm",[7,-118,360,233],0],[6,"data/data586.b3dm",[169,504,384,709],5.2],[6,"data/data587.b3dm",[-35,447,189,711],4],[6,"data/data602.b3dm",[-244,503,-29,706],3.4],[6,"data/data603.b3dm",[-449,503,-207,712],5],[6,"data/data612.b3dm",[343,298,579,518],3.9],[6,"data/data614.b3dm",[322,117,578,330],5],[6,"data/data616.b3dm",[165,304,380,515],5.5],[6,"data/data617.b3dm",[-29,308,179,514],4.3],[6,"data/data618.b3dm",[158,108,373,323],3.3],[6,"data/data619.b3dm",[-29,79,183,326],3.2],[6,"data/data626.b3dm",[169,-85,383,132],5.3],[6,"data/data627.b3dm",[-35,-84,179,197],2.2],[6,"data/data631.b3dm",[-235,300,-29,520],3.9],[6,"data/data632.b3dm",[-440,312,-219,513],1.5],[6,"data/data633.b3dm",[-251,121,-29,318],1.3],[6,"data/data634.b3dm",[-432,121,-214,333],2.1],[6,"data/data641.b3dm",[-254,-121,-21,261],3],[6,"data/data642.b3dm",[-446,-73,-227,121],3.2]],"shibuya":[[3,"data/data470.b3dm",[65,368,254,562],2],[3,"data/data471.b3dm",[-121,369,66,559],1.6],[3,"data/data472.b3dm",[66,189,271,398],2.6],[3,"data/data473.b3dm",[-127,191,66,506],2.4],[3,"data/data486.b3dm",[-303,346,-110,558],3.5],[3,"data/data487.b3dm",[-465,367,-284,559],1.8],[3,"data/data488.b3dm",[-296,188,-83,380],4.2],[3,"data/data489.b3dm",[-477,189,-278,385],4.6],[3,"data/data502.b3dm",[66,18,252,232],2.5],[3,"data/data503.b3dm",[-110,19,122,210],1.3],[3,"data/data504.b3dm",[61,-187,250,35],2.9],[3,"data/data505.b3dm",[-111,-169,106,35],2.3],[3,"data/data518.b3dm",[-292,14,-85,218],5],[3,"data/data519.b3dm",[-470,10,-275,207],4.5],[3,"data/data520.b3dm",[-396,-156,-93,49],4.2],[3,"data/data521.b3dm",[-474,-162,-277,39],3]],"tokyo":[[5,"data/data418.b3dm",[208,86,525,402],2.7],[5,"data/data429.b3dm",[79,148,228,277],0.9],[5,"data/data430.b3dm",[-99,147,79,290],0.9],[5,"data/data439.b3dm",[79,-19,228,190],2.6],[5,"data/data440.b3dm",[-70,27,79,152],0],[5,"data/data441.b3dm",[14,-230,228,180],0.2],[5,"data/data442.b3dm",[-104,-226,151,218],1.9],[5,"data/data449.b3dm",[48,-241,228,-14],0.1],[5,"data/data450.b3dm",[-70,-237,79,-98],0.1],[5,"data/data451.b3dm",[-77,-348,79,-223],1.2],[5,"data/data464.b3dm",[-78,-598,228,-323],0.4],[7,"data/data86.b3dm",[354,-66,592,309],6.9],[7,"data/data88.b3dm",[353,-401,571,-34],5.8],[7,"data/data90.b3dm",[189,-66,389,298],1.8],[7,"data/data91.b3dm",[162,-410,388,-27],4.2],[7,"data/data92.b3dm",[2,-405,245,-48],2.8]],"ginza":[[5,"data/data464.b3dm",[202,397,508,671],0.4],[5,"data/data465.b3dm",[62,522,211,647],0.2],[5,"data/data466.b3dm",[-87,518,62,647],0],[5,"data/data467.b3dm",[58,353,211,545],0.6],[5,"data/data468.b3dm",[-101,392,92,619],1.6],[5,"data/data470.b3dm",[62,272,211,397],0],[5,"data/data471.b3dm",[-143,243,86,400],1],[5,"data/data472.b3dm",[-90,131,64,282],0.7],[5,"data/data475.b3dm",[-384,358,-68,675],3.3],[5,"data/data476.b3dm",[-533,520,-384,647],0.1],[5,"data/data477.b3dm",[-681,517,-527,647],0],[5,"data/data478.b3dm",[-533,397,-384,530],0],[5,"data/data479.b3dm",[-681,392,-533,522],0],[5,"data/data481.b3dm",[-247,210,-31,420],1.7],[5,"data/data482.b3dm",[-384,272,-235,397],0.6],[5,"data/data483.b3dm",[-253,117,-64,285],1],[5,"data/data484.b3dm",[-384,143,-221,300],1.3],[5,"data/data486.b3dm",[-533,272,-384,397],0],[5,"data/data487.b3dm",[-691,272,-531,397],0.1],[5,"data/data488.b3dm",[-533,100,-363,275],1.7],[5,"data/data489.b3dm",[-681,147,-533,272],0.1],[5,"data/data492.b3dm",[-87,-352,508,158],0.1],[5,"data/data493.b3dm",[-256,22,-87,147],0.6],[5,"data/data494.b3dm",[-415,12,-235,157],2],[5,"data/data495.b3dm",[-384,-102,-235,22],0],[5,"data/data497.b3dm",[-549,22,-384,147],0.8],[5,"data/data498.b3dm",[-681,7,-533,147],0.1],[5,"data/data499.b3dm",[-587,-118,-377,71],1.9],[5,"data/data500.b3dm",[-681,-151,-526,22],0.5],[5,"data/data502.b3dm",[-548,-271,-384,-87],1.3],[5,"data/data503.b3dm",[-681,-232,-518,-102],0.4],[5,"data/data504.b3dm",[-534,-352,-384,-227],0],[5,"data/data505.b3dm",[-703,-352,-519,-217],0.8],[7,"data/data91.b3dm",[442,585,669,968],4.2],[7,"data/data92.b3dm",[282,589,525,947],2.8],[7,"data/data99.b3dm",[452,239,676,615],5.1],[7,"data/data100.b3dm",[272,239,481,609],4],[7,"data/data101.b3dm",[444,-97,673,259],6.3],[7,"data/data102.b3dm",[270,-106,479,262],6.2],[7,"data/data105.b3dm",[88,248,292,600],1.9],[7,"data/data106.b3dm",[73,-93,297,262],5.7],[7,"data/data107.b3dm",[-97,-107,113,253],4.1],[7,"data/data109.b3dm",[-286,-109,-77,253],2.9],[7,"data/data110.b3dm",[-467,-100,-249,253],0.7],[7,"data/data177.b3dm",[457,-471,675,-75],4.9],[7,"data/data178.b3dm",[272,-443,485,-91],6.1],[7,"data/data179.b3dm",[464,-796,709,-430],7.6],[7,"data/data180.b3dm",[261,-803,496,-426],6.9],[7,"data/data193.b3dm",[89,-440,291,-54],5.4],[7,"data/data194.b3dm",[-111,-445,115,-84],10.8],[7,"data/data195.b3dm",[86,-790,303,-413],7.2],[7,"data/data196.b3dm",[-109,-824,120,-430],9],[7,"data/data198.b3dm",[-294,-456,-75,-85],7.3],[7,"data/data199.b3dm",[-467,-442,-258,-90],5.9],[7,"data/data200.b3dm",[-290,-786,-84,-432],2.6],[7,"data/data201.b3dm",[-467,-786,-275,-420],0.8],[10,"data/data0.b3dm",[-204,-623,4,-403],0],[10,"data/data1.b3dm",[-418,-636,-195,-403],1.4],[10,"data/data3.b3dm",[-641,-415,-412,-183],0.4],[10,"data/data5.b3dm",[-626,-623,-407,-403],1.8]],"otemachi":[[5,"data/data152.b3dm",[501,515,694,777],2.1],[5,"data/data161.b3dm",[499,466,667,672],1.9],[5,"data/data163.b3dm",[500,349,663,480],1.6],[5,"data/data165.b3dm",[508,99,805,349],0.1],[5,"data/data207.b3dm",[-696,582,-488,726],0.2],[5,"data/data210.b3dm",[355,474,510,601],2.6],[5,"data/data211.b3dm",[203,464,366,605],3.5],[5,"data/data212.b3dm",[355,342,513,475],3.2],[5,"data/data213.b3dm",[204,341,361,484],1.8],[5,"data/data215.b3dm",[62,470,216,604],2.2],[5,"data/data216.b3dm",[-95,462,62,609],1.7],[5,"data/data217.b3dm",[58,344,218,483],1.8],[5,"data/data218.b3dm",[-87,349,63,474],0.1],[5,"data/data220.b3dm",[355,224,512,355],0.9],[5,"data/data221.b3dm",[211,224,359,353],0.4],[5,"data/data222.b3dm",[332,40,508,224],0.6],[5,"data/data223.b3dm",[211,99,367,231],1.2],[5,"data/data225.b3dm",[23,196,218,349],1.4],[5,"data/data226.b3dm",[-130,224,62,354],0.9],[5,"data/data227.b3dm",[54,99,211,224],0.8],[5,"data/data228.b3dm",[-87,77,89,224],0.9],[5,"data/data231.b3dm",[-237,474,-68,603],1.3],[5,"data/data232.b3dm",[-384,429,-234,602],0.6],[5,"data/data233.b3dm",[-257,340,-74,474],1],[5,"data/data234.b3dm",[-384,349,-235,474],0.1],[5,"data/data236.b3dm",[-692,349,-351,606],0.5],[5,"data/data237.b3dm",[-384,99,-32,349],3.9],[5,"data/data417.b3dm",[504,-151,805,99],0.2],[5,"data/data418.b3dm",[488,-467,805,-151],2.7],[5,"data/data421.b3dm",[211,-183,550,111],4.4],[5,"data/data422.b3dm",[-27,-26,211,118],2.2],[5,"data/data423.b3dm",[-87,-26,62,99],0],[5,"data/data424.b3dm",[57,-151,217,-19],1.1],[5,"data/data425.b3dm",[-87,-154,62,-9],1.4],[5,"data/data427.b3dm",[359,-301,508,-128],1.1],[5,"data/data428.b3dm",[198,-284,359,-151],0.8],[5,"data/data429.b3dm",[359,-405,508,-276],0.9],[5,"data/data430.b3dm",[181,-405,359,-263],0.9],[5,"data/data432.b3dm",[32,-294,211,-151],0.9],[5,"data/data433.b3dm",[-96,-306,62,-133],2.2],[5,"data/data434.b3dm",[62,-403,211,-276],0.9],[5,"data/data435.b3dm",[-106,-454,104,-244],1.7],[5,"data/data438.b3dm",[-681,-416,-65,99],3.7],[5,"data/data439.b3dm",[359,-572,509,-363],2.6],[5,"data/data440.b3dm",[211,-526,359,-401],0],[5,"data/data441.b3dm",[294,-783,508,-373],0.2],[5,"data/data442.b3dm",[176,-779,431,-334],1.9],[5,"data/data444.b3dm",[62,-526,212,-401],0.1],[5,"data/data445.b3dm",[-87,-526,62,-401],0.1],[5,"data/data446.b3dm",[58,-711,240,-398],0.8],[5,"data/data459.b3dm",[-384,-651,-70,-395],0.6],[7,"data/data80.b3dm",[468,90,673,439],4.6],[7,"data/data81.b3dm",[282,92,478,439],0.1],[7,"data/data82.b3dm",[470,-254,657,92],0.3],[7,"data/data90.b3dm",[470,-619,669,-254],1.8]],"nihonbashi":[[5,"data/data155.b3dm",[216,475,811,983],0],[5,"data/data165.b3dm",[-378,475,-81,725],0.1],[5,"data/data220.b3dm",[-531,600,-374,731],0.9],[5,"data/data221.b3dm",[-676,600,-527,728],0.4],[5,"data/data222.b3dm",[-554,416,-378,600],0.6],[5,"data/data223.b3dm",[-676,475,-519,607],1.2],[5,"data/data417.b3dm",[-382,225,-81,475],0.2],[5,"data/data418.b3dm",[-398,-91,-81,225],2.7],[5,"data/data421.b3dm",[-676,192,-336,487],4.4],[5,"data/data427.b3dm",[-527,75,-378,247],1.1],[5,"data/data428.b3dm",[-688,92,-527,225],0.8],[5,"data/data429.b3dm",[-527,-29,-378,100],0.9],[5,"data/data430.b3dm",[-705,-29,-527,113],0.9],[5,"data/data439.b3dm",[-527,-196,-377,13],2.6],[5,"data/data440.b3dm",[-676,-150,-527,-25],0],[5,"data/data441.b3dm",[-592,-407,-378,3],0.2],[5,"data/data442.b3dm",[-710,-403,-455,42],1.9],[5,"data/data449.b3dm",[-558,-418,-378,-191],0.1],[5,"data/data450.b3dm",[-676,-414,-527,-275],0.1],[5,"data/data451.b3dm",[-683,-525,-527,-400],1.2],[5,"data/data464.b3dm",[-684,-774,-378,-500],0.4],[7,"data/data30.b3dm",[320,463,523,827],2.2],[7,"data/data31.b3dm",[125,446,343,821],3.4],[7,"data/data32.b3dm",[325,117,531,478],2.8],[7,"data/data33.b3dm",[138,121,340,487],5.1],[7,"data/data55.b3dm",[321,-231,536,141],5.4],[7,"data/data56.b3dm",[135,-231,352,121],4.4],[7,"data/data57.b3dm",[325,-581,531,-208],7.2],[7,"data/data58.b3dm",[135,-578,340,-208],6],[7,"data/data75.b3dm",[-54,457,164,827],6.5],[7,"data/data76.b3dm",[-247,468,-25,823],5.3],[7,"data/data77.b3dm",[-97,121,152,486],7],[7,"data/data78.b3dm",[-282,117,-2,509],5.6],[7,"data/data80.b3dm",[-418,466,-213,815],4.6],[7,"data/data81.b3dm",[-604,468,-408,815],0.1],[7,"data/data82.b3dm",[-416,121,-229,468],0.3],[7,"data/data85.b3dm",[-92,-279,148,131],6.2],[7,"data/data86.b3dm",[-252,-243,-14,133],6.9],[7,"data/data87.b3dm",[-51,-581,155,-225],4.5],[7,"data/data88.b3dm",[-253,-578,-35,-211],5.8],[7,"data/data90.b3dm",[-416,-243,-217,121],1.8],[7,"data/data91.b3dm",[-444,-587,-218,-203],4.2],[7,"data/data92.b3dm",[-604,-582,-361,-225],2.8]],"ueno":[[8,"18/232850/39530_bldg_Building.glb",[-543,-151,-422,3],0.1],[8,"18/232851/39530_bldg_Building.glb",[-444,-142,-301,7],0.1],[8,"18/232851/39531_bldg_Building.glb",[-380,-305,-351,-219],0.1],[8,"18/232850/39533_bldg_Building.glb",[-570,-606,-426,-454],0.6],[8,"18/232851/39532_bldg_Building.glb",[-435,-432,-335,-303],0.4],[8,"18/232851/39533_bldg_Building.glb",[-441,-608,-299,-449],1],[8,"18/232850/39534_bldg_Building.glb",[-560,-758,-454,-724],0.1],[8,"18/232850/39535_bldg_Building.glb",[-581,-918,-455,-735],0.6],[8,"18/232851/39534_bldg_Building.glb",[-434,-777,-299,-595],1.1],[8,"18/232851/39535_bldg_Building.glb",[-436,-924,-299,-746],0.7],[8,"18/232852/39530_bldg_Building.glb",[-311,-149,-172,-81],0.1],[8,"18/232852/39531_bldg_Building.glb",[-316,-314,-191,-137],0.8],[8,"18/232853/39530_bldg_Building.glb",[-213,-198,-13,-31],0.1],[8,"18/232853/39531_bldg_Building.glb",[-191,-302,-21,-133],0.5],[8,"18/232854/39529_bldg_Building.glb",[-109,-92,161,151],0.3],[8,"18/232854/39530_bldg_Building.glb",[-122,-154,73,29],0.2],[8,"18/232854/39531_bldg_Building.glb",[-35,-314,68,-127],0.3],[8,"18/232852/39532_bldg_Building.glb",[-296,-458,-225,-301],0.8],[8,"18/232852/39533_bldg_Building.glb",[-323,-618,-206,-419],1.1],[8,"18/232853/39532_bldg_Building.glb",[-177,-458,-57,-271],0.8],[8,"18/232853/39533_bldg_Building.glb",[-168,-607,-66,-446],0.8],[8,"18/232852/39534_bldg_Building.glb",[-314,-842,-185,-602],0.7],[8,"18/232852/39535_bldg_Building.glb",[-324,-912,-184,-752],0.4],[8,"18/232853/39534_bldg_Building.glb",[-178,-772,-79,-599],0.5],[8,"18/232853/39535_bldg_Building.glb",[-192,-918,-91,-753],0.8],[8,"18/232854/39532_bldg_Building.glb",[-63,-456,69,-297],0.4],[8,"18/232854/39533_bldg_Building.glb",[-34,-606,65,-451],0.6],[8,"18/232854/39534_bldg_Building.glb",[-48,-770,60,-606],0.6],[8,"18/232854/39535_bldg_Building.glb",[-60,-922,72,-740],0.6],[9,"data/data36.b3dm",[-1054,-575,-412,-68],1.1],[9,"data/data44.b3dm",[-1043,-1090,-412,-557],6.7]]}};
+var UBLD = {"year":2025,"bases":["https://assets.cms.plateau.reearth.io/assets/4b/59935f-b488-4701-891d-adee4492ab2f/13102_chuo-ku_pref_2025_citygml_1_op_ubld_3dtiles_lod4/","https://assets.cms.plateau.reearth.io/assets/ea/284655-a1e2-46c1-bdb5-ee4a66af67a3/13113_shibuya-ku_pref_2025_citygml_1_op_ubld_3dtiles_lod4/","https://assets.cms.plateau.reearth.io/assets/e4/d33e66-911d-42e5-9507-8791bada2bd1/13106_taito-ku_city_2025_citygml_1_op_ubld_3dtiles_lod1/","https://assets.cms.plateau.reearth.io/assets/d0/b74723-d536-4f18-89fd-1770b143041f/13116_toshima-ku_pref_2025_citygml_1_op_ubld_3dtiles_lod4/","https://assets.cms.plateau.reearth.io/assets/7d/d6f2c5-80ca-4c58-ac34-a67de3786d04/13104_shinjuku-ku_pref_2025_citygml_1_op_ubld_3dtiles_lod4/"],"stations":{"tokyo":{"lod":"LOD4","tiles":[[0,"data/data0.b3dm"],[0,"data/data1.b3dm"],[0,"data/data2.b3dm"],[0,"data/data3.b3dm"],[0,"data/data4.b3dm"],[0,"data/data5.b3dm"],[0,"data/data6.b3dm"],[0,"data/data7.b3dm"],[0,"data/data8.b3dm"],[0,"data/data9.b3dm"],[0,"data/data15.b3dm"],[0,"data/data17.b3dm"],[0,"data/data19.b3dm"],[0,"data/data20.b3dm"],[0,"data/data21.b3dm"],[0,"data/data22.b3dm"],[0,"data/data24.b3dm"],[0,"data/data25.b3dm"],[0,"data/data27.b3dm"],[0,"data/data28.b3dm"],[0,"data/data29.b3dm"],[0,"data/data30.b3dm"],[0,"data/data32.b3dm"],[0,"data/data33.b3dm"]],"box":[139.76766,35.67848,139.77164,35.68275],"ground":40.36},"ginza":{"lod":"LOD4","tiles":[[0,"data/data0.b3dm"],[0,"data/data2.b3dm"],[0,"data/data3.b3dm"],[0,"data/data4.b3dm"],[0,"data/data5.b3dm"],[0,"data/data6.b3dm"],[0,"data/data7.b3dm"],[0,"data/data8.b3dm"],[0,"data/data9.b3dm"],[0,"data/data15.b3dm"],[0,"data/data17.b3dm"],[0,"data/data19.b3dm"],[0,"data/data20.b3dm"],[0,"data/data21.b3dm"],[0,"data/data22.b3dm"],[0,"data/data24.b3dm"],[0,"data/data25.b3dm"],[0,"data/data27.b3dm"],[0,"data/data28.b3dm"],[0,"data/data29.b3dm"],[0,"data/data30.b3dm"],[0,"data/data32.b3dm"],[0,"data/data33.b3dm"]],"box":[139.76766,35.67848,139.77164,35.68275],"ground":40.41},"otemachi":{"lod":"LOD4","tiles":[[0,"data/data0.b3dm"],[0,"data/data1.b3dm"],[0,"data/data2.b3dm"],[0,"data/data3.b3dm"],[0,"data/data4.b3dm"],[0,"data/data5.b3dm"],[0,"data/data6.b3dm"],[0,"data/data7.b3dm"],[0,"data/data8.b3dm"],[0,"data/data9.b3dm"],[0,"data/data15.b3dm"],[0,"data/data17.b3dm"],[0,"data/data19.b3dm"],[0,"data/data20.b3dm"],[0,"data/data21.b3dm"],[0,"data/data22.b3dm"],[0,"data/data24.b3dm"],[0,"data/data25.b3dm"],[0,"data/data27.b3dm"],[0,"data/data28.b3dm"],[0,"data/data29.b3dm"],[0,"data/data30.b3dm"],[0,"data/data32.b3dm"],[0,"data/data33.b3dm"]],"box":[139.76766,35.67848,139.77164,35.68275],"ground":40.01},"nihonbashi":{"lod":"LOD4","tiles":[[0,"data/data0.b3dm"],[0,"data/data1.b3dm"],[0,"data/data2.b3dm"],[0,"data/data3.b3dm"],[0,"data/data4.b3dm"],[0,"data/data5.b3dm"],[0,"data/data6.b3dm"],[0,"data/data7.b3dm"],[0,"data/data8.b3dm"],[0,"data/data9.b3dm"],[0,"data/data15.b3dm"],[0,"data/data17.b3dm"],[0,"data/data19.b3dm"],[0,"data/data20.b3dm"],[0,"data/data21.b3dm"],[0,"data/data22.b3dm"],[0,"data/data24.b3dm"],[0,"data/data25.b3dm"],[0,"data/data27.b3dm"],[0,"data/data28.b3dm"],[0,"data/data29.b3dm"],[0,"data/data30.b3dm"],[0,"data/data32.b3dm"],[0,"data/data33.b3dm"]],"box":[139.76766,35.67848,139.77164,35.68275],"ground":40.55},"shibuya":{"lod":"LOD4","tiles":[[1,"data/data0.b3dm"],[1,"data/data1.b3dm"],[1,"data/data3.b3dm"],[1,"data/data4.b3dm"],[1,"data/data7.b3dm"],[1,"data/data8.b3dm"],[1,"data/data9.b3dm"],[1,"data/data11.b3dm"],[1,"data/data12.b3dm"],[1,"data/data13.b3dm"],[1,"data/data14.b3dm"],[1,"data/data15.b3dm"],[1,"data/data18.b3dm"],[1,"data/data19.b3dm"],[1,"data/data22.b3dm"],[1,"data/data23.b3dm"],[1,"data/data24.b3dm"],[1,"data/data26.b3dm"],[1,"data/data27.b3dm"],[1,"data/data28.b3dm"],[1,"data/data29.b3dm"],[1,"data/data31.b3dm"],[1,"data/data32.b3dm"],[1,"data/data34.b3dm"],[1,"data/data35.b3dm"],[1,"data/data36.b3dm"],[1,"data/data37.b3dm"],[1,"data/data40.b3dm"],[1,"data/data41.b3dm"],[1,"data/data42.b3dm"],[1,"data/data43.b3dm"],[1,"data/data45.b3dm"],[1,"data/data46.b3dm"],[1,"data/data47.b3dm"],[1,"data/data48.b3dm"],[1,"data/data50.b3dm"],[1,"data/data51.b3dm"],[1,"data/data52.b3dm"],[1,"data/data53.b3dm"],[1,"data/data56.b3dm"],[1,"data/data57.b3dm"],[1,"data/data58.b3dm"],[1,"data/data59.b3dm"],[1,"data/data61.b3dm"],[1,"data/data62.b3dm"],[1,"data/data63.b3dm"],[1,"data/data64.b3dm"],[1,"data/data66.b3dm"],[1,"data/data67.b3dm"],[1,"data/data68.b3dm"],[1,"data/data70.b3dm"],[1,"data/data73.b3dm"],[1,"data/data74.b3dm"],[1,"data/data75.b3dm"],[1,"data/data77.b3dm"],[1,"data/data78.b3dm"],[1,"data/data81.b3dm"],[1,"data/data82.b3dm"],[1,"data/data83.b3dm"],[1,"data/data85.b3dm"],[1,"data/data86.b3dm"],[1,"data/data87.b3dm"],[1,"data/data89.b3dm"],[1,"data/data90.b3dm"],[1,"data/data91.b3dm"],[1,"data/data92.b3dm"],[1,"data/data94.b3dm"],[1,"data/data95.b3dm"],[1,"data/data96.b3dm"],[1,"data/data99.b3dm"],[1,"data/data100.b3dm"],[1,"data/data101.b3dm"],[1,"data/data102.b3dm"],[1,"data/data104.b3dm"],[1,"data/data105.b3dm"],[1,"data/data107.b3dm"],[1,"data/data108.b3dm"],[1,"data/data109.b3dm"],[1,"data/data110.b3dm"],[1,"data/data113.b3dm"],[1,"data/data114.b3dm"],[1,"data/data116.b3dm"],[1,"data/data117.b3dm"]],"box":[139.69851,35.65835,139.70305,35.66133],"ground":51.77},"ueno":{"lod":"LOD1","tiles":[[2,"18/232852/39531_uro_UndergroundBuilding.glb"],[2,"18/232853/39531_uro_UndergroundBuilding.glb"],[2,"18/232852/39532_uro_UndergroundBuilding.glb"],[2,"18/232852/39533_uro_UndergroundBuilding.glb"],[2,"18/232852/39534_uro_UndergroundBuilding.glb"],[2,"18/232854/39534_uro_UndergroundBuilding.glb"]],"box":[139.77248,35.70726,139.77689,35.71243],"ground":48.27},"ikebukuro":{"lod":"LOD4","tiles":[[3,"data/data0.b3dm"],[3,"data/data1.b3dm"],[3,"data/data2.b3dm"],[3,"data/data5.b3dm"],[3,"data/data6.b3dm"],[3,"data/data7.b3dm"],[3,"data/data8.b3dm"],[3,"data/data9.b3dm"],[3,"data/data10.b3dm"],[3,"data/data12.b3dm"],[3,"data/data14.b3dm"],[3,"data/data18.b3dm"],[3,"data/data21.b3dm"],[3,"data/data24.b3dm"],[3,"data/data25.b3dm"]],"box":[139.70939,35.72805,139.71337,35.73137],"ground":69.91},"shinjuku":{"lod":"LOD4","tiles":[[4,"data/data0.b3dm"],[4,"data/data1.b3dm"],[4,"data/data3.b3dm"],[4,"data/data4.b3dm"],[4,"data/data5.b3dm"],[4,"data/data6.b3dm"],[4,"data/data8.b3dm"],[4,"data/data9.b3dm"],[4,"data/data10.b3dm"],[4,"data/data11.b3dm"],[4,"data/data14.b3dm"],[4,"data/data15.b3dm"],[4,"data/data16.b3dm"],[4,"data/data18.b3dm"],[4,"data/data19.b3dm"],[4,"data/data20.b3dm"],[4,"data/data21.b3dm"],[4,"data/data23.b3dm"],[4,"data/data24.b3dm"],[4,"data/data26.b3dm"],[4,"data/data29.b3dm"],[4,"data/data30.b3dm"],[4,"data/data32.b3dm"],[4,"data/data33.b3dm"],[4,"data/data34.b3dm"],[4,"data/data35.b3dm"],[4,"data/data37.b3dm"],[4,"data/data40.b3dm"],[4,"data/data41.b3dm"],[4,"data/data42.b3dm"],[4,"data/data43.b3dm"],[4,"data/data46.b3dm"],[4,"data/data47.b3dm"],[4,"data/data48.b3dm"],[4,"data/data49.b3dm"],[4,"data/data51.b3dm"],[4,"data/data52.b3dm"],[4,"data/data54.b3dm"],[4,"data/data55.b3dm"],[4,"data/data56.b3dm"],[4,"data/data57.b3dm"],[4,"data/data59.b3dm"],[4,"data/data60.b3dm"],[4,"data/data61.b3dm"],[4,"data/data62.b3dm"],[4,"data/data66.b3dm"],[4,"data/data67.b3dm"],[4,"data/data69.b3dm"],[4,"data/data70.b3dm"],[4,"data/data73.b3dm"],[4,"data/data74.b3dm"],[4,"data/data75.b3dm"],[4,"data/data77.b3dm"],[4,"data/data78.b3dm"],[4,"data/data79.b3dm"],[4,"data/data81.b3dm"],[4,"data/data82.b3dm"],[4,"data/data83.b3dm"],[4,"data/data85.b3dm"],[4,"data/data86.b3dm"],[4,"data/data87.b3dm"],[4,"data/data88.b3dm"],[4,"data/data91.b3dm"],[4,"data/data92.b3dm"],[4,"data/data94.b3dm"],[4,"data/data95.b3dm"],[4,"data/data96.b3dm"],[4,"data/data97.b3dm"],[4,"data/data99.b3dm"],[4,"data/data101.b3dm"],[4,"data/data102.b3dm"],[4,"data/data103.b3dm"],[4,"data/data104.b3dm"],[4,"data/data108.b3dm"],[4,"data/data110.b3dm"],[4,"data/data112.b3dm"],[4,"data/data113.b3dm"],[4,"data/data115.b3dm"],[4,"data/data116.b3dm"],[4,"data/data117.b3dm"],[4,"data/data118.b3dm"],[4,"data/data121.b3dm"],[4,"data/data122.b3dm"],[4,"data/data124.b3dm"],[4,"data/data125.b3dm"],[4,"data/data127.b3dm"],[4,"data/data128.b3dm"],[4,"data/data129.b3dm"],[4,"data/data130.b3dm"],[4,"data/data132.b3dm"],[4,"data/data133.b3dm"],[4,"data/data134.b3dm"],[4,"data/data135.b3dm"],[4,"data/data138.b3dm"],[4,"data/data139.b3dm"],[4,"data/data140.b3dm"],[4,"data/data142.b3dm"],[4,"data/data143.b3dm"],[4,"data/data144.b3dm"],[4,"data/data146.b3dm"],[4,"data/data148.b3dm"],[4,"data/data149.b3dm"],[4,"data/data152.b3dm"],[4,"data/data154.b3dm"],[4,"data/data155.b3dm"]],"box":[139.69803,35.6907,139.70362,35.69501],"ground":74.57}}};
 var SPACES = null;
 var NET = "data/net/";
 var VER = "?v=33808f1fbe"; // データの版（組み立てごとの印）。前の版の駅データがブラウザに残って、新しいページと組み合わさらないように（2026-10-13） // 乗換案内の時刻表の置き場所（公開ページだけ。data/net/。埋め込みの版は null）
@@ -4292,12 +4294,12 @@ var View3D = (function () {
   }
   function needNet() { return $('from').value === 'dep' || $('partner').value === 'dep'; }
   function syncDep() {
-    $('from-dep').hidden = $('from-dep-l').hidden = $('from').value !== 'dep';
+    $('from-dep').hidden = $('from').value !== 'dep';
     $('partner-dep').hidden = $('partner').value !== 'dep';
-    $('meetwhen').hidden = !needNet();
     if (!$('md').value || !$('mt').value) defaultWhen();
     var w = meetWhen();
-    $('md-kind').textContent = w ? (w.kind === 'h' ? '土休日' : '平日') + 'の時刻表で調べます' : '';
+    $('md-kind').textContent = !needNet() ? '「出発駅・バス停から乗り換えて来る」ときに、この時刻に着ける電車・バスを探します' :
+      w ? (w.kind === 'h' ? '土休日' : '平日') + 'の時刻表で、この時刻に着ける電車・バスを探します' : '';
   }
   function ymd(d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
   // 初めの合流日時: 今日の、いまから 1 時間後（10 分単位に切り上げ）
@@ -4408,6 +4410,12 @@ var View3D = (function () {
     var f = db > da ? 1 - best.t : best.t, n = CARS[L.railway.replace('odpt.Railway:', '')] || 10;
     return { car: Math.min(n, Math.max(1, Math.ceil(f * n))), cars: n, f: f, ref: best.ref };
   }
+  // 路線の札の色: 明るい色（中央・総武線の黄色など）は黒い字に
+  function lbStyle(c) {
+    var m = /^#?([0-9a-f]{6})$/i.exec(c || ''), bg = m ? '#' + m[1] : '#777', v = m ? parseInt(m[1], 16) : 0x777777;
+    var y = (0.299 * (v >> 16 & 255) + 0.587 * (v >> 8 & 255) + 0.114 * (v & 255)) / 255;
+    return 'background:' + bg + ';color:' + (y > 0.62 ? '#1d1d1b' : '#fff');
+  }
   function carText(c) { return c ? '進行方向の前から' + c.car + '両目あたり（' + c.cars + '両編成のとき）' : ''; }
   // 乗換案内の欄（出る・乗り換える・着く駅と時刻、降りる車両、出る改札）
   function itinHTML(it, g, ep) {
@@ -4419,7 +4427,7 @@ var View3D = (function () {
     legs.forEach(function (l, i) {
       var x = Transit.legInfo(N, l), next = legs[i + 1] ? Transit.legInfo(N, legs[i + 1]) : null;
       lis += '<li><span class="lt">' + hm(l.dep) + '</span><b>' + esc(x.from) + '</b>' + (i ? 'で乗り換え' : r.walk0 ? 'で乗る' : 'を出る') + '<small>' +
-        '<span class="lb" style="background:' + esc(x.color || '#777') + '">' + esc(x.line) + '</span> ' + esc(x.type && x.type !== '普通' && x.type !== '各駅停車' ? x.type + '・' : '') + esc(x.dest) + '行き' +
+        '<span class="lb" style="' + lbStyle(x.color) + '">' + esc(x.line) + '</span> ' + esc(x.type && x.type !== '普通' && x.type !== '各駅停車' ? x.type + '・' : '') + esc(x.dest) + '行き' +
         (x.through.length ? '（' + esc(x.through.join('・')) + 'に直通）' : '') + '・' + x.stops + (x.stops < 10 ? 'つ目' : '番目') + (x.bus ? 'の停留所' : 'の停車駅') + 'で降りる</small></li>';
       lis += '<li><span class="lt">' + hm(l.arr) + '</span><b>' + esc(x.to) + '</b>で降りる';
       if (next) lis += '<small>' + (next.from !== x.to || l.walk ? esc(next.from + (next.bus ? 'の' + next.route + 'の乗り場' : next.from === x.to ? 'の' + next.line + 'のホーム' : '駅')) + 'まで歩いて乗り換え（約' + Math.max(1, Math.round(l.walk || Transit.CHG)) + '分の見込み）' : next.bus || x.bus ? '同じ乗り場で乗り換え' : '同じホームか、となりのホームで乗り換え') + '</small>';
@@ -4467,7 +4475,7 @@ var View3D = (function () {
     var ep = rawEp(k), p = state.st.plats.filter(function (x) { return x.id === ep.id; })[0], w = p && Guide.womenCar(state.st, p);
     for (var c = 1; c <= Guide.CARS; c++) sel.options[c].textContent = '前から' + c + '両目' + (w && w.car === c ? '（女性専用車・平日朝）' : '');
   }
-  function profile() { return document.querySelector('input[name=profile]:checked').value; }
+  function profile() { return $('from-pr').value || 'std'; }
 
   // 重い処理（駅の切り替え・経路と近い出口の計算・立体図の作り直し）の前に、処理中のダイアログを出してから始める。
   // 計算は画面を止めるので、ダイアログが描かれてから（次の描画の後に）実行する
@@ -4519,7 +4527,8 @@ var View3D = (function () {
     else $('partner').value = pd.b && hasOpt('partner', pd.b) ? pd.b : '';
     // 合流日時（共有リンク・前回の選択）。前回の選択の日が過ぎていれば今日に
     if (pd.md && /^\d{4}-\d{2}-\d{2}$/.test(pd.md) && (pd.url || pd.md >= ymd(new Date()))) { $('md').value = pd.md; if (pd.mt) $('mt').value = pd.mt.replace(/^(\d):/, '0$1:'); }
-    $('partner-pr').value = pd.bp === 'ev' ? 'ev' : 'std';
+    $('partner-pr').value = ['stair', 'esc', 'ev'].indexOf(pd.bp) >= 0 ? pd.bp : 'std';
+    if (pd.v) state.view = pd.v;
     fillTime('from', pd.at); fillTime('partner', pd.bt);
     syncCarSel('from'); syncCarSel('to');
     $('from-car').value = fc >= 1 && fc <= Guide.CARS ? String(fc) : '';
@@ -4552,13 +4561,17 @@ var View3D = (function () {
   $('to').addEventListener('change', function () { $('to-car').value = ''; runBusy(); });
   $('from-car').addEventListener('change', runBusy);
   $('to-car').addEventListener('change', runBusy);
-  document.querySelectorAll('input[name=profile]').forEach(function (r) { r.addEventListener('change', runBusy); });
-  $('swap').addEventListener('click', function () {
-    if (!hasOpt('to', $('from').value)) { toast('電車で来るときは、待ち合わせ場所と入れ替えられません'); return; }
-    var a = $('from').value; $('from').value = $('to').value; $('to').value = a;
-    syncCarSel('from'); syncCarSel('to');
-    var c = $('from-car').value; $('from-car').value = $('to-car').value; $('to-car').value = c;
-    runBusy();
+  $('from-pr').addEventListener('change', runBusy);
+  // 設定を閉じる・開く（閉じても 1 行のまとめは残す）
+  function setSetup(open) {
+    document.body.classList.toggle('setup-closed', !open);
+    $('setup-toggle').textContent = open ? '設定を閉じる' : '設定を変える';
+    $('setup-toggle').setAttribute('aria-expanded', open);
+  }
+  $('setup-toggle').addEventListener('click', function () { setSetup(document.body.classList.contains('setup-closed')); });
+  // 見る画面の切り替え
+  document.querySelectorAll('#viewtabs [data-v]').forEach(function (b) {
+    b.addEventListener('click', function () { if (state.view === b.dataset.v) return; state.view = b.dataset.v; busy('画面を切り替えています…', run); });
   });
   $('form').addEventListener('submit', function (e) { e.preventDefault(); });
 
@@ -4577,7 +4590,7 @@ var View3D = (function () {
     var at = timeOf('from'), bt = timeOf('partner');
     try { localStorage.setItem(SAVE_KEY, JSON.stringify({ st: state.st.id, from: epVal('from'), to: $('to').value, pr: profile(), fc: epOf('from').car, tc: epOf('to').car,
       at: at != null && $('from').value !== 'dep' ? hm(at) : null, b: epVal('partner'), bt: bt != null && $('partner').value !== 'dep' ? hm(bt) : null, bp: partnerPr(),
-      md: needNet() ? $('md').value : null, mt: needNet() ? $('mt').value : null })); } catch (e) {}
+      md: needNet() ? $('md').value : null, mt: needNet() ? $('mt').value : null, v: state.view })); } catch (e) {}
     // アドレス欄も選んだ内容に合わせる（そのままコピーしても同じ案内が開く）。埋め込み（アーティファクト）では変えない
     try { if (/^https?:/.test(location.protocol) && window.top === window) history.replaceState(null, '', location.pathname + choiceQuery()); } catch (e) {}
   }
@@ -4589,13 +4602,13 @@ var View3D = (function () {
     var at = $('from').value === 'dep' ? null : timeOf('from'), bt = $('partner').value === 'dep' ? null : timeOf('partner'), b = epVal('partner');
     return '?st=' + encodeURIComponent(state.st.id) + '&from=' + encodeURIComponent(epVal('from')) + '&to=' + encodeURIComponent($('to').value) + '&pr=' + profile() +
       (fc ? '&fc=' + fc : '') + (tc ? '&tc=' + tc : '') + (at != null ? '&at=' + hm(at) : '') + (b ? '&b=' + encodeURIComponent(b) : '') + (b && bt != null ? '&bt=' + hm(bt) : '') + (b && partnerPr() !== 'std' ? '&bp=' + partnerPr() : '') +
-      (needNet() ? '&md=' + $('md').value + '&mt=' + $('mt').value : '');
+      (needNet() ? '&md=' + $('md').value + '&mt=' + $('mt').value : '') + (b && state.view ? '&v=' + state.view : '');
   }
   function urlChoice() {
     try {
       var p = new URLSearchParams(location.search);
       return p.get('st') ? { st: p.get('st'), from: p.get('from'), to: p.get('to'), pr: p.get('pr'), fc: +p.get('fc') || null, tc: +p.get('tc') || null,
-        at: p.get('at'), b: p.get('b'), bt: p.get('bt'), bp: p.get('bp'), md: p.get('md'), mt: p.get('mt'), url: true } : null;
+        at: p.get('at'), b: p.get('b'), bt: p.get('bt'), bp: p.get('bp'), md: p.get('md'), mt: p.get('mt'), v: p.get('v'), url: true } : null;
     } catch (e) { return null; }
   }
   function epText(ep) {
@@ -4681,7 +4694,7 @@ var View3D = (function () {
             '<span class="tm">わたし 約' + Math.max(1, Math.round(c.a)) + '分・あいて 約' + Math.max(1, Math.round(c.b)) + '分' + (c.t != null ? '・' + hm(c.t) + ' ごろそろう' : '') + '</span></button></li>';
         }).join('') + '</ol>' + (gp ? '<button type="button" class="send" id="send-partner" title="あいてには、あいての来かたからの道順が開くリンクを送ります">あいてに送る</button>' : '');
     }
-    return '<section class="meet" aria-label="ふたりの到着"><div class="who">' + rows + '</div>' + when + list + '</section>';
+    return '<section class="meet" aria-labelledby="h-meet"><h2 id="h-meet">着く時刻（いまの遅れを入れて）と待ち合わせ場所</h2><div class="who">' + rows + '</div>' + when + list + '</section>';
   }
   // ---------- 遅れに合わせる（ODPT の運行情報・列車の位置。2026-10-11 利用者「遅れに合わせる機能も入れて」） ----------
   // 中継サーバ（トークンはサーバ側。CORS は公開ページ tyra0119.github.io だけ）から、選んだ路線の運行情報（odpt:TrainInformation）と
@@ -4785,7 +4798,7 @@ var View3D = (function () {
     var prB = partnerPr(), gp = state.gp, g = state.g;
     var q = '?st=' + encodeURIComponent(state.st.id) + '&from=' + encodeURIComponent(epVal('partner')) + '&to=' + encodeURIComponent($('to').value) + '&pr=' + prB + '&bp=' + pr +
       (bt != null && $('partner').value !== 'dep' ? '&at=' + hm(bt) : '') + '&b=' + encodeURIComponent(epVal('from')) + (at != null && $('from').value !== 'dep' ? '&bt=' + hm(at) : '') +
-      (needNet() ? '&md=' + $('md').value + '&mt=' + $('mt').value : '');
+      (needNet() ? '&md=' + $('md').value + '&mt=' + $('mt').value : '') + '&v=me';
     var da = epOf('from').type === 'line' ? delayOf(epOf('from'), at) : null, db = pe.type === 'line' ? delayOf(pe, bt) : null;
     if (at != null && da) at += da.min;
     if (bt != null && db) bt += db.min;
@@ -4805,69 +4818,139 @@ var View3D = (function () {
     try { return JSON.parse(localStorage.getItem(SAVE_KEY)) || null; } catch (e) { return null; }
   }
 
+  // ふたりそれぞれの来かた・条件・着く時刻・道順
+  function person(k) {
+    var st = state.st, pr = k === 'from' ? profile() : partnerPr(), ep = withPr(k === 'from' ? epOf('from') : partnerEp(), pr), to = epOf('to');
+    var same = ep.type === to.type && ep.id === to.id;
+    var g = ep.type === 'dep' || ep.evNo || same ? null : Guide.guide(st, ep, to, pr);
+    return { k: k, pr: pr, ep: ep, g: g, same: same, t: timeOf(k), who: k === 'from' ? 'わたし' : 'あいて', mark: k === 'from' ? 'mmark' : 'pmark' };
+  }
+  // 出発地の短い言い方（まとめの帯・切り替えのボタン）
+  function epShort(P) {
+    if (!P) return '';
+    if ($(P.k).value === 'dep') return depName(P.k) ? depName(P.k) + 'から' : '出発駅を入れてください';
+    if (P.ep.type === 'line') return P.ep.L.name + 'で着く';
+    return epText(P.ep) + 'から';
+  }
+  function syncHead(A, B, to, view) {
+    var mw = meetWhen(), st = state.st;
+    $('sumtx').innerHTML = (needNet() && mw ? '<span><b>' + esc($('md').value.replace(/^\d{4}-0?(\d+)-0?(\d+)$/, '$1/$2')) + ' ' + hm(mw.min) + '</b></span>' : '') +
+      '<span><b>' + esc(st.name) + '</b>・' + esc(epText(to)) + '</span>' +
+      '<span><span class="mmark"></span>わたし: ' + esc(epShort(A)) + '</span>' + (B ? '<span><span class="pmark"></span>あいて: ' + esc(epShort(B)) + '</span>' : '<span>あいて: （ひとりで調べる）</span>');
+    var tabs = $('viewtabs');
+    tabs.hidden = !B;
+    tabs.querySelectorAll('[data-v]').forEach(function (b) {
+      var v = b.dataset.v;
+      b.setAttribute('aria-selected', v === view);
+      if (v === 'me') b.innerHTML = '<span class="mmark"></span>わたし' + (A ? '（' + esc(epShort(A)) + '）' : '');
+      if (v === 'you') b.innerHTML = '<span class="pmark"></span>あいて' + (B ? '（' + esc(epShort(B)) + '）' : '');
+    });
+  }
+
   function run() {
     syncDep();
     state.itin = {};
     if ($('from').value === 'dep') state.itin.from = planDep('from');
     if ($('partner').value === 'dep') state.itin.partner = planDep('partner');
     saveChoice();
-    var st = state.st, from = epOf('from'), to = epOf('to'), pr = profile();
-    var out = $('out');
-    if (from.type === 'dep') { out.innerHTML = '<div class="notice"><b>乗換案内:</b> ' + esc(from.err) + '</div>'; return; }
+    var st = state.st, to = epOf('to'), out = $('out');
     syncCarSel('from'); syncCarSel('to');
-    if (from.type === to.type && from.id === to.id) {
-      out.innerHTML = '<div class="notice">出発地と待ち合わせ場所が同じです。どちらかを変えてください。</div>'; return;
+    var A = person('from'), B = $('partner').value ? person('partner') : null;
+    // 見る画面: あいてがいれば ふたり・わたし・あいて、いなければ わたし だけ
+    var view = B ? (['duo', 'me', 'you'].indexOf(state.view) >= 0 ? state.view : 'duo') : 'me';
+    state.view = B ? view : state.view;
+    syncHead(A, B, to, view);
+    var M = view === 'you' ? B : A, O = view === 'you' ? A : (B || null);
+    state.main = M; state.g = null; state.nav = -1; state.auto = false; document.body.classList.remove('nav-on');
+    if (M.ep.type === 'dep') { out.innerHTML = '<div class="notice"><b>' + M.who + 'の乗換案内:</b> ' + esc(M.ep.err) + '</div>'; return; }
+    if (M.same) { out.innerHTML = '<div class="notice">' + M.who + 'の出発地と待ち合わせ場所が同じです。どちらかを変えてください。</div>'; return; }
+    if (!M.g) { out.innerHTML = noRoute(st, M.ep, to, M.pr); bindAlts(); return; }
+    state.g = M.g; state.gp = O ? O.g : null;
+    if (view === 'duo') {
+      out.innerHTML = '<div class="main duo"><div class="side">' + flowHTML(A, B, to) + meetHTML(st, A.ep, to, A.g, A.pr, B.g) + '</div>' + p3dHTML(st) + '</div>';
+    } else {
+      out.innerHTML = summaryHTML(M.g, M.ep, to) +
+        '<div class="main"><div class="side"><div id="navbox"></div>' + stepsPanel(M, O) + '</div>' + p3dHTML(st) +
+        '<div class="figs2">' +
+          '<section class="panel" aria-labelledby="h-sec"><h2 id="h-sec">上り下りの流れ</h2><p class="hint">横から見た図です。横は歩く距離、縦は深さを表します。</p><div class="svgbox">' + sectionSVG(M.g, M.ep, to) + '</div></section>' +
+          '<section class="panel" aria-labelledby="h-exits"><h2 id="h-exits">待ち合わせ場所に近い出口</h2><p class="hint">地下の道のりが短い順です。相手が別の方向から来るときに伝えてください。</p>' + nearExitsHTML(to, M.pr, M.k) + '</section>' +
+        '</div></div>';
     }
-    from = withPr(from, pr);
-    var g = from.evNo ? null : Guide.guide(st, from, to, pr);
-    // 「おすすめの車両」に、車両を指定しないときの推定の車両を添える
-    var g0 = from.car || to.car ? Guide.guide(st, { type: from.type, id: from.id }, { type: to.type, id: to.id }, pr) : g;
-    if (g0) {
-      if (from.type === 'plat') syncCarSel('from', g0.steps[0].car);
-      if (to.type === 'plat') syncCarSel('to', g0.steps[g0.steps.length - 1].car);
-    }
-    if (!g) { out.innerHTML = noRoute(st, from, to, pr); bindAlts(); return; }
-    state.g = g; state.nav = -1; state.auto = false; document.body.classList.remove('nav-on');
-    // あいての道順（あいての来かたを選んだとき）
-    var prB = partnerPr(), pe = withPr(partnerEp(), prB), gp = pe && !pe.evNo && pe.type !== 'dep' ? Guide.guide(st, pe, to, prB) : null;
-    state.gp = gp;
-    out.innerHTML =
-      summaryHTML(g, from, to) +
-      '<div class="main">' +
-        // ふたりの到着は左の列の上（PC の 1 画面の並びで、案内カード・歩く順番と同じ列に。案内中は隠す）
-        '<div class="side">' + meetHTML(st, from, to, g, pr, gp) + '<div id="navbox"></div>' +
-        '<section class="panel" aria-labelledby="h-steps"><h2 id="h-steps">' + (gp ? 'わたしの' : '') + (from.itin ? '電車と歩く順番' : '歩く順番') + '</h2>' + (from.itin ? itinHTML(from.itin, g, from) : '') +
-          '<p class="hint">' + (from.itin ? '歩く順番: ' : '') + '押すと、そこから 1 手順ずつ案内します。</p>' + stepsHTML(g) + '</section>' +
-        (gp ? '<section class="panel" aria-labelledby="h-psteps"><h2 id="h-psteps"><span class="pmark"></span>あいての' + (pe.itin ? '電車と歩く順番' : '歩く順番') + '</h2>' + (pe.itin ? itinHTML(pe.itin, gp, pe) : '') + '<p class="hint">' + (pe.itin ? '歩く順番: ' : '') + '立体図のだいだいの線です。あいてに送ると、あいての画面ではこちらが案内になります。</p><ol class="psteps">' +
-          gp.steps.map(function (s) { return '<li>' + esc(s.title) + (s.detail ? '<small>' + esc(s.detail) + '</small>' : '') + '</li>'; }).join('') + '</ol></section>' : '') +
-        '</div>' +
-          '<section class="panel p3d" aria-labelledby="h-3d"><h2 id="h-3d">立体で見る</h2><p class="hint" title="マウスは左ドラッグで移動、右ドラッグで回転、ホイールで拡大します（スマホは 1 本指で移動、2 本指で拡大・回転）。右上の方位マークを押すと北が上になります。地上の建物は実際の高さです。手順を押すとその場所に寄ります。高さは見やすいように強調しています。">マウスは左ドラッグで移動、右ドラッグで回転、ホイールで拡大します（スマホは 1 本指で移動、2 本指で拡大・回転）。右上の方位マークを押すと北が上に、＋・－で拡大・縮小、◎で現在地を出して出発地にします。地上の建物は実際の高さです。手順を押すとその場所に寄ります。高さは見やすいように強調しています。</p>' +
-            '<div class="stage" id="stage"><div class="views">' +
-              '<button type="button" data-view="oblique">斜めから</button><button type="button" data-view="side">横から</button><button type="button" data-view="top">真上から</button>' +
-              (View3D.hasCity ? '<button type="button" id="city-toggle" aria-pressed="' + View3D.city + '">街並み ' + (View3D.city ? '表示中' : '非表示') + '</button>' : '') +
-              (View3D.hasPhoto ? '<button type="button" id="photo-toggle" aria-pressed="' + View3D.photoCity + '" title="PLATEAU の写真付きの建物と、航空写真の地面に切り替える（データが多いので通信に注意）"' + (View3D.city ? '' : ' hidden') + '>写真の街並み</button>' : '') +
-              (View3D.hasUbld(st) ? '<button type="button" id="ubld-toggle" aria-pressed="' + View3D.ubld + '" title="PLATEAU の地下街モデル（壁・床・天井）を重ねる。深さは通路網の階に合わせて伸ばしている">地下街</button>' : '') +
-              // 地下・建物の名前の札とトイレのマーク（2026-10-12 利用者「スマホだとラベルで画面が埋まる」）
-              '<button type="button" id="marks-toggle" aria-pressed="' + View3D.marks + '" title="改札・地下街・店・建物の名前の札とトイレのマークを出す・消す（出発・待ち合わせ場所・出口・手順の札は残す）">ラベル ' + (View3D.marks ? '表示中' : '非表示') + '</button>' +
-            '</div><div class="knobs">' +
-            (View3D.hasCity ? '<label class="depth" for="city-a" id="city-a-wrap"' + (View3D.city ? '' : ' hidden') + '>街並みの濃さ<input type="range" id="city-a" min="0" max="1" step="0.05" value="' + View3D.cityAlpha + '"><output id="city-a-v">' + Math.round(View3D.cityAlpha * 100) + '%</output></label>' : '') +
-            // 地下街の濃さ（2026-10-11 利用者「地下空間の透明度を調整できるようにして」）。地下街を出しているときだけ
-            (View3D.hasUbld(st) ? '<label class="depth" for="ubld-a" id="ubld-a-wrap"' + (View3D.ubld ? '' : ' hidden') + ' title="PLATEAU の地下街モデルの壁・床・天井の濃さ。案内中はこの半分ほど。リアル視点ではいつも不透明">地下街の濃さ<input type="range" id="ubld-a" min="0" max="1" step="0.05" value="' + View3D.ubldAlpha + '"><output id="ubld-a-v">' + Math.round(View3D.ubldAlpha * 100) + '%</output></label>' : '') +
-            '</div></div></section>' +
-      '<div class="figs2">' +
-          '<section class="panel" aria-labelledby="h-sec"><h2 id="h-sec">上り下りの流れ</h2><p class="hint">横から見た図です。横は歩く距離、縦は深さを表します。</p><div class="svgbox">' + sectionSVG(g, from, to) + '</div></section>' +
-          '<section class="panel" aria-labelledby="h-exits"><h2 id="h-exits">待ち合わせ場所に近い出口</h2><p class="hint">地下の道のりが短い順です。相手が別の方向から来るときに伝えてください。</p>' + nearExitsHTML(to, pr) + '</section>' +
-      '</div>' +
-      '</div>';
-    // 駅・出発・目的地が同じ（条件だけ変えた）なら、立体図のカメラは動かさない
-    var vkey = st.id + '|' + from.type + ':' + from.id + ':' + (from.car || '') + '|' + to.type + ':' + to.id + ':' + (to.car || ''), sameView = state.vkey === vkey;
+    // 駅・出発・目的地・見る画面が同じ（条件だけ変えた）なら、立体図のカメラは動かさない
+    var vkey = st.id + '|' + view + '|' + M.ep.type + ':' + M.ep.id + '|' + to.type + ':' + to.id, sameView = state.vkey === vkey;
     state.vkey = vkey;
-    View3D.build(g.st || st, g, from, to, $('stage'), false, sameView); // 車両を指定したときは、その位置の点を足した駅のデータで描く
-    View3D.setPartner(gp); // あいての道順（だいだい）
-    // 経路を選び直すと立体図は外からの見え方に戻る（リアル視点も切れる）ので、ボタンの見た目も合わせる
-    // （2026-10-08 利用者「リアル視点を押して、出発地を変えると、リアル視点がＯＮのままだね」。ボタンは作り直す前の状態で描いていた）
-    if ($('fpv-toggle')) $('fpv-toggle').setAttribute('aria-pressed', View3D.fpv);
+    View3D.build(M.g.st || st, M.g, M.ep, to, $('stage'), false, sameView); // 案内している人の道順（赤）
+    View3D.setPartner(O ? O.g : null); // もう一人の道順（だいだい）
+    bind3D();
     syncResume();
+    if ($('nav-start')) $('nav-start').addEventListener('click', function () { var r = View3D.resumeStep; startNav(r > 0 ? r : 0); });
+    if ($('fpv-opt')) $('fpv-opt').addEventListener('change', function () { try { localStorage.setItem('machiawase.fpvOpt', this.checked ? '1' : '0'); } catch (e) {} });
+    if ($('auto-walk')) $('auto-walk').addEventListener('click', startAuto);
+    if ($('share')) $('share').addEventListener('click', shareRoute);
+    document.querySelectorAll('[data-meet]').forEach(function (b) { b.addEventListener('click', function () { $('to').value = b.dataset.meet; runBusy(); }); });
+    if ($('send-partner')) $('send-partner').addEventListener('click', sendToPartner);
+    if (liveLines().length && Date.now() - live.at > 30000) liveFetch(rerenderMeet); // 遅れ・運行情報（30 秒より新しければそのまま）
+    bindHover();
+    bindAlts();
+  }
+  // わたし・あいての画面の左の欄: 電車（乗換案内）と歩く順番
+  function stepsPanel(M, O) {
+    var it = M.ep.itin, both = '';
+    if (O && O.g && M.t != null && O.t != null) {
+      var a = M.t + M.g.minutes, b = O.t + O.g.minutes;
+      both = '<p class="hint" style="margin:6px 0 0">' + hm(Math.max(a, b)) + ' ごろ、ふたりがそろいます（' + (Math.abs(a - b) < 1 ? 'ほぼ同時' : (a < b ? M.who : O.who) + 'が約' + Math.round(Math.abs(a - b)) + '分待つ') + '）。</p>';
+    }
+    return '<section class="panel" aria-labelledby="h-steps"><h2 id="h-steps">' + (O ? '<span class="' + M.mark + '"></span>' + M.who + 'の' : '') + (it ? '電車と歩く順番' : '歩く順番') + '</h2>' + both +
+      (it ? itinHTML(it, M.g, M.ep) : '') +
+      '<p class="hint">' + (it ? '歩く順番: ' : '') + '押すと、そこから 1 手順ずつ案内します。' + (O && O.g ? '立体図の赤い線が' + M.who + '、だいだいの線が' + O.who + 'の道順です。' : '') + '</p>' + stepsHTML(M.g) + '</section>';
+  }
+  // ふたりの流れ（ふたりの画面）: それぞれの出発から、乗り換え・着く駅・出る改札・歩いて待ち合わせ場所まで。下でひとつにまとめる
+  function flowHTML(A, B, to) {
+    function lane(P) {
+      var li = [], it = P.ep.itin;
+      if (P.ep.type === 'dep') li.push('<li>' + esc(P.ep.err) + '</li>');
+      else if (it) {
+        var N = it.net, r = it.plan;
+        if (r.walk0) li.push('<li><span class="lt">' + hm(r.dep) + '</span>' + esc(N.st[r.start][1]) + 'から歩く</li>');
+        r.legs.forEach(function (l, i) {
+          var x = Transit.legInfo(N, l);
+          li.push('<li><span class="lt">' + hm(l.dep) + '</span><b>' + esc(x.from) + '</b>' + (i ? 'で乗り換え' : '') + '<small><span class="lb" style="' + lbStyle(x.color) + '">' + esc(x.line) + '</span> ' + esc(x.dest) + '行き</small></li>');
+        });
+        var last = Transit.legInfo(N, r.legs[r.legs.length - 1]);
+        li.push('<li><span class="lt">' + hm(it.arr) + '</span><b>' + esc(last.to) + '</b>に着く</li>');
+      } else if (P.ep.type === 'line') li.push('<li><span class="lt">' + (P.t != null ? hm(P.t) : '') + '</span><b>' + esc(P.ep.L.name) + '</b>で着く</li>');
+      else li.push('<li><b>' + esc(epText(P.ep)) + '</b>から歩く</li>');
+      if (P.g) {
+        var sk = P.ep.starts && P.ep.starts.filter(function (s) { return s[0] === P.g.route.start; })[0], gate = sk && sk[2].charAt(0) !== '*' ? sk[2].replace(/の前$/, '') : '';
+        li.push('<li>' + (gate ? '「' + esc(gate) + '」を出て、' : '') + '歩いて約' + P.g.minutes + '分' + (P.t != null ? '<small>' + hm(P.t + P.g.minutes) + ' ごろ待ち合わせ場所に着く</small>' : '') + '</li>');
+      } else if (P.ep.type !== 'dep') li.push('<li>' + (P.ep.evNo ? '段差なしで駅を出る道がデータにありません' : 'この待ち合わせ場所への道が見つかりません') + '</li>');
+      return '<div class="lane"><h3><span class="' + P.mark + '"></span>' + P.who + '</h3><ol class="legs">' + li.join('') + '</ol></div>';
+    }
+    var a = A.g && A.t != null ? A.t + A.g.minutes : null, b = B.g && B.t != null ? B.t + B.g.minutes : null;
+    var merge = (a != null && b != null ? hm(Math.max(a, b)) + ' ごろ、' : '') + '「' + esc(epText(to)) + '」でそろう' +
+      (a != null && b != null && Math.abs(a - b) >= 1 ? '<small>' + (a < b ? 'わたし' : 'あいて') + 'が約' + Math.round(Math.abs(a - b)) + '分待ちます</small>' : '');
+    return '<section class="panel flow" aria-labelledby="h-flow"><h2 id="h-flow">ふたりの流れ</h2><p class="hint">それぞれの出発から待ち合わせ場所までです。駅の中の道順は立体図（赤がわたし、だいだいがあいて）。それぞれの案内は上の「わたし」「あいて」で見られます。</p>' +
+      '<div class="lanes">' + lane(A) + lane(B) + '</div><div class="merge">' + merge + '</div></section>';
+  }
+  // 立体図の欄
+  function p3dHTML(st) {
+    return '<section class="panel p3d" aria-labelledby="h-3d"><h2 id="h-3d">立体で見る</h2><p class="hint" title="マウスは左ドラッグで移動、右ドラッグで回転、ホイールで拡大します（スマホは 1 本指で移動、2 本指で拡大・回転）。右上の方位マークを押すと北が上になります。地上の建物は実際の高さです。手順を押すとその場所に寄ります。高さは見やすいように強調しています。">マウスは左ドラッグで移動、右ドラッグで回転、ホイールで拡大します（スマホは 1 本指で移動、2 本指で拡大・回転）。右上の方位マークを押すと北が上に、＋・－で拡大・縮小、◎で現在地を出して出発地にします。地上の建物は実際の高さです。手順を押すとその場所に寄ります。高さは見やすいように強調しています。</p>' +
+      '<div class="stage" id="stage"><div class="views">' +
+        '<button type="button" data-view="oblique">斜めから</button><button type="button" data-view="side">横から</button><button type="button" data-view="top">真上から</button>' +
+        (View3D.hasCity ? '<button type="button" id="city-toggle" aria-pressed="' + View3D.city + '">街並み ' + (View3D.city ? '表示中' : '非表示') + '</button>' : '') +
+        (View3D.hasPhoto ? '<button type="button" id="photo-toggle" aria-pressed="' + View3D.photoCity + '" title="PLATEAU の写真付きの建物と、航空写真の地面に切り替える（データが多いので通信に注意）"' + (View3D.city ? '' : ' hidden') + '>写真の街並み</button>' : '') +
+        (View3D.hasUbld(st) ? '<button type="button" id="ubld-toggle" aria-pressed="' + View3D.ubld + '" title="PLATEAU の地下街モデル（壁・床・天井）を重ねる。深さは通路網の階に合わせて伸ばしている">地下街</button>' : '') +
+        // 地下・建物の名前の札とトイレのマーク（2026-10-12 利用者「スマホだとラベルで画面が埋まる」）
+        '<button type="button" id="marks-toggle" aria-pressed="' + View3D.marks + '" title="改札・地下街・店・建物の名前の札とトイレのマークを出す・消す（出発・待ち合わせ場所・出口・手順の札は残す）">ラベル ' + (View3D.marks ? '表示中' : '非表示') + '</button>' +
+      '</div><div class="knobs">' +
+      (View3D.hasCity ? '<label class="depth" for="city-a" id="city-a-wrap"' + (View3D.city ? '' : ' hidden') + '>街並みの濃さ<input type="range" id="city-a" min="0" max="1" step="0.05" value="' + View3D.cityAlpha + '"><output id="city-a-v">' + Math.round(View3D.cityAlpha * 100) + '%</output></label>' : '') +
+      // 地下街の濃さ（2026-10-11 利用者「地下空間の透明度を調整できるようにして」）。地下街を出しているときだけ
+      (View3D.hasUbld(st) ? '<label class="depth" for="ubld-a" id="ubld-a-wrap"' + (View3D.ubld ? '' : ' hidden') + ' title="PLATEAU の地下街モデルの壁・床・天井の濃さ。案内中はこの半分ほど。リアル視点ではいつも不透明">地下街の濃さ<input type="range" id="ubld-a" min="0" max="1" step="0.05" value="' + View3D.ubldAlpha + '"><output id="ubld-a-v">' + Math.round(View3D.ubldAlpha * 100) + '%</output></label>' : '') +
+      '</div></div></section>';
+  }
+  function bind3D() {
+    // 経路を選び直すと立体図は外からの見え方に戻る（リアル視点も切れる）ので、ボタンの見た目も合わせる
+    if ($('fpv-toggle')) $('fpv-toggle').setAttribute('aria-pressed', View3D.fpv);
     if ($('city-toggle')) $('city-toggle').addEventListener('click', function () {
       var on = !View3D.city;
       View3D.setCity(on);
@@ -4887,12 +4970,6 @@ var View3D = (function () {
       if ($('ubld-a-wrap')) $('ubld-a-wrap').hidden = !on;
       if ($('fpv-toggle')) $('fpv-toggle').setAttribute('aria-pressed', View3D.fpv);
     });
-    if ($('fpv-toggle')) $('fpv-toggle').addEventListener('click', function () {
-      var on = !View3D.fpv;
-      if (on && !View3D.ubld) { View3D.setUbld(true); if ($('ubld-toggle')) $('ubld-toggle').setAttribute('aria-pressed', true); if ($('ubld-a-wrap')) $('ubld-a-wrap').hidden = false; } // リアル視点には地下街が要る
-      View3D.setFpv(on);
-      this.setAttribute('aria-pressed', View3D.fpv);
-    });
     if ($('photo-toggle')) $('photo-toggle').addEventListener('click', function () {
       var on = !View3D.photoCity;
       View3D.setPhotoCity(on);
@@ -4908,20 +4985,9 @@ var View3D = (function () {
       $('ubld-a-v').textContent = Math.round(a * 100) + '%';
       View3D.setUbldAlpha(a);
     });
-    // 続きがあれば、その手順から案内する（2026-10-08 利用者「途中まで自動で移動したあとに、案内をはじめるを押した場合も途中から」）
-    $('nav-start').addEventListener('click', function () { var r = View3D.resumeStep; startNav(r > 0 ? r : 0); });
-    if ($('fpv-opt')) $('fpv-opt').addEventListener('change', function () { try { localStorage.setItem('machiawase.fpvOpt', this.checked ? '1' : '0'); } catch (e) {} });
-    // 自動で歩く（前の「歩く様子」）。2026-10-08 利用者「左にボタンを集めた方がいいのではないか」→ 進め方（手動・自動）を左に、見え方を立体図の上に
-    $('auto-walk').addEventListener('click', startAuto);
-    $('share').addEventListener('click', shareRoute);
-    document.querySelectorAll('[data-meet]').forEach(function (b) { b.addEventListener('click', function () { $('to').value = b.dataset.meet; runBusy(); }); });
-    if ($('send-partner')) $('send-partner').addEventListener('click', sendToPartner);
-    if (liveLines().length && Date.now() - live.at > 30000) liveFetch(rerenderMeet); // 遅れ・運行情報（30 秒より新しければそのまま）
     document.querySelectorAll('[data-view]').forEach(function (b) {
       b.addEventListener('click', function () { View3D.view(b.dataset.view); if ($('fpv-toggle')) $('fpv-toggle').setAttribute('aria-pressed', View3D.fpv); });
     });
-    bindHover();
-    bindAlts();
   }
 
   function summaryHTML(g, from, to) {
@@ -4956,7 +5022,7 @@ var View3D = (function () {
 
   function stepIcon(s) {
     if (s.icon === 'exit') {
-      var name = parseEp(s.kind === 'start' ? $('from').value : $('to').value).id;
+      var name = (s.kind === 'start' ? (state.main ? state.main.ep : rawEp('from')) : epOf('to')).id;
       return '<div class="ico exit">' + esc(name) + '</div>';
     }
     if (s.icon === 'place') return '<div class="ico place">' + icon('place') + '</div>';
@@ -5149,7 +5215,7 @@ var View3D = (function () {
     }).join('') + '</div>' : '') + '</div>';
   }
   // 待ち合わせ場所から、地下の道のりでいちばん近い出口（4 か所まで）。出口ごとに経路を探して比べる
-  function nearExitsHTML(to, pr) {
+  function nearExitsHTML(to, pr, side) {
     if (to.type !== 'spot') return '<p class="hint">待ち合わせ場所を選ぶと出ます。</p>';
     var st = state.st, list = [];
     Guide.exitNames(st).forEach(function (n) {
@@ -5162,7 +5228,7 @@ var View3D = (function () {
     list.sort(function (a, b) { return a.len - b.len; });
     if (!list.length) return '<p class="hint">この条件で待ち合わせ場所へ行ける出口がデータにありません。</p>';
     return '<div class="alts">' + list.slice(0, 4).map(function (a) {
-      return '<button type="button" data-alt="' + esc(a.n) + '" data-side="from"><span class="exitbadge">' + esc(a.n) + '</span>' +
+      return '<button type="button" data-alt="' + esc(a.n) + '" data-side="' + (side || 'from') + '"><span class="exitbadge">' + esc(a.n) + '</span>' +
         esc(Guide.exitLabel(a.n)) + 'から約' + Math.max(10, Math.round(a.len / 10) * 10) + 'm・約' + a.min + '分' + (a.ev ? '（エレベーター）' : '') + '</button>';
     }).join('') + '</div>';
   }
@@ -5418,8 +5484,9 @@ var View3D = (function () {
   var saved = urlChoice() || loadChoice(), start = -1;
   if (saved) {
     start = STATIONS.findIndex(function (s) { return s.id === saved.st; });
-    if (saved.pr && $('p-' + saved.pr)) $('p-' + saved.pr).checked = true;
+    if (saved.pr && ['std', 'stair', 'esc', 'ev'].indexOf(saved.pr) >= 0) $('from-pr').value = saved.pr;
   }
+  setSetup(!saved); // 前の選択・共有リンクがあれば、設定は閉じてまとめだけ
   openStation(start >= 0 ? start : 0, function () {
     if (start >= 0) { state.pend = saved; setStation(start, saved.from, saved.to, saved.fc, saved.tc); }
     else setStation(0);
