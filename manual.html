@@ -41,6 +41,7 @@ figure img { width: 100%; height: auto; border-radius: 8px; border: 1px solid va
 figure.phone { max-width: 300px; }
 figcaption { font-size: 13px; color: var(--muted); margin-top: 4px; }
 .two { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; align-items: start; }
 table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 8px 0; }
 th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
 th { color: var(--muted); font-weight: 500; white-space: nowrap; }
@@ -51,7 +52,7 @@ th { color: var(--muted); font-weight: 500; white-space: nowrap; }
 .warn { border-left: 4px solid var(--oedo); padding: 6px 12px; background: var(--faint); border-radius: 0 8px 8px 0; font-size: 14px; }
 footer { font-size: 12px; color: var(--muted); margin-top: 24px; }
 a { color: var(--sel); }
-@media (max-width: 680px) { .two { grid-template-columns: minmax(0, 1fr); } section { padding: 16px; } .sign a { display: none; } }
+@media (max-width: 680px) { .two, .three { grid-template-columns: minmax(0, 1fr); } section { padding: 16px; } .sign a { display: none; } }
 </style>
 </head>
 <body>
@@ -64,9 +65,9 @@ a { color: var(--sel); }
 <main>
 <section>
   <h2>Machiawase とは</h2>
-  <p>別々の電車で来るふたりが、大きな駅の地下（改札・地下街・地下の店）で会うための Web アプリです。ふたりの<b>乗ってくる電車</b>から、<b>ふたりがそろう時刻</b>と、<b>ふたりにちょうどよい待ち合わせ場所</b>を出し、ふたりの道順を立体図と手順で案内します。電車の遅れも反映します。</p>
+  <p>別々の所から来るふたりが、大きな駅の地下（改札・地下街・地下の店）で会うための Web アプリです。ふたりの<b>出発駅・バス停</b>（または乗ってくる電車）から、<b>乗る電車・バス</b>、<b>ふたりがそろう時刻</b>、<b>ふたりにちょうどよい待ち合わせ場所</b>を出し、ふたりの道順を立体図と手順で案内します。電車の遅れも反映します。あいてに QR コードで入力してもらい、あいてがどこまで進んでいるかも見られます。</p>
   <p>対応している駅: <span class="chip">池袋</span> <span class="chip">新宿</span> <span class="chip">渋谷</span> <span class="chip">東京</span> <span class="chip">上野</span> <span class="chip">銀座（有楽町・日比谷）</span> <span class="chip">大手町</span> <span class="chip">日本橋</span></p>
-  <figure><img src="manual/01_overview.jpg" alt="池袋駅で、わたしは丸ノ内線、あいては JR山手線で来るときの画面" loading="lazy"><figcaption>池袋駅で、わたしは丸ノ内線（荻窪方面から）、あいては JR山手線（外回り）で来るとき。左に「ふたりの到着」、右に立体図。</figcaption></figure>
+  <figure><img src="manual/12_duo_flow.jpg" alt="池袋駅で、わたしは朝霞、あいては新座から来るときのふたりの画面" loading="lazy"><figcaption>池袋駅で、わたしは朝霞駅、あいては新座駅から来るとき（「ふたり」の画面）。左にふたりの流れの図、右にふたりの道順の立体図。</figcaption></figure>
 </section>
 
 <section>
@@ -76,11 +77,13 @@ a { color: var(--sel); }
     <li>「待ち合わせ場所」で、<b>駅</b>・<b>場所</b>・<b>合流日時</b>を選びます。場所は、立体図の改札・店などの札や建物の名前を押しても選べます。</li>
     <li><b>出発地（わたし）</b>で、自分の来かたを選びます。電車で来るときは「電車で着く」の中から、路線と方面（「丸ノ内線（荻窪方面から）」「JR山手線・外回り（目白の方から）」など）を選びます。地上の場所（ハチ公前・東京都庁前など）や出口から来るときは、その場所を選びます。</li>
     <li>家の最寄り駅などから来るときは、「<b>出発駅・バス停から乗り換えて来る</b>」を選び（駅名・バス停名は、ひらがなでも探せます。候補には路線の色の札が出ます。時刻表の無い駅や、その日に便の無いバス停は「案内できません」と理由を出します）、<b>出発駅（またはバス停）</b>と<b>合流日時</b>を入れます。合流日時に待ち合わせ場所へ着ける、いちばん遅い電車・バスを探し、出る駅と時刻・乗り換える駅・降りる車両（進行方向の前から何両目あたりか）・出る改札を出します。電車の乗り換えは 2 回まで、バスの乗り換えは 1 回までです。</li>
-    <li>電車で来るときは、その下の欄で<b>乗ってくる電車</b>（この駅に着く時刻）を選びます。いまの 5 分前から 4 時間先までの電車が、時刻表の順に並びます。並んでいない時刻は「時刻を入れる…」で入れられます。</li>
+    <li>「電車で着く」を選んだときは、その下の欄で<b>乗ってくる電車</b>（この駅に着く時刻）を選びます。いまの 5 分前から 4 時間先までの電車が、時刻表の順に並びます。並んでいない時刻は「時刻を入れる…」で入れられます。</li>
     <li>あいての来かたを、あいてに入れてもらうこともできます。「あいての出発地」の来かたで「<b>あいてに入力してもらう（QRコード）</b>」を選び、出てきた QR コードかリンクをあいてに送ります。あいてが来かたを入れると、こちらの画面に数秒で出ます。</li>
     <li><b>あいての来かた</b>で、あいての来かた・条件（標準／段差なし）・乗ってくる電車を同じように選びます。ひとりで道順だけ調べるときは「－」のままにします。</li>
     <li><b>待ち合わせ場所</b>を選びます（あとで、下の「ふたりにちょうどよい待ち合わせ場所」からも選べます）。改札・地下街・地下通路・カフェ・店などから選べます。</li>
   </ol>
+  <figure><img src="manual/18_search.jpg" alt="出発駅の欄にしんじゅくと入れたときの候補" loading="lazy"><figcaption>出発駅・バス停の候補。駅名の合う所を色で、読みがな、路線の色の札。案内できない駅は理由を添えて下に</figcaption></figure>
+  <figure><img src="manual/17_invite_qr.jpg" alt="あいてに入力してもらう QR コードのダイアログ" loading="lazy" style="max-width:520px"><figcaption>「あいてに入力してもらう（QRコード）」。閉じても 5 秒ごとに読みに行き、あいての入力が届くと「あいて」に出ます</figcaption></figure>
   <div class="note">着く時刻は、公共交通オープンデータセンター（ODPT）の駅時刻表・列車時刻表から取っています。土日は土休日の時刻表です（祝日は平日の時刻表になります）。西武池袋・西武新宿・小田急新宿・東急渋谷に着く電車は、時刻表のデータが無いので時刻を入れてください。</div>
 </section>
 
@@ -88,11 +91,13 @@ a { color: var(--sel); }
   <h2><span class="no">2</span>ふたり・わたし・あいての画面</h2>
   <p>あいてを選ぶと、設定の下に「<b>ふたり</b>」「<b>わたし</b>」「<b>あいて</b>」の切り替えが出ます。</p>
   <ul>
-    <li><b>ふたり</b>: 「ふたりの流れ」に、ふたりそれぞれの出発・乗り換え・着く駅・出る改札・待ち合わせ場所に着く時刻を 2 列で並べ、下に「10:00 ごろ、◯◯でそろう」とまとめます。駅の中の道順は立体図に、わたし（赤）とあいて（だいだい）の 2 本で出します。</li>
+    <li><b>ふたり</b>: 「ふたりの流れ」の図に、ふたりの出発（駅・時刻）、乗る区間（路線の色の線）、乗り換え、着く駅、駅の中を歩く所（点線）、待ち合わせ場所とそろう時刻を横に並べます。見出しは「10:00 ごろ、ふたりがそろいます（あいてが約2分待つ）」。「くわしく」を開くと、出る改札・歩く時間の一覧も見られます。駅の中の道順は立体図に、わたし（赤）とあいて（だいだい）の 2 本で出します。</li>
     <li><b>わたし</b>: わたしの電車（乗換案内）と歩く順番・立体図で、1 手順ずつ案内します。</li>
     <li><b>あいて</b>: あいての電車と歩く順番・立体図を<b>見るだけ</b>の画面です（案内開始のボタンはありません。手順を押すと立体図でその場所を見せます）。</li>
   </ul>
+  <figure><img src="manual/13_flow.jpg" alt="ふたりの流れの図" loading="lazy"><figcaption>ふたりの流れの図（あいてがいま乗っている所が、見出しの下に出ます）</figcaption></figure>
   <p><b>あいてがどこまで進んだか</b>: 「あいてに入力してもらう（QRコード）」でつながっていると、あいてが案内カードを進めるたびに、あいての画面とふたりの画面に「<b>あいてはいま 3 / 7</b>：9:36 朝霞台で、東武東上線に乗る（1分前に案内を進めました）」と出ます。あいての画面では、その行に「いま」の印、立体図に青い「いま」のピンが出ます。つながっていないときや、あいてがまだ案内をはじめていないときは、合流日の当日なら時刻表から「予定では、北朝霞で乗り換えているころ」と見込みを出します。</p>
+  <figure><img src="manual/16_partner_progress.jpg" alt="あいての画面に、あいての進み具合の見込みが出ている" loading="lazy"><figcaption>「あいて」の画面。あいての進み具合（ここでは時刻表からの見込み）と、その行の「いま」の印</figcaption></figure>
   <p><b>待ち合わせを変えたとき</b>: 共有したあとに、誘った人が待ち合わせの駅・場所・日時を変えると、あいての画面の下に「<b>あいてが待ち合わせを変えました</b>」と、変わった所（前 → 新しい）が出ます。あいての案内も新しい待ち合わせで出し直します。</p>
   <p><b>出口</b>: 出口の番号は駅・地下街ごとに振られているので、この駅の出口は「6番出口」、ほかの駅・地下街の出口は「新宿サブナード 6番出口」「都庁前駅 A1番出口」のように、どこの出口かを添えて出します（選択肢も「この駅」と「ほかの駅・地下街」に分けています）。</p>
   <p>案内の上の大きな「約◯分」は<b>歩く時間</b>です（電車で来るときは、駅に着いてから待ち合わせ場所まで。電車・バスの時間は入りません）。</p>
@@ -141,12 +146,14 @@ a { color: var(--sel); }
 
 <section>
   <h2><span class="no">7</span>道順の案内</h2>
-  <p>左の「わたしの歩く順番」は、乗ってきた電車から始まります（「丸ノ内線（荻窪方面から）で着いて、中央通路中央改札を出る」）。「あいての歩く順番」も並べて出します。</p>
+  <p>「わたし」の画面の左に、<b>電車と歩く順番</b>が出ます。乗換案内で来るときは、出る駅と時刻・乗り換え・降りる駅（降りる車両）の下に、駅の中を歩く手順が続きます。歩く手順は、乗ってきた電車から始まります（「丸ノ内線（荻窪方面から）で着いて、中央通路中央改札を出る」）。手順には「地上」「地下1階」の札が付きます。</p>
+  <figure><img src="manual/14_itin.jpg" alt="わたしの画面の電車と歩く順番" loading="lazy"><figcaption>電車と歩く順番（朝霞から池袋へ）</figcaption></figure>
   <ul>
-    <li>乗換案内で来るときは、歩く手順の前に<b>電車・バスのカード</b>が出ます: 乗る（路線の帯の図）・乗り換える（乗り換えの図）・降りる（編成の図で、進行方向の前から何両目か）。</li>
+    <li>歩く手順の前に<b>電車・バスのカード</b>が出ます: 乗る（路線の帯の図）・乗り換える（乗り換えの図）・降りる（編成の図で、進行方向の前から何両目か）。カードのあいだ、立体図の場所に<b>路線図</b>（地理院地図の上に、乗る区間を路線の色で）が出ます。電車の行を押すと、そのカードから案内します。</li>
     <li><b>▶ 案内開始（手動進行）</b>: 1 手順ずつ「つぎへ」で進めます（キーボードの ← → でも）。移動中はこちらが便利です。</li>
     <li><b>▶ 案内開始（自動進行）</b>: 立体図の中を自動で歩き、手順の案内カードも進みます。止める・再開・続きからにも対応します。</li>
   </ul>
+  <figure><img src="manual/15_ride_card.jpg" alt="電車のカードと路線図" loading="lazy"><figcaption>電車のカード（降りる車両の図）と、地理院地図の上の路線図</figcaption></figure>
   <figure><img src="manual/03_nav_arrive.jpg" alt="手動進行の案内。案内カードに電車を降りて改札を出る手順" loading="lazy"><figcaption>電車を降りて改札を出る手順から案内する</figcaption></figure>
 </section>
 
@@ -165,9 +172,10 @@ a { color: var(--sel); }
 
 <section>
   <h2><span class="no">9</span>スマートフォンで</h2>
-  <div class="two">
-    <figure class="phone"><img src="manual/08_mobile_meet.jpg" alt="スマートフォンでふたりの到着の欄を見ている画面" loading="lazy"><figcaption>ふたりの到着</figcaption></figure>
-    <figure class="phone"><img src="manual/09_mobile_nav.jpg" alt="スマートフォンで案内している画面" loading="lazy"><figcaption>案内中は、立体図が上に、案内カードがその下に出ます</figcaption></figure>
+  <div class="three">
+    <figure class="phone"><img src="manual/19_mobile_flow.jpg" alt="スマートフォンでふたりの流れを見ている画面" loading="lazy"><figcaption>ふたりの流れ</figcaption></figure>
+    <figure class="phone"><img src="manual/20_mobile_ride.jpg" alt="スマートフォンで電車のカードを見ている画面" loading="lazy"><figcaption>電車のカードのあいだは、図を大きく出します</figcaption></figure>
+    <figure class="phone"><img src="manual/09_mobile_nav.jpg" alt="スマートフォンで案内している画面" loading="lazy"><figcaption>歩く案内中は、立体図が上に、案内カードがその下に出ます</figcaption></figure>
   </div>
 </section>
 
@@ -189,6 +197,7 @@ a { color: var(--sel); }
     <tr><th>地上の歩道</th><td>国土交通省「歩行空間ネットワークデータ」（池袋駅周辺・東京駅周辺・台東区上野駅周辺・渋谷駅、千駄ヶ谷駅周辺／新宿駅周辺。政府標準利用規約 第2.0版）</td></tr>
     <tr><th>地下の通路・出口・改札・待ち合わせ場所・トイレ</th><td>© OpenStreetMap contributors（ODbL）</td></tr>
     <tr><th>建物・道路・地下街・写真の街並み</th><td>「3D都市モデル（Project PLATEAU）東京都23区（2025年度）」（国土交通省）を加工して作成。写真の街並みの地面は地理院タイル（シームレス空中写真）（国土地理院）、地表の高さは国土地理院の標高 API とジオイド高 API</td></tr>
+    <tr><th>電車・バスの路線図</th><td>地理院タイル（淡色地図）（国土地理院）の上に、ODPT・都営バスの駅・停留所の位置で描いています</td></tr>
     <tr><th>立体図・案内の作り</th><td>「エキしるべ」（同じ作者の公共交通オープンデータチャレンジ2026 応募作品）をもとにしています</td></tr>
   </table>
 </section>
