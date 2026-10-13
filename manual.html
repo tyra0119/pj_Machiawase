@@ -52,6 +52,14 @@ th { color: var(--muted); font-weight: 500; white-space: nowrap; }
 .warn { border-left: 4px solid var(--oedo); padding: 6px 12px; background: var(--faint); border-radius: 0 8px 8px 0; font-size: 14px; }
 footer { font-size: 12px; color: var(--muted); margin-top: 24px; }
 a { color: var(--sel); }
+/* スマホの幅では、表の見出し（左の列）を上、説明を下に縦に並べる（2026-10-14 利用者「manualの使っているデータの部分がスマホだと崩れる」。
+   見出しが折り返さないので、左の列が幅を取り、説明が細く押しつぶされて横にはみ出していた） */
+@media (max-width: 680px) {
+  table, tbody, tr, th, td { display: block; width: 100%; }
+  tr { border-bottom: 1px solid var(--line); padding: 6px 0; }
+  th, td { border-bottom: none; padding: 2px 0; }
+  th { white-space: normal; font-weight: 700; }
+}
 @media (max-width: 680px) { .two, .three { grid-template-columns: minmax(0, 1fr); } section { padding: 16px; } .sign a { display: none; } }
 </style>
 </head>
