@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Machiawase 使い方</title>
-<meta name="description" content="Machiawase の使い方。別々の電車で来るふたりが、駅の地下で会うための待ち合わせ場所と時刻を、公共交通オープンデータの時刻表と遅れから出します（池袋・新宿・渋谷・東京・上野・銀座・大手町・日本橋）">
+<meta name="description" content="Machiawase の使い方。別々の電車で来るふたりが、駅の地下で会うための待ち合わせ場所と時刻を、公共交通オープンデータの時刻表と遅れから出します（池袋・新宿・渋谷・東京・銀座）">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Barlow+Semi+Condensed:wght@600;700&display=swap">
@@ -66,7 +66,7 @@ a { color: var(--sel); }
 <section>
   <h2>Machiawase とは</h2>
   <p>別々の所から来るふたりが、大きな駅の地下（改札・地下街・地下の店）で会うための Web アプリです。ふたりの<b>出発駅・バス停</b>（または乗ってくる電車）から、<b>乗る電車・バス</b>、<b>ふたりがそろう時刻</b>、<b>ふたりにちょうどよい待ち合わせ場所</b>を出し、ふたりの道順を立体図と手順で案内します。電車の遅れも反映します。あいてに QR コードで入力してもらい、あいてがどこまで進んでいるかも見られます。</p>
-  <p>対応している駅: <span class="chip">池袋</span> <span class="chip">新宿</span> <span class="chip">渋谷</span> <span class="chip">東京</span> <span class="chip">上野</span> <span class="chip">銀座（有楽町・日比谷）</span> <span class="chip">大手町</span> <span class="chip">日本橋</span></p>
+  <p>対応している駅: <span class="chip">池袋</span> <span class="chip">新宿</span> <span class="chip">渋谷</span> <span class="chip">東京</span> <span class="chip">銀座（有楽町・日比谷）</span></p>
   <figure><img src="manual/12_duo_flow.jpg" alt="池袋駅で、わたしは朝霞、あいては新座から来るときのふたりの画面" loading="lazy"><figcaption>池袋駅で、わたしは朝霞駅、あいては新座駅から来るとき（「ふたり」の画面）。左にふたりの流れの図、右にふたりの道順の立体図。</figcaption></figure>
 </section>
 
@@ -130,7 +130,7 @@ a { color: var(--sel); }
       <ul>
         <li>ちょうどよい待ち合わせ場所は、段差なしの人がエレベーターで行ける場所だけになります。</li>
         <li>選んだ待ち合わせ場所に段差なしで行けないときは、そう出ます。下の候補から選んでください。</li>
-        <li>都営大江戸線の駅（新宿・新宿西口・都庁前・上野御徒町）では、都営地下鉄の GTFS-Pathways から、ホームから改札までのエレベーターの道の時間を使います。ほかの駅は、エレベーターの位置がデータに無いので、時間は推定です。</li>
+        <li>都営大江戸線の駅（新宿・新宿西口・都庁前）では、都営地下鉄の GTFS-Pathways から、ホームから改札までのエレベーターの道の時間を使います。ほかの駅は、エレベーターの位置がデータに無いので、時間は推定です。</li>
         <li>待ち合わせ場所にいちばん近い<b>車いす対応のトイレ</b>（立体図のトイレのマーク）までの距離を出します。</li>
       </ul>
     </div>
@@ -194,7 +194,7 @@ a { color: var(--sel); }
     <tr><th>来かた・着く時刻・遅れ</th><td>公共交通オープンデータセンター（ODPT）の駅・路線・方面・駅時刻表・列車時刻表・運行情報・列車ロケーション情報。東京メトロ（公共交通オープンデータ基本ライセンス）、東京都交通局（CC BY 4.0）、JR東日本・東武鉄道・西武鉄道・小田急電鉄・京王電鉄・東急電鉄（公共交通オープンデータチャレンジ限定ライセンス）。中継サーバを通して呼び、アクセストークンはページに置いていません</td></tr>
     <tr><th>乗換案内</th><td>ODPT の列車時刻表（東京メトロ・東京都交通局・JR東日本・東武鉄道・京王電鉄。ライセンスは上と同じ）と、東京都交通局「都営バス GTFS」（公共交通オープンデータ協議会、CC BY 4.0）</td></tr>
     <tr><th>ホームから改札（段差なし）</th><td>東京都交通局「鉄道関連情報（GTFS-Pathways）」（CC BY 4.0）。都営大江戸線の駅</td></tr>
-    <tr><th>地上の歩道</th><td>国土交通省「歩行空間ネットワークデータ」（池袋駅周辺・東京駅周辺・台東区上野駅周辺・渋谷駅、千駄ヶ谷駅周辺／新宿駅周辺。政府標準利用規約 第2.0版）</td></tr>
+    <tr><th>地上の歩道</th><td>国土交通省「歩行空間ネットワークデータ」（池袋駅周辺・東京駅周辺・渋谷駅、千駄ヶ谷駅周辺／新宿駅周辺。政府標準利用規約 第2.0版）</td></tr>
     <tr><th>地下の通路・出口・改札・待ち合わせ場所・トイレ</th><td>© OpenStreetMap contributors（ODbL）</td></tr>
     <tr><th>建物・道路・地下街・写真の街並み</th><td>「3D都市モデル（Project PLATEAU）東京都23区（2025年度）」（国土交通省）を加工して作成。写真の街並みの地面は地理院タイル（シームレス空中写真）（国土地理院）、地表の高さは国土地理院の標高 API とジオイド高 API</td></tr>
     <tr><th>電車・バスの路線図</th><td>地理院タイル（淡色地図）（国土地理院）の上に、ODPT・都営バスの駅・停留所の位置で描いています</td></tr>
