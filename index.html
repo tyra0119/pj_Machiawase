@@ -1697,6 +1697,7 @@ var View3D = (function () {
     var m = new THREE.Mesh(new THREE.PlaneGeometry(W, Hn), new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0.85, depthWrite: false }));
     m.rotation.x = -Math.PI / 2; m.position.set(cxm, 0.02, -cnm); m.renderOrder = -2;
     m.userData.city = 'photoground'; m.userData.ready = Promise.all(jobs);
+    m.userData.box = [cxm - W / 2, cnm - Hn / 2, W, Hn]; // 航空写真の範囲（x の西の端、北向きの南の端、幅、高さ。写真の無い建物の屋根に貼る）
     return m;
   }
   // 写真の建物は、立体図の中心（見ている所）から近いタイルだけ読む（Machiawase）。エキしるべは駅の範囲のタイルを全部読むが、
@@ -1705,6 +1706,33 @@ var View3D = (function () {
   // 写真付きの建物の写真の大きさの上限（画素）。試しに ?photomax=0（縮めない）・2048・1024 で見比べられる
   var PHOTO_MAXT = (function () { try { var q = new URLSearchParams(location.search).get('photomax'); if (q != null) return +q; } catch (e) {} return LOWMEM ? 1024 : 2048; })();
   var PHOTO_R_MIN = LOWMEM ? 140 : 220, PHOTO_R_MAX = LOWMEM ? 240 : 450, PHOTO_PAR = LOWMEM ? 1 : 3, lastPhotoCheck = 0; // メモリの少ないスマホは狭く・1 つずつ
+  // 写真の無い建物（PLATEAU の写真付きの建物のデータで、建物の形だけで写真の無いもの。池袋の東武百貨店・東京芸術劇場など）は、
+  // 屋根に国土地理院の航空写真（地面と同じ）を真上から貼り、壁は階ごとの窓の並びを描く（2026-10-14 利用者「池袋以外でも写真付き建物になって
+  // ないものがある。できるなら写真付き建物にしてほしい」。壁の写真はオープンデータに無い）。前は明るい灰色の一色だった
+  var noPhotoU = { uGround: { value: null }, uBox: { value: new THREE.Vector4(0, 0, 1, 1) } }, noPhotoMat = null;
+  function noPhotoMaterial() {
+    if (noPhotoMat) return noPhotoMat;
+    noPhotoMat = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.6, side: THREE.DoubleSide, depthWrite: true });
+    noPhotoMat.onBeforeCompile = function (sh) {
+      sh.uniforms.uGround = noPhotoU.uGround; sh.uniforms.uBox = noPhotoU.uBox;
+      sh.vertexShader = 'varying vec3 vWPos; varying vec3 vWNrm;\n' + sh.vertexShader.replace('#include <fog_vertex>',
+        '#include <fog_vertex>\n vWPos = (modelMatrix * vec4(transformed, 1.0)).xyz; vWNrm = normalize(mat3(modelMatrix) * objectNormal);');
+      sh.fragmentShader = 'uniform sampler2D uGround; uniform vec4 uBox; varying vec3 vWPos; varying vec3 vWNrm;\n' + sh.fragmentShader.replace('#include <map_fragment>', [
+        '#include <map_fragment>',
+        'vec3 npc; vec3 wn = normalize(vWNrm);',
+        'if (abs(wn.y) > 0.6) {', // 屋根: 航空写真（範囲の外は明るい灰色）
+        '  vec2 uv = vec2((vWPos.x - uBox.x) / uBox.z, (-vWPos.z - uBox.y) / uBox.w);',
+        '  npc = (uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0) ? texture2D(uGround, uv).rgb : vec3(0.85, 0.82, 0.78);',
+        '} else {', // 壁: 3.6 m ごとの階に、2.6 m ごとの窓（窓は淡い青みの灰色、壁は暖かい明るい灰色。濃いと写真付きの建物より目立った）
+        '  vec2 t = normalize(vec2(-wn.z, wn.x)); float sx = dot(vWPos.xz, t);',
+        '  float fy = mod(vWPos.y, 3.6), fx = mod(sx, 2.6);',
+        '  bool win = fy > 1.0 && fy < 2.8 && fx > 0.45 && fx < 2.15 && vWPos.y > 3.0;',
+        '  npc = win ? vec3(0.58, 0.63, 0.69) : vec3(0.85, 0.82, 0.77);',
+        '}',
+        'diffuseColor.rgb *= npc;'].join('\n'));
+    };
+    return noPhotoMat;
+  }
   function addPhotoCity(st, setStatus) {
     var list = window.TILES && TILES.stations && TILES.stations[st.id];
     if (!list || !list.length) { setStatus('この駅には写真の街並みのデータがありません'); return; }
@@ -1712,6 +1740,7 @@ var View3D = (function () {
     var box = st.photoBox || [Math.min.apply(null, xs) - 120, Math.min.apply(null, ys) - 120, Math.max.apply(null, xs) + 120, Math.max.apply(null, ys) + 120];
     try { localStorage.setItem('machiawase.photoLoading', String(Date.now())); } catch (e) {} // 読み込み中の印（読み終えたら消す）
     var myScene = scene, ground = groundPhoto(st, box);
+    noPhotoU.uGround.value = ground.material.map; noPhotoU.uBox.value.fromArray(ground.userData.box); // 写真の無い建物の屋根に、同じ航空写真を貼る
     ground.visible = false; netMeshes.push(ground); scene.add(ground);
     ground.userData.ready.then(function () { if (scene === myScene) { ground.userData.loaded = true; applyOpacity(); } });
     photoState.ready = false; photoState.grp = null;
@@ -1821,7 +1850,7 @@ var View3D = (function () {
           }
           old.map.needsUpdate = true;
         }
-        o.material = new THREE.MeshLambertMaterial({ map: old.map || null, color: old.map ? 0xffffff : 0xd9d2c8, transparent: true, opacity: 0.6, side: THREE.DoubleSide, depthWrite: true });
+        o.material = old.map ? new THREE.MeshLambertMaterial({ map: old.map, color: 0xffffff, transparent: true, opacity: 0.6, side: THREE.DoubleSide, depthWrite: true }) : noPhotoMaterial();
         o.userData.photoMat = true;
       }
       o.renderOrder = 5; o.userData.city = 'photo'; o.userData.keep = true; netMeshes.push(o);
